@@ -1,0 +1,14 @@
+{
+  "name": "五行英语牌",
+  "short_name": "英语牌",
+  "description": "五元素之力 · 快乐学英语 — 小学低年级英语学习工具",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f0ff",
+  "theme_color": "#4A148C",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

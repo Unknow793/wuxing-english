@@ -1,0 +1,622 @@
+/* ========== 全局 ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f0ff;
+  --card-bg: #ffffff;
+  --text: #333333;
+  --text-light: #888888;
+  --primary: #7c4dff;
+  --primary-light: #b388ff;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 20px rgba(124, 77, 255, 0.15);
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* 五行色 */
+  --fire: #ff5722;
+  --fire-bg: #fff3e0;
+  --water: #2196f3;
+  --water-bg: #e3f2fd;
+  --wood: #4caf50;
+  --wood-bg: #e8f5e9;
+  --metal: #ffc107;
+  --metal-bg: #fff8e1;
+  --earth: #795548;
+  --earth-bg: #efebe9;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#app { max-width: 480px; margin: 0 auto; padding: 16px; height: 100%; }
+
+/* ========== 屏幕切换 ========== */
+.screen { display: none; flex-direction: column; min-height: calc(100vh - 32px); }
+.screen.active { display: flex; }
+
+/* ========== 头部通用 ========== */
+.screen-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; padding-bottom: 12px;
+  border-bottom: 2px solid #e8e0f0;
+}
+.back-btn {
+  background: none; border: none; color: var(--primary);
+  font-size: 16px; cursor: pointer; padding: 4px 8px;
+}
+h1 { font-size: 32px; color: var(--primary); text-align: center; }
+h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px; }
+.subtitle { color: var(--text-light); font-size: 14px; text-align: center; }
+.hint { color: var(--text-light); font-size: 14px; text-align: center; margin-bottom: 20px; }
+
+/* ========== 主界面 ========== */
+.title-block { text-align: center; padding: 40px 0 30px; }
+.title-icon { font-size: 64px; margin-bottom: 8px; }
+
+.menu-buttons { display: flex; flex-direction: column; gap: 16px; padding: 0 8px; }
+.menu-btn {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; padding: 20px;
+  border: none; border-radius: var(--radius);
+  font-size: 18px; cursor: pointer; text-align: left;
+  box-shadow: var(--shadow); transition: transform 0.15s;
+}
+.menu-btn:active { transform: scale(0.97); }
+.menu-btn .btn-icon { font-size: 32px; }
+.menu-btn .btn-label { font-weight: 700; font-size: 20px; }
+.menu-btn .btn-desc { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+
+.btn-fire { background: linear-gradient(135deg, var(--fire-bg), #fff); color: var(--fire); }
+.btn-water { background: linear-gradient(135deg, var(--water-bg), #fff); color: var(--water); }
+.btn-earth { background: linear-gradient(135deg, var(--earth-bg), #fff); color: var(--earth); }
+.btn-locked { background: #f0f0f0; color: #bbb; cursor: not-allowed; box-shadow: none; }
+
+/* ========== 选五行 ========== */
+.element-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding: 8px 0; }
+.element-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 120px; height: 120px;
+  border-radius: var(--radius); border: 3px solid transparent;
+  cursor: pointer; font-size: 14px; font-weight: 600;
+  transition: all 0.2s; box-shadow: var(--shadow);
+}
+.element-card:active { transform: scale(0.95); }
+.element-card.selected { border-color: var(--primary); transform: scale(1.05); }
+.element-card .elem-icon { font-size: 40px; margin-bottom: 6px; }
+.element-card .elem-name { font-size: 16px; }
+
+/* 五行各自颜色 */
+.elem-huo { background: var(--fire-bg); color: var(--fire); }
+.elem-shui { background: var(--water-bg); color: var(--water); }
+.elem-mu { background: var(--wood-bg); color: var(--wood); }
+.elem-jin { background: var(--metal-bg); color: #f57f17; }
+.elem-tu { background: var(--earth-bg); color: var(--earth); }
+
+.element-result { text-align: center; margin-top: 20px; padding: 20px; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); }
+.result-row { display: flex; justify-content: center; gap: 32px; margin-bottom: 12px; }
+.result-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.result-label { font-size: 13px; color: var(--text-light); }
+.result-desc { color: var(--text-light); font-size: 14px; margin-bottom: 16px; }
+.element-badge {
+  display: inline-block; padding: 8px 20px; border-radius: 20px;
+  font-size: 18px; font-weight: 700;
+}
+
+/* ========== 按钮 ========== */
+.primary-btn {
+  display: inline-block; padding: 14px 36px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white; border: none; border-radius: 30px;
+  font-size: 18px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 15px rgba(124, 77, 255, 0.3);
+  transition: transform 0.15s;
+}
+.primary-btn:active { transform: scale(0.96); }
+.primary-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.secondary-btn {
+  padding: 14px 36px;
+  background: white; color: var(--primary);
+  border: 2px solid var(--primary-light); border-radius: 30px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+}
+.secondary-btn:active { background: #f5f0ff; }
+
+.text-btn { background: none; border: none; color: var(--text-light); font-size: 14px; cursor: pointer; padding: 8px; margin-top: 8px; }
+
+/* ========== 学单词 ========== */
+.progress-bar {
+  flex: 1; height: 8px; background: #e8e0f0; border-radius: 4px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 4px; transition: width 0.3s;
+}
+.progress-text { font-size: 14px; color: var(--text-light); min-width: 32px; text-align: right; }
+
+.learn-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
+.element-hint { font-size: 14px; color: var(--text-light); }
+
+.word-display {
+  width: 100%; max-width: 320px; padding: 40px 24px;
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); text-align: center;
+}
+.word-main { margin-bottom: 16px; }
+.word-english { font-size: 48px; font-weight: 800; display: block; line-height: 1.2; }
+.word-sentence { font-size: 16px; color: var(--text-light); font-style: italic; }
+.word-chinese {
+  font-size: 28px; color: var(--primary); font-weight: 600;
+  animation: fadeIn 0.3s;
+}
+
+.learn-buttons { display: flex; gap: 16px; }
+.learn-buttons button { min-width: 120px; }
+
+/* ========== 连句子 ========== */
+.sentence-area { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.sentence-display {
+  width: 100%; min-height: 80px; padding: 20px;
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); display: flex; justify-content: center; align-items: center; gap: 8px;
+  font-size: 28px; font-weight: 700; line-height: 1.4;
+}
+.sentence-placeholder { color: #ccc; font-size: 16px; font-weight: 400; }
+.word-token {
+  display: inline-block; padding: 6px 16px;
+  background: var(--primary-light); color: white;
+  border-radius: 12px; cursor: pointer;
+  animation: popIn 0.2s;
+}
+
+/* 结果显示模式 — 位置对比 */
+.slot-token {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 10px 18px; border-radius: 12px; font-size: 24px; font-weight: 800;
+  min-width: 60px; text-align: center; gap: 4px;
+}
+.slot-correct { background: #c8e6c9; color: #2e7d32; }
+.slot-wrong { background: #ffcdd2; color: #c62828; }
+.slot-empty { background: #f5f5f5; color: #bbb; border: 2px dashed #ddd; }
+.slot-hint { font-size: 13px; font-weight: 400; color: #888; }
+
+.word-bank { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding: 8px 0; }
+.bank-card {
+  padding: 16px 24px; background: var(--card-bg);
+  border-radius: var(--radius-sm); box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  font-size: 20px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; border: 2px solid transparent;
+}
+.bank-card:active { transform: scale(0.95); }
+.bank-card.used { opacity: 0.3; pointer-events: none; border-color: #ddd; }
+.bank-card .bank-cn { font-size: 13px; font-weight: 400; color: var(--text-light); display: block; margin-top: 4px; }
+
+#sentence-actions { display: flex; justify-content: center; }
+
+/* 句子结果区 */
+#sentence-result { text-align: center; width: 100%; }
+.result-message { padding: 16px; border-radius: var(--radius-sm); margin-bottom: 12px; }
+.result-msg { font-size: 16px; line-height: 1.6; }
+.result-msg-perfect { background: #e8f5e9; color: #2e7d32; }
+.result-msg-partial { background: #fff3e0; color: #e65100; }
+.result-msg-fail { background: #ffebee; color: #c62828; }
+.result-msg-answer { background: #e3f2fd; color: #1565c0; }
+.result-sentence { font-size: 20px; font-weight: 800; display: inline-block; margin-top: 4px; }
+.result-buttons { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+/* ========== 奖励 ========== */
+.reward-area { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 0; }
+.reward-icon { font-size: 72px; animation: bounce 0.6s; }
+.reward-desc { color: var(--text-light); }
+
+.reward-card {
+  width: 200px; padding: 30px 20px; text-align: center;
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  animation: popIn 0.3s;
+}
+.reward-card .rw-word { font-size: 36px; font-weight: 800; display: block; }
+.reward-card .rw-cn { font-size: 18px; color: var(--text-light); margin-top: 4px; }
+.reward-card .rw-element { font-size: 14px; margin-top: 8px; display: inline-block; padding: 4px 12px; border-radius: 12px; }
+
+.reward-action { text-align: center; }
+.reward-prompt { font-size: 15px; color: var(--text); margin-bottom: 12px; font-weight: 600; }
+.reward-choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.choice-card {
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s;
+}
+.choice-card:active { transform: scale(0.95); }
+
+.reward-buttons { display: flex; gap: 12px; margin-top: 12px; }
+
+/* ========== 技能背包 ========== */
+.backpack-grid { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; }
+.bp-section { }
+.bp-section-header { font-size: 16px; font-weight: 700; padding: 4px 0 8px; border-bottom: 2px solid currentColor; margin-bottom: 8px; }
+.bp-section-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.bp-card {
+  width: calc(50% - 5px); padding: 16px;
+  border-radius: var(--radius-sm); box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex; align-items: center; gap: 12px;
+}
+.bp-card .bp-element { font-size: 24px; }
+.bp-card .bp-info { flex: 1; }
+.bp-card .bp-word { font-weight: 700; font-size: 18px; }
+.bp-card .bp-cn { font-size: 13px; color: var(--text-light); }
+.bp-card .bp-date { font-size: 11px; color: #ccc; }
+
+/* ========== 物品背包 ========== */
+.items-grid { display: flex; flex-wrap: wrap; gap: 12px; padding: 8px 0; justify-content: center; }
+.item-card {
+  width: calc(50% - 6px); max-width: 200px;
+  background: #fff8e1; border-radius: var(--radius-sm);
+  padding: 20px 12px; text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  cursor: pointer; transition: transform 0.15s;
+}
+.item-card:active { transform: scale(0.96); }
+.item-card.selected { outline: 3px solid #ff8f00; background: #fff3cd; }
+.item-card-icon { font-size: 32px; margin-bottom: 6px; }
+.item-card-label { font-size: 14px; font-weight: 700; color: #e65100; }
+.item-card-sublabel { font-size: 11px; color: #888; margin-top: 2px; }
+.item-card-date { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+/* 道具详情 */
+.items-detail {
+  margin-top: 16px; padding: 20px;
+  background: #fff8e1; border-radius: var(--radius);
+  text-align: center; box-shadow: var(--shadow);
+}
+.items-detail-icon { font-size: 48px; margin-bottom: 8px; }
+.items-detail-name { font-size: 20px; font-weight: 700; color: #e65100; }
+.items-detail-desc { font-size: 14px; color: #666; margin: 8px 0 16px; }
+.items-detail-actions { display: flex; gap: 12px; justify-content: center; }
+
+/* ========== 模态框 ========== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; }
+.modal-box {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: white; padding: 32px; border-radius: var(--radius);
+  text-align: center; z-index: 101; min-width: 280px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.modal-box p { font-size: 18px; margin-bottom: 20px; }
+.modal-buttons { display: flex; gap: 12px; justify-content: center; }
+.modal-wide { min-width: 320px; max-width: 420px; }
+.modal-wide h3 { margin-bottom: 16px; }
+
+/* ========== 复习弹窗 ========== */
+.review-word-list { display: flex; flex-direction: column; gap: 12px; }
+.review-item { padding: 14px 16px; background: #fafafa; border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+.review-item:active { background: #f0f0f0; }
+.review-word { font-size: 22px; font-weight: 800; }
+.review-cn { font-size: 14px; color: var(--text-light); margin-top: 2px; }
+.review-sentence { font-size: 13px; color: #999; font-style: italic; margin-top: 4px; }
+
+/* ========== 挑战按钮 ========== */
+.btn-challenge {
+  background: linear-gradient(135deg, #fce4ec, #fff); color: #e91e63; box-shadow: var(--shadow);
+}
+
+/* ========== 级别选择 ========== */
+.level-list { display: flex; flex-direction: column; gap: 16px; padding: 20px 8px; }
+.level-card {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; padding: 24px 20px;
+  border: none; border-radius: var(--radius);
+  font-size: 18px; cursor: pointer; text-align: left;
+  box-shadow: var(--shadow); transition: transform 0.15s;
+}
+.level-card:active { transform: scale(0.97); }
+.level-card .level-icon { font-size: 40px; }
+.level-card .level-label { font-weight: 700; font-size: 22px; }
+.level-card .level-desc { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+.level-card.level-active { background: linear-gradient(135deg, #f3e5f5, #fff); color: var(--primary); }
+.level-card.level-locked { background: #f0f0f0; color: #bbb; cursor: not-allowed; box-shadow: none; }
+.level-card.level-locked:active { transform: none; }
+
+/* ========== Boss选择 ========== */
+.boss-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding: 8px 0; }
+.boss-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 130px; padding: 20px 12px;
+  border-radius: var(--radius); border: 3px solid transparent;
+  cursor: pointer; font-size: 14px; font-weight: 600;
+  transition: all 0.2s; box-shadow: var(--shadow);
+  gap: 6px;
+}
+.boss-card:active { transform: scale(0.95); }
+.boss-card .boss-icon { font-size: 48px; }
+.boss-card .boss-name { font-size: 18px; font-weight: 700; }
+.boss-card .boss-elem { font-size: 13px; opacity: 0.8; }
+.boss-card .boss-stats { font-size: 12px; color: var(--text-light); letter-spacing: 0.5px; }
+
+/* ========== 装备 ========== */
+.equip-info { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; margin-bottom: 8px; }
+#equip-count { font-size: 16px; font-weight: 700; color: var(--primary); }
+.equip-element-counts { display: flex; gap: 6px; }
+.equip-el-badge {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 2px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 600;
+}
+.equip-el-badge.missing { opacity: 0.3; background: #eee !important; }
+
+.equip-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 8px;
+  max-height: 300px; overflow-y: auto;
+  background: #fafafa; border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+.equip-card {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 10px 14px; border-radius: 10px;
+  cursor: pointer; border: 2px solid transparent;
+  transition: all 0.15s; gap: 2px;
+  width: calc(33% - 6px); max-width: 120px;
+}
+.equip-card:active { transform: scale(0.95); }
+.equip-card.equip-selected { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(124,77,255,0.3); }
+.equip-card .eq-word { font-size: 16px; font-weight: 700; }
+.equip-card .eq-cn { font-size: 11px; color: var(--text-light); }
+.equip-actions { display: flex; justify-content: center; padding: 8px; }
+
+/* ========== 战斗 ========== */
+#screen-battle { padding: 0; }
+.battle-hud-top {
+  padding: 8px 12px; background: white;
+  border-bottom: 1px solid #eee;
+}
+.battle-boss-stats {
+  display: flex; gap: 12px; margin-top: 4px;
+  font-size: 12px; color: var(--text-light); font-weight: 600;
+}
+.battle-boss-info { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.battle-boss-icon { font-size: 28px; }
+.battle-boss-name { font-size: 18px; font-weight: 700; }
+#b-boss-card.berserk .battle-boss-icon { animation: berserk-pulse 0.8s infinite; }
+#b-boss-card.berserk .battle-boss-name::after { content: ' 🔥'; }
+@keyframes berserk-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+  50% { transform: scale(1.15); filter: drop-shadow(0 0 8px #ff4400); }
+}
+.battle-level-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 8px;
+  background: #e8e0f0; color: var(--text-light);
+}
+.battle-hp-row { display: flex; align-items: center; gap: 8px; }
+.battle-hp-bar {
+  flex: 1; height: 18px; background: #e0e0e0; border-radius: 10px;
+  overflow: hidden; position: relative;
+}
+.battle-hp-fill {
+  height: 100%; border-radius: 10px;
+  transition: width 0.5s ease;
+  background: linear-gradient(90deg, #66bb6a, #43a047);
+}
+.battle-hp-fill.low { background: linear-gradient(90deg, #ef5350, #e53935); }
+.battle-hp-fill.mid { background: linear-gradient(90deg, #ffa726, #ff9800); }
+.battle-hp-text {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  font-size: 11px; font-weight: 700; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.battle-main {
+  flex: 1; overflow-y: auto; padding: 12px;
+  display: flex; flex-direction: column;
+}
+.battle-round-label {
+  text-align: center; font-size: 16px; font-weight: 700;
+  color: var(--primary); margin-bottom: 12px;
+}
+
+/* Boss题目 */
+.battle-phase { width: 100%; }
+.bq-question {
+  text-align: center; font-size: 22px; font-weight: 700;
+  padding: 20px; background: white; border-radius: var(--radius);
+  box-shadow: var(--shadow); margin-bottom: 16px; line-height: 1.6;
+}
+.bq-options { display: flex; flex-direction: column; gap: 10px; }
+.bq-option {
+  width: 100%; padding: 16px 20px;
+  border: 2px solid #e0e0e0; border-radius: var(--radius-sm);
+  background: white; font-size: 18px; font-weight: 600;
+  cursor: pointer; text-align: center;
+  transition: all 0.15s;
+}
+.bq-option:active { transform: scale(0.97); }
+.bq-option.correct { border-color: #4caf50; background: #e8f5e9; color: #2e7d32; }
+.bq-option.wrong { border-color: #f44336; background: #ffebee; color: #c62828; }
+.bq-option:disabled { cursor: not-allowed; opacity: 0.7; }
+
+.bq-result {
+  text-align: center; padding: 16px; margin-top: 12px;
+  border-radius: var(--radius-sm); font-size: 16px;
+}
+.bq-result.bq-correct { background: #e8f5e9; color: #2e7d32; }
+.bq-result.bq-wrong { background: #ffebee; color: #c62828; }
+
+/* 玩家攻击 */
+.bp-sentence-area { margin-bottom: 12px; }
+.bp-sentence-display {
+  width: 100%; min-height: 64px; padding: 16px;
+  background: white; border-radius: var(--radius);
+  box-shadow: var(--shadow); display: flex; justify-content: center;
+  align-items: center; gap: 6px; font-size: 22px; font-weight: 700;
+  flex-wrap: wrap; line-height: 1.4;
+}
+.bp-error-msg {
+  text-align: center; font-size: 13px; color: #e53935;
+  min-height: 20px; margin-top: 4px;
+}
+.bp-actions { display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; }
+.bp-actions button { min-width: 100px; }
+
+/* 手牌 */
+.battle-hand {
+  background: white; border-top: 2px solid #e8e0f0;
+  padding: 8px 12px; flex-shrink: 0;
+}
+.battle-hand-header {
+  display: flex; justify-content: space-between; margin-bottom: 6px;
+}
+.battle-hand-label { font-size: 13px; color: var(--text-light); font-weight: 600; }
+.battle-hand-count { font-size: 13px; color: var(--primary); font-weight: 700; }
+.battle-hand-cards {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 4px 0; max-height: 130px; overflow-y: auto;
+  align-content: flex-start;
+}
+.battle-hand-cards::-webkit-scrollbar { width: 4px; }
+.battle-hand-cards::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+.hand-card {
+  flex-shrink: 0; width: 70px; padding: 10px 8px;
+  border-radius: 10px; border: 2px solid transparent;
+  cursor: pointer; text-align: center;
+  transition: all 0.15s; display: flex; flex-direction: column; gap: 2px;
+}
+.hand-card:active { transform: scale(0.92); }
+.hand-card.hand-selected {
+  border-color: var(--primary); box-shadow: 0 0 0 2px rgba(124,77,255,0.3);
+  transform: translateY(-8px);
+}
+.hand-card .hc-word { font-size: 14px; font-weight: 700; }
+.hand-card .hc-cn { font-size: 10px; color: var(--text-light); }
+.hand-card .hc-pos { font-size: 9px; opacity: 0.6; }
+
+.battle-hand-empty {
+  text-align: center; color: #ccc; font-size: 14px; padding: 16px 0;
+}
+
+/* 玩家HP */
+.battle-hud-bottom {
+  padding: 8px 12px; background: white;
+  border-top: 1px solid #eee;
+}
+.player-hp-row { display: flex; align-items: center; gap: 8px; }
+.player-hp-label { font-size: 18px; }
+.player-hp .battle-hp-fill { background: linear-gradient(90deg, #ef5350, #e53935); }
+
+/* 过渡提示 */
+.bt-content {
+  text-align: center; padding: 20px; font-size: 18px; line-height: 1.6;
+}
+.bt-content .bt-damage { font-size: 28px; font-weight: 800; color: #e53935; display: block; margin: 8px 0; }
+.bt-content .bt-damage.heal { color: #43a047; }
+#bt-next-btn { display: block; margin: 12px auto 0; }
+
+/* ========== 战斗结算 ========== */
+.br-area { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 40px 20px; }
+.br-icon { font-size: 80px; animation: bounce 0.6s; }
+.br-area h2 { font-size: 32px; }
+.br-boss-defeated { font-size: 16px; color: var(--text-light); }
+.br-stats {
+  display: flex; gap: 20px; justify-content: center;
+  background: white; padding: 20px; border-radius: var(--radius);
+  box-shadow: var(--shadow); width: 100%; max-width: 360px;
+}
+.br-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.br-stat-label { font-size: 13px; color: var(--text-light); }
+.br-stat-value { font-size: 28px; font-weight: 800; color: var(--primary); }
+.br-reward-area { text-align: center; }
+.br-buttons { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+/* ========== 动画 ========== */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+/* ========== 经验值条（主页） ========== */
+.home-xp-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin: -10px auto 16px; max-width: 380px;
+  background: white; padding: 8px 14px;
+  border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.home-level-text {
+  font-size: 14px; font-weight: 800; color: var(--primary);
+  min-width: 38px;
+}
+.home-title-text {
+  font-size: 13px; font-weight: 600; color: var(--text-light);
+  min-width: 80px; text-align: center;
+}
+.home-xp-track {
+  flex: 1; height: 8px; background: #e8e0f0; border-radius: 4px; overflow: hidden;
+}
+.home-xp-fill {
+  height: 100%; background: linear-gradient(90deg, #7c4dff, #b388ff);
+  border-radius: 4px; transition: width 0.4s ease;
+}
+.home-xp-text {
+  font-size: 11px; color: var(--text-light); min-width: 42px; text-align: right;
+}
+
+/* ========== 五行属性条 ========== */
+.home-stats-row {
+  display: flex; justify-content: center; gap: 12px;
+  margin: -6px auto 14px; max-width: 380px;
+  background: white; padding: 6px 14px;
+  border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.home-stat {
+  font-size: 13px; font-weight: 700; color: var(--text-light);
+  display: flex; align-items: center; gap: 2px;
+}
+
+/* ========== 学习选年级 ========== */
+.grade-list { display: flex; flex-direction: column; gap: 16px; padding: 20px 8px; }
+.grade-card {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; padding: 24px 20px;
+  border: none; border-radius: var(--radius);
+  font-size: 18px; cursor: pointer; text-align: left;
+  box-shadow: var(--shadow); transition: transform 0.15s;
+}
+.grade-card:active { transform: scale(0.97); }
+.grade-card .grade-icon { font-size: 40px; }
+.grade-card .grade-info { flex: 1; }
+.grade-card .grade-label { font-weight: 700; font-size: 22px; display: block; }
+.grade-card .grade-desc { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+.grade-card .grade-lock { font-size: 20px; opacity: 0.5; }
+.grade-card.grade-active { background: linear-gradient(135deg, #f3e5f5, #fff); color: var(--primary); }
+.grade-card.grade-locked { background: #f0f0f0; color: #bbb; cursor: not-allowed; box-shadow: none; }
+.grade-card.grade-locked:active { transform: none; }
+.grade-card.grade-unlocked { background: linear-gradient(135deg, #e0f2f1, #fff); color: #00897b; }
+
+/* ========== 奖励 XP 信息 ========== */
+.reward-xp-info {
+  display: flex; align-items: center; gap: 8px;
+  background: #f5f0ff; padding: 8px 16px; border-radius: 20px;
+  width: 100%; max-width: 340px; margin-bottom: 12px;
+}
+.reward-xp-gain { font-size: 14px; font-weight: 800; color: var(--primary); }
+.reward-xp-bar {
+  flex: 1; height: 6px; background: #ddd; border-radius: 3px; overflow: hidden;
+}
+.reward-xp-fill {
+  height: 100%; background: linear-gradient(90deg, #7c4dff, #b388ff);
+  border-radius: 3px; transition: width 0.5s ease;
+}
+.reward-xp-text { font-size: 11px; color: var(--text-light); min-width: 60px; text-align: right; }
+
+/* ========== 奖励多卡展示 ========== */
+.reward-cards {
+  display: flex; gap: 12px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 12px;
+}
+
+/* ========== 工具类 ========== */
+.text-center { text-align: center; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }

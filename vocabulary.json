@@ -1,0 +1,3396 @@
+{
+  "name": "五行英语牌词汇库",
+  "version": "2.0",
+  "description": "合并词库，包含 beginner 和 intermediate 两个等级",
+  "total_words": 349,
+  "words": [
+    {
+      "word": "cat",
+      "cn": "猫",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "金",
+      "sentence": "I see a cat.",
+      "tier": "beginner"
+    },
+    {
+      "word": "dog",
+      "cn": "狗",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "火",
+      "sentence": "I like dogs.",
+      "tier": "beginner"
+    },
+    {
+      "word": "fish",
+      "cn": "鱼",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "水",
+      "sentence": "I see a fish.",
+      "tier": "beginner"
+    },
+    {
+      "word": "bird",
+      "cn": "鸟",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "木",
+      "sentence": "A bird can fly.",
+      "tier": "beginner"
+    },
+    {
+      "word": "rabbit",
+      "cn": "兔子",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "木",
+      "sentence": "I see a rabbit.",
+      "tier": "beginner"
+    },
+    {
+      "word": "pig",
+      "cn": "猪",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "土",
+      "sentence": "The pig is pink.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cow",
+      "cn": "奶牛",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "木",
+      "sentence": "The cow is big.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sheep",
+      "cn": "羊",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "木",
+      "sentence": "The sheep is white.",
+      "tier": "beginner"
+    },
+    {
+      "word": "horse",
+      "cn": "马",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "火",
+      "sentence": "The horse can run.",
+      "tier": "beginner"
+    },
+    {
+      "word": "duck",
+      "cn": "鸭子",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "水",
+      "sentence": "The duck swims.",
+      "tier": "beginner"
+    },
+    {
+      "word": "chicken",
+      "cn": "鸡",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "木",
+      "sentence": "The chicken eats.",
+      "tier": "beginner"
+    },
+    {
+      "word": "frog",
+      "cn": "青蛙",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "水",
+      "sentence": "A green frog.",
+      "tier": "beginner"
+    },
+    {
+      "word": "bear",
+      "cn": "熊",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "土",
+      "sentence": "The bear is big.",
+      "tier": "beginner"
+    },
+    {
+      "word": "lion",
+      "cn": "狮子",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "火",
+      "sentence": "The lion is brave.",
+      "tier": "beginner"
+    },
+    {
+      "word": "elephant",
+      "cn": "大象",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "土",
+      "sentence": "The elephant is big.",
+      "tier": "beginner"
+    },
+    {
+      "word": "monkey",
+      "cn": "猴子",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "火",
+      "sentence": "The monkey is funny.",
+      "tier": "beginner"
+    },
+    {
+      "word": "panda",
+      "cn": "熊猫",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "木",
+      "sentence": "I like pandas.",
+      "tier": "beginner"
+    },
+    {
+      "word": "tiger",
+      "cn": "老虎",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "火",
+      "sentence": "The tiger runs.",
+      "tier": "beginner"
+    },
+    {
+      "word": "mouse",
+      "cn": "老鼠",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "土",
+      "sentence": "A small mouse.",
+      "tier": "beginner"
+    },
+    {
+      "word": "snake",
+      "cn": "蛇",
+      "pos": "noun",
+      "subcategory": "animal",
+      "category_cn": "动物",
+      "element": "水",
+      "sentence": "A long snake.",
+      "tier": "beginner"
+    },
+    {
+      "word": "eye",
+      "cn": "眼睛",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "水",
+      "sentence": "I have two eyes.",
+      "tier": "beginner"
+    },
+    {
+      "word": "ear",
+      "cn": "耳朵",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "水",
+      "sentence": "I have two ears.",
+      "tier": "beginner"
+    },
+    {
+      "word": "nose",
+      "cn": "鼻子",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "水",
+      "sentence": "This is my nose.",
+      "tier": "beginner"
+    },
+    {
+      "word": "mouth",
+      "cn": "嘴",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "火",
+      "sentence": "Open your mouth.",
+      "tier": "beginner"
+    },
+    {
+      "word": "head",
+      "cn": "头",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "金",
+      "sentence": "This is my head.",
+      "tier": "beginner"
+    },
+    {
+      "word": "hand",
+      "cn": "手",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "火",
+      "sentence": "I have two hands.",
+      "tier": "beginner"
+    },
+    {
+      "word": "foot",
+      "cn": "脚",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "土",
+      "sentence": "I have two feet.",
+      "tier": "beginner"
+    },
+    {
+      "word": "arm",
+      "cn": "胳膊",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "木",
+      "sentence": "This is my arm.",
+      "tier": "beginner"
+    },
+    {
+      "word": "leg",
+      "cn": "腿",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "木",
+      "sentence": "This is my leg.",
+      "tier": "beginner"
+    },
+    {
+      "word": "hair",
+      "cn": "头发",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "木",
+      "sentence": "I have black hair.",
+      "tier": "beginner"
+    },
+    {
+      "word": "face",
+      "cn": "脸",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "金",
+      "sentence": "This is my face.",
+      "tier": "beginner"
+    },
+    {
+      "word": "finger",
+      "cn": "手指",
+      "pos": "noun",
+      "subcategory": "body",
+      "category_cn": "身体",
+      "element": "金",
+      "sentence": "I have ten fingers.",
+      "tier": "beginner"
+    },
+    {
+      "word": "mom",
+      "cn": "妈妈",
+      "pos": "noun",
+      "subcategory": "family",
+      "category_cn": "家庭",
+      "element": "火",
+      "sentence": "I love my mom.",
+      "tier": "beginner"
+    },
+    {
+      "word": "dad",
+      "cn": "爸爸",
+      "pos": "noun",
+      "subcategory": "family",
+      "category_cn": "家庭",
+      "element": "火",
+      "sentence": "I love my dad.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sister",
+      "cn": "姐妹",
+      "pos": "noun",
+      "subcategory": "family",
+      "category_cn": "家庭",
+      "element": "水",
+      "sentence": "I love my sister.",
+      "tier": "beginner"
+    },
+    {
+      "word": "brother",
+      "cn": "兄弟",
+      "pos": "noun",
+      "subcategory": "family",
+      "category_cn": "家庭",
+      "element": "木",
+      "sentence": "I love my brother.",
+      "tier": "beginner"
+    },
+    {
+      "word": "baby",
+      "cn": "宝宝",
+      "pos": "noun",
+      "subcategory": "family",
+      "category_cn": "家庭",
+      "element": "水",
+      "sentence": "The baby is cute.",
+      "tier": "beginner"
+    },
+    {
+      "word": "grandma",
+      "cn": "奶奶/外婆",
+      "pos": "noun",
+      "subcategory": "family",
+      "category_cn": "家庭",
+      "element": "土",
+      "sentence": "I love my grandma.",
+      "tier": "beginner"
+    },
+    {
+      "word": "grandpa",
+      "cn": "爷爷/外公",
+      "pos": "noun",
+      "subcategory": "family",
+      "category_cn": "家庭",
+      "element": "金",
+      "sentence": "I love my grandpa.",
+      "tier": "beginner"
+    },
+    {
+      "word": "family",
+      "cn": "家庭",
+      "pos": "noun",
+      "subcategory": "family",
+      "category_cn": "家庭",
+      "element": "木",
+      "sentence": "I love my family.",
+      "tier": "beginner"
+    },
+    {
+      "word": "rice",
+      "cn": "米饭",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "木",
+      "sentence": "I eat rice.",
+      "tier": "beginner"
+    },
+    {
+      "word": "bread",
+      "cn": "面包",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "木",
+      "sentence": "I eat bread.",
+      "tier": "beginner"
+    },
+    {
+      "word": "milk",
+      "cn": "牛奶",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "水",
+      "sentence": "I drink milk.",
+      "tier": "beginner"
+    },
+    {
+      "word": "egg",
+      "cn": "鸡蛋",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "火",
+      "sentence": "I eat an egg.",
+      "tier": "beginner"
+    },
+    {
+      "word": "meat",
+      "cn": "肉",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "火",
+      "sentence": "I eat meat.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cake",
+      "cn": "蛋糕",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "火",
+      "sentence": "I like cake.",
+      "tier": "beginner"
+    },
+    {
+      "word": "candy",
+      "cn": "糖果",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "土",
+      "sentence": "I like candy.",
+      "tier": "beginner"
+    },
+    {
+      "word": "noodle",
+      "cn": "面条",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "木",
+      "sentence": "I eat noodles.",
+      "tier": "beginner"
+    },
+    {
+      "word": "soup",
+      "cn": "汤",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "水",
+      "sentence": "I like soup.",
+      "tier": "beginner"
+    },
+    {
+      "word": "juice",
+      "cn": "果汁",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "水",
+      "sentence": "I drink juice.",
+      "tier": "beginner"
+    },
+    {
+      "word": "water",
+      "cn": "水",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "水",
+      "sentence": "I drink water.",
+      "tier": "beginner"
+    },
+    {
+      "word": "tea",
+      "cn": "茶",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "水",
+      "sentence": "I drink tea.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cookie",
+      "cn": "饼干",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "火",
+      "sentence": "I like cookies.",
+      "tier": "beginner"
+    },
+    {
+      "word": "ice cream",
+      "cn": "冰淇淋",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "水",
+      "sentence": "I like ice cream.",
+      "tier": "beginner"
+    },
+    {
+      "word": "salt",
+      "cn": "盐",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "金",
+      "sentence": "This is salt.",
+      "tier": "beginner"
+    },
+    {
+      "word": "honey",
+      "cn": "蜂蜜",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "金",
+      "sentence": "The honey is sweet.",
+      "tier": "beginner"
+    },
+    {
+      "word": "butter",
+      "cn": "黄油",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "金",
+      "sentence": "This is butter.",
+      "tier": "beginner"
+    },
+    {
+      "word": "chocolate",
+      "cn": "巧克力",
+      "pos": "noun",
+      "subcategory": "food",
+      "category_cn": "食物饮品",
+      "element": "土",
+      "sentence": "I like chocolate.",
+      "tier": "beginner"
+    },
+    {
+      "word": "apple",
+      "cn": "苹果",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "木",
+      "sentence": "I eat an apple.",
+      "tier": "beginner"
+    },
+    {
+      "word": "banana",
+      "cn": "香蕉",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "土",
+      "sentence": "I eat a banana.",
+      "tier": "beginner"
+    },
+    {
+      "word": "orange",
+      "cn": "橙子",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "水",
+      "sentence": "It is orange.",
+      "tier": "beginner"
+    },
+    {
+      "word": "grape",
+      "cn": "葡萄",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "水",
+      "sentence": "I eat grapes.",
+      "tier": "beginner"
+    },
+    {
+      "word": "watermelon",
+      "cn": "西瓜",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "水",
+      "sentence": "I like watermelon.",
+      "tier": "beginner"
+    },
+    {
+      "word": "strawberry",
+      "cn": "草莓",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "火",
+      "sentence": "I like strawberries.",
+      "tier": "beginner"
+    },
+    {
+      "word": "pear",
+      "cn": "梨",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "木",
+      "sentence": "I eat a pear.",
+      "tier": "beginner"
+    },
+    {
+      "word": "peach",
+      "cn": "桃子",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "土",
+      "sentence": "I eat a peach.",
+      "tier": "beginner"
+    },
+    {
+      "word": "lemon",
+      "cn": "柠檬",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "木",
+      "sentence": "The lemon is sour.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cherry",
+      "cn": "樱桃",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "火",
+      "sentence": "I like cherries.",
+      "tier": "beginner"
+    },
+    {
+      "word": "pineapple",
+      "cn": "菠萝",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "金",
+      "sentence": "I like pineapple.",
+      "tier": "beginner"
+    },
+    {
+      "word": "coconut",
+      "cn": "椰子",
+      "pos": "noun",
+      "subcategory": "fruit",
+      "category_cn": "水果",
+      "element": "金",
+      "sentence": "This is a coconut.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sun",
+      "cn": "太阳",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "火",
+      "sentence": "The sun is hot.",
+      "tier": "beginner"
+    },
+    {
+      "word": "moon",
+      "cn": "月亮",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "金",
+      "sentence": "The moon is bright.",
+      "tier": "beginner"
+    },
+    {
+      "word": "star",
+      "cn": "星星",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "金",
+      "sentence": "I see stars.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sky",
+      "cn": "天空",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "土",
+      "sentence": "The sky is blue.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cloud",
+      "cn": "云",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "水",
+      "sentence": "White clouds.",
+      "tier": "beginner"
+    },
+    {
+      "word": "rain",
+      "cn": "雨",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "水",
+      "sentence": "The rain falls.",
+      "tier": "beginner"
+    },
+    {
+      "word": "wind",
+      "cn": "风",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "木",
+      "sentence": "The wind blows.",
+      "tier": "beginner"
+    },
+    {
+      "word": "snow",
+      "cn": "雪",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "金",
+      "sentence": "White snow.",
+      "tier": "beginner"
+    },
+    {
+      "word": "tree",
+      "cn": "树",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "木",
+      "sentence": "A tall tree.",
+      "tier": "beginner"
+    },
+    {
+      "word": "flower",
+      "cn": "花",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "木",
+      "sentence": "Pretty flowers.",
+      "tier": "beginner"
+    },
+    {
+      "word": "river",
+      "cn": "河流",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "水",
+      "sentence": "The river flows.",
+      "tier": "beginner"
+    },
+    {
+      "word": "mountain",
+      "cn": "山",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "土",
+      "sentence": "A high mountain.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sea",
+      "cn": "大海",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "水",
+      "sentence": "The sea is blue.",
+      "tier": "beginner"
+    },
+    {
+      "word": "stone",
+      "cn": "石头",
+      "pos": "noun",
+      "subcategory": "nature",
+      "category_cn": "天气与自然",
+      "element": "土",
+      "sentence": "A heavy stone.",
+      "tier": "beginner"
+    },
+    {
+      "word": "book",
+      "cn": "书",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "木",
+      "sentence": "I read a book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "pen",
+      "cn": "钢笔",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "火",
+      "sentence": "I write with a pen.",
+      "tier": "beginner"
+    },
+    {
+      "word": "pencil",
+      "cn": "铅笔",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "木",
+      "sentence": "I draw with a pencil.",
+      "tier": "beginner"
+    },
+    {
+      "word": "ruler",
+      "cn": "尺子",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "木",
+      "sentence": "This is a ruler.",
+      "tier": "beginner"
+    },
+    {
+      "word": "bag",
+      "cn": "书包",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "土",
+      "sentence": "This is my bag.",
+      "tier": "beginner"
+    },
+    {
+      "word": "desk",
+      "cn": "书桌",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "金",
+      "sentence": "This is my desk.",
+      "tier": "beginner"
+    },
+    {
+      "word": "chair",
+      "cn": "椅子",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "金",
+      "sentence": "This is my chair.",
+      "tier": "beginner"
+    },
+    {
+      "word": "teacher",
+      "cn": "老师",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "土",
+      "sentence": "I like my teacher.",
+      "tier": "beginner"
+    },
+    {
+      "word": "paper",
+      "cn": "纸",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "水",
+      "sentence": "I write on paper.",
+      "tier": "beginner"
+    },
+    {
+      "word": "eraser",
+      "cn": "橡皮",
+      "pos": "noun",
+      "subcategory": "school",
+      "category_cn": "学校用品",
+      "element": "木",
+      "sentence": "This is an eraser.",
+      "tier": "beginner"
+    },
+    {
+      "word": "ball",
+      "cn": "球",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "火",
+      "sentence": "I play with a ball.",
+      "tier": "beginner"
+    },
+    {
+      "word": "doll",
+      "cn": "娃娃",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "火",
+      "sentence": "I like dolls.",
+      "tier": "beginner"
+    },
+    {
+      "word": "toy",
+      "cn": "玩具",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "火",
+      "sentence": "I like toys.",
+      "tier": "beginner"
+    },
+    {
+      "word": "block",
+      "cn": "积木",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "木",
+      "sentence": "I play with blocks.",
+      "tier": "beginner"
+    },
+    {
+      "word": "kite",
+      "cn": "风筝",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "木",
+      "sentence": "I fly a kite.",
+      "tier": "beginner"
+    },
+    {
+      "word": "balloon",
+      "cn": "气球",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "水",
+      "sentence": "A red balloon.",
+      "tier": "beginner"
+    },
+    {
+      "word": "gift",
+      "cn": "礼物",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "土",
+      "sentence": "A nice gift.",
+      "tier": "beginner"
+    },
+    {
+      "word": "clock",
+      "cn": "钟表",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "金",
+      "sentence": "The clock ticks.",
+      "tier": "beginner"
+    },
+    {
+      "word": "key",
+      "cn": "钥匙",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "金",
+      "sentence": "This is a key.",
+      "tier": "beginner"
+    },
+    {
+      "word": "card",
+      "cn": "卡片",
+      "pos": "noun",
+      "subcategory": "toy",
+      "category_cn": "玩具与物品",
+      "element": "金",
+      "sentence": "I make a card.",
+      "tier": "beginner"
+    },
+    {
+      "word": "car",
+      "cn": "汽车",
+      "pos": "noun",
+      "subcategory": "vehicle",
+      "category_cn": "交通工具",
+      "element": "火",
+      "sentence": "A red car.",
+      "tier": "beginner"
+    },
+    {
+      "word": "bus",
+      "cn": "公交车",
+      "pos": "noun",
+      "subcategory": "vehicle",
+      "category_cn": "交通工具",
+      "element": "火",
+      "sentence": "I take the bus.",
+      "tier": "beginner"
+    },
+    {
+      "word": "bike",
+      "cn": "自行车",
+      "pos": "noun",
+      "subcategory": "vehicle",
+      "category_cn": "交通工具",
+      "element": "金",
+      "sentence": "I ride a bike.",
+      "tier": "beginner"
+    },
+    {
+      "word": "train",
+      "cn": "火车",
+      "pos": "noun",
+      "subcategory": "vehicle",
+      "category_cn": "交通工具",
+      "element": "火",
+      "sentence": "I take the train.",
+      "tier": "beginner"
+    },
+    {
+      "word": "plane",
+      "cn": "飞机",
+      "pos": "noun",
+      "subcategory": "vehicle",
+      "category_cn": "交通工具",
+      "element": "金",
+      "sentence": "A fast plane.",
+      "tier": "beginner"
+    },
+    {
+      "word": "boat",
+      "cn": "小船",
+      "pos": "noun",
+      "subcategory": "vehicle",
+      "category_cn": "交通工具",
+      "element": "水",
+      "sentence": "A small boat.",
+      "tier": "beginner"
+    },
+    {
+      "word": "ship",
+      "cn": "大船",
+      "pos": "noun",
+      "subcategory": "vehicle",
+      "category_cn": "交通工具",
+      "element": "水",
+      "sentence": "A big ship.",
+      "tier": "beginner"
+    },
+    {
+      "word": "truck",
+      "cn": "卡车",
+      "pos": "noun",
+      "subcategory": "vehicle",
+      "category_cn": "交通工具",
+      "element": "火",
+      "sentence": "A big truck.",
+      "tier": "beginner"
+    },
+    {
+      "word": "shirt",
+      "cn": "衬衫",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "木",
+      "sentence": "I wear a shirt.",
+      "tier": "beginner"
+    },
+    {
+      "word": "shoe",
+      "cn": "鞋子",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "金",
+      "sentence": "I wear shoes.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sock",
+      "cn": "袜子",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "木",
+      "sentence": "I wear socks.",
+      "tier": "beginner"
+    },
+    {
+      "word": "hat",
+      "cn": "帽子",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "土",
+      "sentence": "I wear a hat.",
+      "tier": "beginner"
+    },
+    {
+      "word": "coat",
+      "cn": "外套",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "火",
+      "sentence": "I wear a coat.",
+      "tier": "beginner"
+    },
+    {
+      "word": "pants",
+      "cn": "裤子",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "木",
+      "sentence": "I wear pants.",
+      "tier": "beginner"
+    },
+    {
+      "word": "dress",
+      "cn": "连衣裙",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "水",
+      "sentence": "A pretty dress.",
+      "tier": "beginner"
+    },
+    {
+      "word": "glove",
+      "cn": "手套",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "金",
+      "sentence": "I wear gloves.",
+      "tier": "beginner"
+    },
+    {
+      "word": "scarf",
+      "cn": "围巾",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "水",
+      "sentence": "A warm scarf.",
+      "tier": "beginner"
+    },
+    {
+      "word": "jacket",
+      "cn": "夹克",
+      "pos": "noun",
+      "subcategory": "clothes",
+      "category_cn": "衣物",
+      "element": "火",
+      "sentence": "I wear a jacket.",
+      "tier": "beginner"
+    },
+    {
+      "word": "door",
+      "cn": "门",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "木",
+      "sentence": "Open the door.",
+      "tier": "beginner"
+    },
+    {
+      "word": "window",
+      "cn": "窗户",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "水",
+      "sentence": "Open the window.",
+      "tier": "beginner"
+    },
+    {
+      "word": "room",
+      "cn": "房间",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "土",
+      "sentence": "This is my room.",
+      "tier": "beginner"
+    },
+    {
+      "word": "bed",
+      "cn": "床",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "木",
+      "sentence": "This is my bed.",
+      "tier": "beginner"
+    },
+    {
+      "word": "table",
+      "cn": "桌子",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "木",
+      "sentence": "This is the table.",
+      "tier": "beginner"
+    },
+    {
+      "word": "lamp",
+      "cn": "灯",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "火",
+      "sentence": "The lamp is bright.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sofa",
+      "cn": "沙发",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "木",
+      "sentence": "I sit on the sofa.",
+      "tier": "beginner"
+    },
+    {
+      "word": "phone",
+      "cn": "电话",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "金",
+      "sentence": "The phone rings.",
+      "tier": "beginner"
+    },
+    {
+      "word": "garden",
+      "cn": "花园",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "土",
+      "sentence": "Pretty garden.",
+      "tier": "beginner"
+    },
+    {
+      "word": "kitchen",
+      "cn": "厨房",
+      "pos": "noun",
+      "subcategory": "house",
+      "category_cn": "房屋与房间",
+      "element": "水",
+      "sentence": "This is the kitchen.",
+      "tier": "beginner"
+    },
+    {
+      "word": "circle",
+      "cn": "圆形",
+      "pos": "noun",
+      "subcategory": "shape",
+      "category_cn": "形状",
+      "element": "水",
+      "sentence": "A round circle.",
+      "tier": "beginner"
+    },
+    {
+      "word": "square",
+      "cn": "正方形",
+      "pos": "noun",
+      "subcategory": "shape",
+      "category_cn": "形状",
+      "element": "金",
+      "sentence": "A big square.",
+      "tier": "beginner"
+    },
+    {
+      "word": "triangle",
+      "cn": "三角形",
+      "pos": "noun",
+      "subcategory": "shape",
+      "category_cn": "形状",
+      "element": "火",
+      "sentence": "A triangle.",
+      "tier": "beginner"
+    },
+    {
+      "word": "star",
+      "cn": "星形",
+      "pos": "noun",
+      "subcategory": "shape",
+      "category_cn": "形状",
+      "element": "火",
+      "sentence": "I see stars.",
+      "tier": "beginner"
+    },
+    {
+      "word": "heart",
+      "cn": "心形",
+      "pos": "noun",
+      "subcategory": "shape",
+      "category_cn": "形状",
+      "element": "水",
+      "sentence": "A red heart.",
+      "tier": "beginner"
+    },
+    {
+      "word": "line",
+      "cn": "线",
+      "pos": "noun",
+      "subcategory": "shape",
+      "category_cn": "形状",
+      "element": "火",
+      "sentence": "A straight line.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cross",
+      "cn": "十字形",
+      "pos": "noun",
+      "subcategory": "shape",
+      "category_cn": "形状",
+      "element": "木",
+      "sentence": "A red cross.",
+      "tier": "beginner"
+    },
+    {
+      "word": "dot",
+      "cn": "点",
+      "pos": "noun",
+      "subcategory": "shape",
+      "category_cn": "形状",
+      "element": "土",
+      "sentence": "I see dot.",
+      "tier": "beginner"
+    },
+    {
+      "word": "red",
+      "cn": "红色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "火",
+      "sentence": "It is red.",
+      "tier": "beginner"
+    },
+    {
+      "word": "blue",
+      "cn": "蓝色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "水",
+      "sentence": "It is blue.",
+      "tier": "beginner"
+    },
+    {
+      "word": "yellow",
+      "cn": "黄色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "土",
+      "sentence": "It is yellow.",
+      "tier": "beginner"
+    },
+    {
+      "word": "green",
+      "cn": "绿色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "木",
+      "sentence": "It is green.",
+      "tier": "beginner"
+    },
+    {
+      "word": "black",
+      "cn": "黑色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "水",
+      "sentence": "It is black.",
+      "tier": "beginner"
+    },
+    {
+      "word": "white",
+      "cn": "白色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "金",
+      "sentence": "It is white.",
+      "tier": "beginner"
+    },
+    {
+      "word": "pink",
+      "cn": "粉色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "火",
+      "sentence": "It is pink.",
+      "tier": "beginner"
+    },
+    {
+      "word": "purple",
+      "cn": "紫色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "水",
+      "sentence": "It is purple.",
+      "tier": "beginner"
+    },
+    {
+      "word": "orange",
+      "cn": "橙色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "火",
+      "sentence": "It is orange.",
+      "tier": "beginner"
+    },
+    {
+      "word": "brown",
+      "cn": "棕色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "土",
+      "sentence": "It is brown.",
+      "tier": "beginner"
+    },
+    {
+      "word": "grey",
+      "cn": "灰色",
+      "pos": "noun",
+      "subcategory": "color",
+      "category_cn": "颜色",
+      "element": "金",
+      "sentence": "It is grey.",
+      "tier": "beginner"
+    },
+    {
+      "word": "day",
+      "cn": "天/白天",
+      "pos": "noun",
+      "subcategory": "time",
+      "category_cn": "时间",
+      "element": "火",
+      "sentence": "Good day!",
+      "tier": "beginner"
+    },
+    {
+      "word": "night",
+      "cn": "夜晚",
+      "pos": "noun",
+      "subcategory": "time",
+      "category_cn": "时间",
+      "element": "水",
+      "sentence": "Good night!",
+      "tier": "beginner"
+    },
+    {
+      "word": "morning",
+      "cn": "早上",
+      "pos": "noun",
+      "subcategory": "time",
+      "category_cn": "时间",
+      "element": "火",
+      "sentence": "Good morning!",
+      "tier": "beginner"
+    },
+    {
+      "word": "evening",
+      "cn": "傍晚",
+      "pos": "noun",
+      "subcategory": "time",
+      "category_cn": "时间",
+      "element": "水",
+      "sentence": "Good evening!",
+      "tier": "beginner"
+    },
+    {
+      "word": "today",
+      "cn": "今天",
+      "pos": "noun",
+      "subcategory": "time",
+      "category_cn": "时间",
+      "element": "土",
+      "sentence": "Today is fun.",
+      "tier": "beginner"
+    },
+    {
+      "word": "tomorrow",
+      "cn": "明天",
+      "pos": "noun",
+      "subcategory": "time",
+      "category_cn": "时间",
+      "element": "木",
+      "sentence": "See you tomorrow.",
+      "tier": "beginner"
+    },
+    {
+      "word": "week",
+      "cn": "星期",
+      "pos": "noun",
+      "subcategory": "time",
+      "category_cn": "时间",
+      "element": "金",
+      "sentence": "A week has seven days.",
+      "tier": "beginner"
+    },
+    {
+      "word": "year",
+      "cn": "年",
+      "pos": "noun",
+      "subcategory": "time",
+      "category_cn": "时间",
+      "element": "金",
+      "sentence": "Happy new year!",
+      "tier": "beginner"
+    },
+    {
+      "word": "run",
+      "cn": "跑",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "I can run.",
+      "tier": "beginner"
+    },
+    {
+      "word": "jump",
+      "cn": "跳",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "I can jump.",
+      "tier": "beginner"
+    },
+    {
+      "word": "eat",
+      "cn": "吃",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "土",
+      "sentence": "I eat well.",
+      "tier": "beginner"
+    },
+    {
+      "word": "drink",
+      "cn": "喝",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "水",
+      "sentence": "I drink water.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sleep",
+      "cn": "睡",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "土",
+      "sentence": "I sleep well.",
+      "tier": "beginner"
+    },
+    {
+      "word": "read",
+      "cn": "读",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "木",
+      "sentence": "I read a book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "write",
+      "cn": "写",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "木",
+      "sentence": "I write a word.",
+      "tier": "beginner"
+    },
+    {
+      "word": "draw",
+      "cn": "画",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "木",
+      "sentence": "I draw a picture.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sing",
+      "cn": "唱歌",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "I sing a song.",
+      "tier": "beginner"
+    },
+    {
+      "word": "dance",
+      "cn": "跳舞",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "I can dance.",
+      "tier": "beginner"
+    },
+    {
+      "word": "play",
+      "cn": "玩",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "I play outside.",
+      "tier": "beginner"
+    },
+    {
+      "word": "swim",
+      "cn": "游泳",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "水",
+      "sentence": "I can swim.",
+      "tier": "beginner"
+    },
+    {
+      "word": "walk",
+      "cn": "走",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "土",
+      "sentence": "I walk to school.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sit",
+      "cn": "坐",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "土",
+      "sentence": "Sit down, please.",
+      "tier": "beginner"
+    },
+    {
+      "word": "stand",
+      "cn": "站",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "土",
+      "sentence": "Stand up, please.",
+      "tier": "beginner"
+    },
+    {
+      "word": "look",
+      "cn": "看",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "Look at me!",
+      "tier": "beginner"
+    },
+    {
+      "word": "listen",
+      "cn": "听",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "水",
+      "sentence": "Listen to me.",
+      "tier": "beginner"
+    },
+    {
+      "word": "speak",
+      "cn": "说话",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "土",
+      "sentence": "I speak English.",
+      "tier": "beginner"
+    },
+    {
+      "word": "smile",
+      "cn": "微笑",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "水",
+      "sentence": "Smile, please!",
+      "tier": "beginner"
+    },
+    {
+      "word": "cry",
+      "cn": "哭",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "水",
+      "sentence": "Don't cry.",
+      "tier": "beginner"
+    },
+    {
+      "word": "laugh",
+      "cn": "笑",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "Laugh out loud!",
+      "tier": "beginner"
+    },
+    {
+      "word": "give",
+      "cn": "给",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "金",
+      "sentence": "Give me a hug.",
+      "tier": "beginner"
+    },
+    {
+      "word": "take",
+      "cn": "拿",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "金",
+      "sentence": "Take a seat.",
+      "tier": "beginner"
+    },
+    {
+      "word": "make",
+      "cn": "做/制作",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "木",
+      "sentence": "Make a wish.",
+      "tier": "beginner"
+    },
+    {
+      "word": "help",
+      "cn": "帮助",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "金",
+      "sentence": "Help me, please.",
+      "tier": "beginner"
+    },
+    {
+      "word": "like",
+      "cn": "喜欢",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "木",
+      "sentence": "I like you.",
+      "tier": "beginner"
+    },
+    {
+      "word": "want",
+      "cn": "想要",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "I want water.",
+      "tier": "beginner"
+    },
+    {
+      "word": "see",
+      "cn": "看见",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "水",
+      "sentence": "I see you.",
+      "tier": "beginner"
+    },
+    {
+      "word": "know",
+      "cn": "知道",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "木",
+      "sentence": "I know that.",
+      "tier": "beginner"
+    },
+    {
+      "word": "have",
+      "cn": "有",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "土",
+      "sentence": "I have a book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "go",
+      "cn": "去",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "Let's go!",
+      "tier": "beginner"
+    },
+    {
+      "word": "come",
+      "cn": "来",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "水",
+      "sentence": "Come here!",
+      "tier": "beginner"
+    },
+    {
+      "word": "put",
+      "cn": "放",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "金",
+      "sentence": "Put it down.",
+      "tier": "beginner"
+    },
+    {
+      "word": "open",
+      "cn": "打开",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "火",
+      "sentence": "Open the door.",
+      "tier": "beginner"
+    },
+    {
+      "word": "close",
+      "cn": "关上",
+      "pos": "verb",
+      "subcategory": null,
+      "category_cn": "动词",
+      "element": "金",
+      "sentence": "Close the door.",
+      "tier": "beginner"
+    },
+    {
+      "word": "big",
+      "cn": "大的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "A big house.",
+      "tier": "beginner"
+    },
+    {
+      "word": "small",
+      "cn": "小的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "A small bug.",
+      "tier": "beginner"
+    },
+    {
+      "word": "long",
+      "cn": "长的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "A long snake.",
+      "tier": "beginner"
+    },
+    {
+      "word": "short",
+      "cn": "短的/矮的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "A short pencil.",
+      "tier": "beginner"
+    },
+    {
+      "word": "fast",
+      "cn": "快的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "火",
+      "sentence": "A fast car.",
+      "tier": "beginner"
+    },
+    {
+      "word": "slow",
+      "cn": "慢的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "A slow turtle.",
+      "tier": "beginner"
+    },
+    {
+      "word": "hot",
+      "cn": "热的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "火",
+      "sentence": "The sun is hot.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cold",
+      "cn": "冷的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "水",
+      "sentence": "It is cold outside.",
+      "tier": "beginner"
+    },
+    {
+      "word": "warm",
+      "cn": "温暖的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "火",
+      "sentence": "Warm hands.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cool",
+      "cn": "凉爽的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "水",
+      "sentence": "Cool water.",
+      "tier": "beginner"
+    },
+    {
+      "word": "happy",
+      "cn": "开心的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "火",
+      "sentence": "I am happy.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sad",
+      "cn": "伤心的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "水",
+      "sentence": "Don't be sad.",
+      "tier": "beginner"
+    },
+    {
+      "word": "angry",
+      "cn": "生气的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "火",
+      "sentence": "I am not angry.",
+      "tier": "beginner"
+    },
+    {
+      "word": "tired",
+      "cn": "累的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "I am tired.",
+      "tier": "beginner"
+    },
+    {
+      "word": "hungry",
+      "cn": "饿的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "I am hungry.",
+      "tier": "beginner"
+    },
+    {
+      "word": "thirsty",
+      "cn": "渴的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "I am thirsty.",
+      "tier": "beginner"
+    },
+    {
+      "word": "good",
+      "cn": "好的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "Good job!",
+      "tier": "beginner"
+    },
+    {
+      "word": "bad",
+      "cn": "坏的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "Too bad.",
+      "tier": "beginner"
+    },
+    {
+      "word": "new",
+      "cn": "新的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "木",
+      "sentence": "A new toy.",
+      "tier": "beginner"
+    },
+    {
+      "word": "old",
+      "cn": "旧的/老的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "An old house.",
+      "tier": "beginner"
+    },
+    {
+      "word": "clean",
+      "cn": "干净的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "Clean hands.",
+      "tier": "beginner"
+    },
+    {
+      "word": "dirty",
+      "cn": "脏的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "Dirty hands.",
+      "tier": "beginner"
+    },
+    {
+      "word": "pretty",
+      "cn": "漂亮的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "金",
+      "sentence": "A pretty flower.",
+      "tier": "beginner"
+    },
+    {
+      "word": "sweet",
+      "cn": "甜的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "水",
+      "sentence": "Sweet candy.",
+      "tier": "beginner"
+    },
+    {
+      "word": "bright",
+      "cn": "明亮的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "火",
+      "sentence": "Bright light.",
+      "tier": "beginner"
+    },
+    {
+      "word": "dark",
+      "cn": "黑暗的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "水",
+      "sentence": "Dark night.",
+      "tier": "beginner"
+    },
+    {
+      "word": "soft",
+      "cn": "柔软的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "水",
+      "sentence": "Soft bed.",
+      "tier": "beginner"
+    },
+    {
+      "word": "hard",
+      "cn": "硬的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "金",
+      "sentence": "Hard stone.",
+      "tier": "beginner"
+    },
+    {
+      "word": "heavy",
+      "cn": "重的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "Heavy box.",
+      "tier": "beginner"
+    },
+    {
+      "word": "light",
+      "cn": "轻的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "水",
+      "sentence": "Light bag.",
+      "tier": "beginner"
+    },
+    {
+      "word": "tall",
+      "cn": "高的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "木",
+      "sentence": "A tall tree.",
+      "tier": "beginner"
+    },
+    {
+      "word": "young",
+      "cn": "年轻的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "木",
+      "sentence": "A young cat.",
+      "tier": "beginner"
+    },
+    {
+      "word": "thin",
+      "cn": "瘦的/细的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "木",
+      "sentence": "A thin book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "strong",
+      "cn": "强壮的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "金",
+      "sentence": "Strong man.",
+      "tier": "beginner"
+    },
+    {
+      "word": "cute",
+      "cn": "可爱的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "金",
+      "sentence": "So cute!",
+      "tier": "beginner"
+    },
+    {
+      "word": "brave",
+      "cn": "勇敢的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "火",
+      "sentence": "Be brave!",
+      "tier": "beginner"
+    },
+    {
+      "word": "quiet",
+      "cn": "安静的",
+      "pos": "adj",
+      "subcategory": null,
+      "category_cn": "形容词",
+      "element": "土",
+      "sentence": "Be quiet.",
+      "tier": "beginner"
+    },
+    {
+      "word": "I",
+      "cn": "我",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "火",
+      "sentence": "I see I.",
+      "tier": "beginner"
+    },
+    {
+      "word": "you",
+      "cn": "你",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "水",
+      "sentence": "You are nice.",
+      "tier": "beginner"
+    },
+    {
+      "word": "he",
+      "cn": "他",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "土",
+      "sentence": "He is tall.",
+      "tier": "beginner"
+    },
+    {
+      "word": "she",
+      "cn": "她",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "土",
+      "sentence": "She is kind.",
+      "tier": "beginner"
+    },
+    {
+      "word": "it",
+      "cn": "它",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "金",
+      "sentence": "It is big.",
+      "tier": "beginner"
+    },
+    {
+      "word": "we",
+      "cn": "我们",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "木",
+      "sentence": "We are friends.",
+      "tier": "beginner"
+    },
+    {
+      "word": "they",
+      "cn": "他们",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "金",
+      "sentence": "They are cute.",
+      "tier": "beginner"
+    },
+    {
+      "word": "my",
+      "cn": "我的",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "火",
+      "sentence": "This is my book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "your",
+      "cn": "你的",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "水",
+      "sentence": "This is your book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "his",
+      "cn": "他的",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "土",
+      "sentence": "This is his book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "her",
+      "cn": "她的",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "土",
+      "sentence": "This is her book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "our",
+      "cn": "我们的",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "木",
+      "sentence": "This is our home.",
+      "tier": "beginner"
+    },
+    {
+      "word": "their",
+      "cn": "他们的",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "金",
+      "sentence": "This is their home.",
+      "tier": "beginner"
+    },
+    {
+      "word": "me",
+      "cn": "我（宾格）",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "火",
+      "sentence": "Look at me!",
+      "tier": "beginner"
+    },
+    {
+      "word": "this",
+      "cn": "这个",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "土",
+      "sentence": "This is a pen.",
+      "tier": "beginner"
+    },
+    {
+      "word": "that",
+      "cn": "那个",
+      "pos": "pron",
+      "subcategory": null,
+      "category_cn": "代词",
+      "element": "土",
+      "sentence": "That is a book.",
+      "tier": "beginner"
+    },
+    {
+      "word": "one",
+      "cn": "一",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "火",
+      "sentence": "I have one nose.",
+      "tier": "beginner"
+    },
+    {
+      "word": "two",
+      "cn": "二",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "火",
+      "sentence": "I have two eyes.",
+      "tier": "beginner"
+    },
+    {
+      "word": "three",
+      "cn": "三",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "火",
+      "sentence": "Three birds.",
+      "tier": "beginner"
+    },
+    {
+      "word": "four",
+      "cn": "四",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "水",
+      "sentence": "Four cats.",
+      "tier": "beginner"
+    },
+    {
+      "word": "five",
+      "cn": "五",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "水",
+      "sentence": "Five fingers.",
+      "tier": "beginner"
+    },
+    {
+      "word": "six",
+      "cn": "六",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "水",
+      "sentence": "Six ducks.",
+      "tier": "beginner"
+    },
+    {
+      "word": "seven",
+      "cn": "七",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "金",
+      "sentence": "Seven days.",
+      "tier": "beginner"
+    },
+    {
+      "word": "eight",
+      "cn": "八",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "金",
+      "sentence": "Eight legs.",
+      "tier": "beginner"
+    },
+    {
+      "word": "nine",
+      "cn": "九",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "土",
+      "sentence": "Nine stars.",
+      "tier": "beginner"
+    },
+    {
+      "word": "ten",
+      "cn": "十",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "土",
+      "sentence": "Ten toes.",
+      "tier": "beginner"
+    },
+    {
+      "word": "zero",
+      "cn": "零",
+      "pos": "num",
+      "subcategory": null,
+      "category_cn": "数词",
+      "element": "木",
+      "sentence": "Zero is nothing.",
+      "tier": "beginner"
+    },
+    {
+      "word": "in",
+      "cn": "在……里面",
+      "pos": "prep",
+      "subcategory": null,
+      "category_cn": "介词",
+      "element": "水",
+      "sentence": "It is in the box.",
+      "tier": "beginner"
+    },
+    {
+      "word": "on",
+      "cn": "在……上面",
+      "pos": "prep",
+      "subcategory": null,
+      "category_cn": "介词",
+      "element": "火",
+      "sentence": "It is on the desk.",
+      "tier": "beginner"
+    },
+    {
+      "word": "under",
+      "cn": "在……下面",
+      "pos": "prep",
+      "subcategory": null,
+      "category_cn": "介词",
+      "element": "土",
+      "sentence": "It is under the bed.",
+      "tier": "beginner"
+    },
+    {
+      "word": "behind",
+      "cn": "在……后面",
+      "pos": "prep",
+      "subcategory": null,
+      "category_cn": "介词",
+      "element": "木",
+      "sentence": "Behind the door.",
+      "tier": "beginner"
+    },
+    {
+      "word": "in front of",
+      "cn": "在……前面",
+      "pos": "prep",
+      "subcategory": null,
+      "category_cn": "介词",
+      "element": "火",
+      "sentence": "In front of me.",
+      "tier": "beginner"
+    },
+    {
+      "word": "next to",
+      "cn": "在……旁边",
+      "pos": "prep",
+      "subcategory": null,
+      "category_cn": "介词",
+      "element": "木",
+      "sentence": "Next to the table.",
+      "tier": "beginner"
+    },
+    {
+      "word": "between",
+      "cn": "在……之间",
+      "pos": "prep",
+      "subcategory": null,
+      "category_cn": "介词",
+      "element": "金",
+      "sentence": "Between the chairs.",
+      "tier": "beginner"
+    },
+    {
+      "word": "at",
+      "cn": "在（某处/某时）",
+      "pos": "prep",
+      "subcategory": null,
+      "category_cn": "介词",
+      "element": "土",
+      "sentence": "At school.",
+      "tier": "beginner"
+    },
+    {
+      "word": "and",
+      "cn": "和",
+      "pos": "conj",
+      "subcategory": null,
+      "category_cn": "连词",
+      "element": "木",
+      "sentence": "You and me.",
+      "tier": "beginner"
+    },
+    {
+      "word": "or",
+      "cn": "或者",
+      "pos": "conj",
+      "subcategory": null,
+      "category_cn": "连词",
+      "element": "水",
+      "sentence": "Tea or juice?",
+      "tier": "beginner"
+    },
+    {
+      "word": "but",
+      "cn": "但是",
+      "pos": "conj",
+      "subcategory": null,
+      "category_cn": "连词",
+      "element": "金",
+      "sentence": "Small but strong.",
+      "tier": "beginner"
+    },
+    {
+      "word": "because",
+      "cn": "因为",
+      "pos": "conj",
+      "subcategory": null,
+      "category_cn": "连词",
+      "element": "土",
+      "sentence": "Because it is fun.",
+      "tier": "beginner"
+    },
+    {
+      "word": "so",
+      "cn": "所以",
+      "pos": "conj",
+      "subcategory": null,
+      "category_cn": "连词",
+      "element": "火",
+      "sentence": "So happy!",
+      "tier": "beginner"
+    },
+    {
+      "word": "a",
+      "cn": "一个",
+      "pos": "art",
+      "subcategory": null,
+      "category_cn": "冠词/限定词",
+      "element": "火",
+      "sentence": "A cat.",
+      "tier": "beginner"
+    },
+    {
+      "word": "an",
+      "cn": "一个（元音前）",
+      "pos": "art",
+      "subcategory": null,
+      "category_cn": "冠词/限定词",
+      "element": "水",
+      "sentence": "An apple.",
+      "tier": "beginner"
+    },
+    {
+      "word": "the",
+      "cn": "这/那",
+      "pos": "art",
+      "subcategory": null,
+      "category_cn": "冠词/限定词",
+      "element": "土",
+      "sentence": "The sun.",
+      "tier": "beginner"
+    },
+    {
+      "word": "every",
+      "cn": "每个",
+      "pos": "art",
+      "subcategory": null,
+      "category_cn": "冠词/限定词",
+      "element": "木",
+      "sentence": "Every day.",
+      "tier": "beginner"
+    },
+    {
+      "word": "some",
+      "cn": "一些",
+      "pos": "art",
+      "subcategory": null,
+      "category_cn": "冠词/限定词",
+      "element": "金",
+      "sentence": "Some water.",
+      "tier": "beginner"
+    },
+    {
+      "word": "hello",
+      "cn": "你好",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "水",
+      "sentence": "Hello!",
+      "tier": "beginner"
+    },
+    {
+      "word": "hi",
+      "cn": "嗨",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "水",
+      "sentence": "Hi!",
+      "tier": "beginner"
+    },
+    {
+      "word": "goodbye",
+      "cn": "再见",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "金",
+      "sentence": "Goodbye!",
+      "tier": "beginner"
+    },
+    {
+      "word": "yes",
+      "cn": "是的",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "火",
+      "sentence": "Yes, I do.",
+      "tier": "beginner"
+    },
+    {
+      "word": "no",
+      "cn": "不/不是",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "土",
+      "sentence": "No, thanks.",
+      "tier": "beginner"
+    },
+    {
+      "word": "oh",
+      "cn": "哦",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "火",
+      "sentence": "Oh, I see.",
+      "tier": "beginner"
+    },
+    {
+      "word": "wow",
+      "cn": "哇",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "火",
+      "sentence": "Wow, so big!",
+      "tier": "beginner"
+    },
+    {
+      "word": "oops",
+      "cn": "哎呀",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "水",
+      "sentence": "Oops, sorry!",
+      "tier": "beginner"
+    },
+    {
+      "word": "aha",
+      "cn": "啊哈",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "木",
+      "sentence": "Aha, I know!",
+      "tier": "beginner"
+    },
+    {
+      "word": "hey",
+      "cn": "嘿",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "木",
+      "sentence": "Hey, look!",
+      "tier": "beginner"
+    },
+    {
+      "word": "hmm",
+      "cn": "嗯",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "木",
+      "sentence": "Hmm, let me see.",
+      "tier": "beginner"
+    },
+    {
+      "word": "ouch",
+      "cn": "哎哟",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "金",
+      "sentence": "Ouch, it hurts!",
+      "tier": "beginner"
+    },
+    {
+      "word": "ah",
+      "cn": "啊",
+      "pos": "interj",
+      "subcategory": null,
+      "category_cn": "感叹词",
+      "element": "土",
+      "sentence": "Ah, I see.",
+      "tier": "beginner"
+    },
+    {
+      "word": "now",
+      "cn": "现在",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "火",
+      "sentence": "Now go!",
+      "tier": "beginner"
+    },
+    {
+      "word": "very",
+      "cn": "非常",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "土",
+      "sentence": "Very good!",
+      "tier": "beginner"
+    },
+    {
+      "word": "too",
+      "cn": "也/太",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "水",
+      "sentence": "Me too.",
+      "tier": "beginner"
+    },
+    {
+      "word": "again",
+      "cn": "再次",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "木",
+      "sentence": "Say it again.",
+      "tier": "beginner"
+    },
+    {
+      "word": "always",
+      "cn": "总是",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "金",
+      "sentence": "Always be nice.",
+      "tier": "beginner"
+    },
+    {
+      "word": "here",
+      "cn": "这里",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "土",
+      "sentence": "Come here.",
+      "tier": "beginner"
+    },
+    {
+      "word": "there",
+      "cn": "那里",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "金",
+      "sentence": "Over there.",
+      "tier": "beginner"
+    },
+    {
+      "word": "up",
+      "cn": "向上",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "火",
+      "sentence": "Look up!",
+      "tier": "beginner"
+    },
+    {
+      "word": "down",
+      "cn": "向下",
+      "pos": "adv",
+      "subcategory": null,
+      "category_cn": "副词",
+      "element": "水",
+      "sentence": "Sit down.",
+      "tier": "beginner"
+    },
+    {
+      "word": "can",
+      "cn": "能/可以",
+      "pos": "aux",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "I can jump."
+    },
+    {
+      "word": "will",
+      "cn": "将/会",
+      "pos": "aux",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "I will go."
+    },
+    {
+      "word": "do",
+      "cn": "做(助动)",
+      "pos": "aux",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "I do like it."
+    },
+    {
+      "word": "does",
+      "cn": "做(三单)",
+      "pos": "aux",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "He does well."
+    },
+    {
+      "word": "is",
+      "cn": "是",
+      "pos": "verb",
+      "element": "土",
+      "tier": "intermediate",
+      "sentence": "It is big."
+    },
+    {
+      "word": "are",
+      "cn": "是(复数)",
+      "pos": "verb",
+      "element": "土",
+      "tier": "intermediate",
+      "sentence": "We are friends."
+    },
+    {
+      "word": "am",
+      "cn": "是(I)",
+      "pos": "verb",
+      "element": "土",
+      "tier": "intermediate",
+      "sentence": "I am happy."
+    },
+    {
+      "word": "be",
+      "cn": "是(原形)",
+      "pos": "verb",
+      "element": "土",
+      "tier": "intermediate",
+      "sentence": "Be good."
+    },
+    {
+      "word": "has",
+      "cn": "有(三单)",
+      "pos": "verb",
+      "element": "土",
+      "tier": "intermediate",
+      "sentence": "He has a cat."
+    },
+    {
+      "word": "to",
+      "cn": "去/到",
+      "pos": "prep",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Go to bed."
+    },
+    {
+      "word": "for",
+      "cn": "为/给",
+      "pos": "prep",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "This is for you."
+    },
+    {
+      "word": "with",
+      "cn": "和/用",
+      "pos": "prep",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Play with me."
+    },
+    {
+      "word": "by",
+      "cn": "通过/在旁",
+      "pos": "prep",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Go by bus."
+    },
+    {
+      "word": "not",
+      "cn": "不",
+      "pos": "adv",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "I am not sad."
+    },
+    {
+      "word": "out",
+      "cn": "外面/出去",
+      "pos": "adv",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "Go out and play."
+    },
+    {
+      "word": "off",
+      "cn": "离开/关掉",
+      "pos": "adv",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "Take off your coat."
+    },
+    {
+      "word": "all",
+      "cn": "全部",
+      "pos": "adv",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "All done."
+    },
+    {
+      "word": "also",
+      "cn": "也",
+      "pos": "adv",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "I also like it."
+    },
+    {
+      "word": "then",
+      "cn": "然后",
+      "pos": "adv",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Then go home."
+    },
+    {
+      "word": "where",
+      "cn": "哪里",
+      "pos": "adv",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Where is my bag?"
+    },
+    {
+      "word": "what",
+      "cn": "什么",
+      "pos": "adv",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "What is this?"
+    },
+    {
+      "word": "who",
+      "cn": "谁",
+      "pos": "adv",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Who is she?"
+    },
+    {
+      "word": "why",
+      "cn": "为什么",
+      "pos": "adv",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Why not go?"
+    },
+    {
+      "word": "how",
+      "cn": "怎样",
+      "pos": "adv",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "How are you?"
+    },
+    {
+      "word": "home",
+      "cn": "家",
+      "pos": "noun",
+      "element": "土",
+      "tier": "intermediate",
+      "sentence": "Go home now."
+    },
+    {
+      "word": "school",
+      "cn": "学校",
+      "pos": "noun",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "I go to school."
+    },
+    {
+      "word": "friend",
+      "cn": "朋友",
+      "pos": "noun",
+      "element": "木",
+      "tier": "intermediate",
+      "sentence": "You are my friend."
+    },
+    {
+      "word": "outside",
+      "cn": "外面",
+      "pos": "adv",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "Play outside."
+    },
+    {
+      "word": "inside",
+      "cn": "里面",
+      "pos": "adv",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Come inside."
+    },
+    {
+      "word": "park",
+      "cn": "公园",
+      "pos": "noun",
+      "element": "木",
+      "tier": "intermediate",
+      "sentence": "Let us go to the park."
+    },
+    {
+      "word": "zoo",
+      "cn": "动物园",
+      "pos": "noun",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "We go to the zoo."
+    },
+    {
+      "word": "shop",
+      "cn": "商店",
+      "pos": "noun",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "Go to the toy shop."
+    },
+    {
+      "word": "store",
+      "cn": "商店",
+      "pos": "noun",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "The toy store is big."
+    },
+    {
+      "word": "street",
+      "cn": "街道",
+      "pos": "noun",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Walk on the street."
+    },
+    {
+      "word": "city",
+      "cn": "城市",
+      "pos": "noun",
+      "element": "土",
+      "tier": "intermediate",
+      "sentence": "Big city."
+    },
+    {
+      "word": "playground",
+      "cn": "操场",
+      "pos": "noun",
+      "element": "木",
+      "tier": "intermediate",
+      "sentence": "Play in the playground."
+    },
+    {
+      "word": "classroom",
+      "cn": "教室",
+      "pos": "noun",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "The classroom is clean."
+    },
+    {
+      "word": "boy",
+      "cn": "男孩",
+      "pos": "noun",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "A tall boy."
+    },
+    {
+      "word": "girl",
+      "cn": "女孩",
+      "pos": "noun",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "A pretty girl."
+    },
+    {
+      "word": "love",
+      "cn": "爱/喜欢",
+      "pos": "verb",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "I love my mom."
+    },
+    {
+      "word": "get",
+      "cn": "得到/拿",
+      "pos": "verb",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "Get the ball."
+    },
+    {
+      "word": "find",
+      "cn": "找到",
+      "pos": "verb",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "Find the book."
+    },
+    {
+      "word": "say",
+      "cn": "说",
+      "pos": "verb",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "Say hello."
+    },
+    {
+      "word": "tell",
+      "cn": "告诉",
+      "pos": "verb",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Tell me a story."
+    },
+    {
+      "word": "ask",
+      "cn": "问",
+      "pos": "verb",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Ask your teacher."
+    },
+    {
+      "word": "think",
+      "cn": "想/认为",
+      "pos": "verb",
+      "element": "木",
+      "tier": "intermediate",
+      "sentence": "I think so."
+    },
+    {
+      "word": "nice",
+      "cn": "好的/友好的",
+      "pos": "adj",
+      "element": "金",
+      "tier": "intermediate",
+      "sentence": "Nice to meet you."
+    },
+    {
+      "word": "kind",
+      "cn": "善良的",
+      "pos": "adj",
+      "element": "木",
+      "tier": "intermediate",
+      "sentence": "She is kind."
+    },
+    {
+      "word": "fun",
+      "cn": "有趣的",
+      "pos": "adj",
+      "element": "火",
+      "tier": "intermediate",
+      "sentence": "It is so fun."
+    },
+    {
+      "word": "easy",
+      "cn": "容易的",
+      "pos": "adj",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "Easy to do."
+    },
+    {
+      "word": "name",
+      "cn": "名字",
+      "pos": "noun",
+      "element": "水",
+      "tier": "intermediate",
+      "sentence": "My name is Sam."
+    }
+  ]
+}

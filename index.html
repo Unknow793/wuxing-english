@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#4A148C">
+<title>五行英语牌</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ======== 主界面 ======== -->
+  <div id="screen-home" class="screen active">
+    <div class="title-block">
+      <div class="title-icon">🃏</div>
+      <h1>五行英语牌</h1>
+      <p class="subtitle">五元素之力 · 快乐学英语</p>
+    </div>
+    <!-- 经验值/等级 -->
+    <div class="home-xp-bar">
+      <span class="home-level-text" id="home-level-text">Lv.0</span>
+      <span class="home-title-text" id="home-title-text">🌱 英语种子</span>
+      <div class="home-xp-track">
+        <div class="home-xp-fill" id="home-xp-fill" style="width:0%"></div>
+      </div>
+      <span class="home-xp-text" id="home-xp-text">0 / 16</span>
+    </div>
+    <!-- 五行属性 -->
+    <div class="home-stats-row">
+      <span class="home-stat" title="血量（木）">🌳 <span id="stat-wood">10</span></span>
+      <span class="home-stat" title="攻击（火）">🔥 <span id="stat-fire">10</span></span>
+      <span class="home-stat" title="防御（土）">⛰️ <span id="stat-earth">10</span></span>
+      <span class="home-stat" title="智慧（水）">💧 <span id="stat-water">10</span></span>
+      <span class="home-stat" title="幸运（金）">⭐ <span id="stat-metal">10</span></span>
+    </div>
+    <div class="menu-buttons">
+      <button class="menu-btn btn-fire" onclick="showStudyScreen()">
+        <span class="btn-icon">📚</span>
+        <span class="btn-label">学习</span>
+        <span class="btn-desc">单词 · 连句</span>
+      </button>
+      <button class="menu-btn btn-challenge" onclick="startChallengeMode()">
+        <span class="btn-icon">⚔️</span>
+        <span class="btn-label">挑战</span>
+        <span class="btn-desc">回合制 · 五行打怪</span>
+      </button>
+      <button class="menu-btn btn-earth" onclick="showBackpack()">
+        <span class="btn-icon">🎒</span>
+        <span class="btn-label">技能背包</span>
+        <span class="btn-desc" id="backpack-count">已收集 0 张</span>
+      </button>
+      <button class="menu-btn btn-water" onclick="showItemBackpack()">
+        <span class="btn-icon">🧰</span>
+        <span class="btn-label">物品背包</span>
+        <span class="btn-desc">道具 · 加成</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ======== 学习选年级 ======== -->
+  <div id="screen-study" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+    </div>
+    <h2>📚 选择年级</h2>
+    <p class="hint">根据孩子的年级选择学习内容</p>
+    <div class="grade-list" id="grade-list">
+      <button class="grade-card grade-active" onclick="startStudy('grade1-2')">
+        <span class="grade-icon">🌱</span>
+        <span class="grade-info">
+          <span class="grade-label">小学1-2年级</span>
+          <span class="grade-desc">基础单词 · 简单句子</span>
+        </span>
+      </button>
+      <button class="grade-card" id="grade-3-4-btn" onclick="handleGrade3_4()">
+        <span class="grade-icon">🌿</span>
+        <span class="grade-info">
+          <span class="grade-label">小学3-4年级</span>
+          <span class="grade-desc" id="grade-3-4-desc">需要 Lv.10 解锁</span>
+        </span>
+        <span class="grade-lock" id="grade-3-4-lock">🔒</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ======== 选五行 ======== -->
+  <div id="screen-element" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+    </div>
+    <h2>今天想学什么？</h2>
+    <p class="hint">选一个你喜欢的五行属性</p>
+    <div class="element-grid" id="element-picker"></div>
+    <div id="element-result" class="element-result" style="display:none">
+      <div class="result-row">
+        <div class="result-item">
+          <span class="result-label">你选了</span>
+          <span class="element-badge" id="user-element-badge"></span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">系统推荐</span>
+          <span class="element-badge" id="sys-element-badge"></span>
+        </div>
+      </div>
+      <p class="result-desc">这两个五行相生，一起学习吧！</p>
+      <button class="primary-btn" onclick="confirmElements()">开始学习 →</button>
+      <button class="text-btn" onclick="resetElementPick()">重新选择</button>
+    </div>
+  </div>
+
+  <!-- ======== 学单词 ======== -->
+  <div id="screen-learn" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="confirmAbort()">← 退出</button>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="progress-text" id="progress-text">1/4</span>
+    </div>
+    <div class="learn-area">
+      <div class="element-hint" id="learn-element"></div>
+      <div class="word-display" id="word-display">
+        <div class="word-main">
+          <span class="word-english" id="word-english">cat</span>
+          <span class="word-chinese" id="word-chinese" style="display:none">猫</span>
+        </div>
+        <div class="word-sentence" id="word-sentence">I see a cat.</div>
+      </div>
+      <div class="learn-buttons">
+        <button class="secondary-btn" id="btn-chinese" onclick="showChinese()">👀 中文</button>
+        <button class="primary-btn" id="btn-next" onclick="nextWord()">下一个 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 连句子 ======== -->
+  <div id="screen-sentence" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 退出</button>
+    </div>
+    <h2>排列句子</h2>
+    <p class="hint sentence-hint" id="sentence-hint">按顺序点击单词，拼出正确的句子</p>
+    <div class="sentence-area">
+      <div class="sentence-display" id="sentence-display">
+        <span class="sentence-placeholder">点击下方单词开始排列</span>
+      </div>
+      <div class="word-bank" id="word-bank"></div>
+
+      <!-- 操作区 -->
+      <div id="sentence-actions">
+        <button class="primary-btn" id="btn-check" onclick="checkSentence()" disabled>完成</button>
+      </div>
+
+      <!-- 结果区（初始隐藏） -->
+      <div id="sentence-result" class="sentence-result" style="display:none">
+        <div id="sentence-result-message" class="result-message"></div>
+        <div class="result-buttons" id="result-buttons"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 奖励 ======== -->
+  <div id="screen-reward" class="screen">
+    <div class="reward-area">
+      <div class="reward-icon" id="reward-icon">🎉</div>
+      <h2 id="reward-title">太棒了！</h2>
+      <p class="reward-desc" id="reward-desc">你完成了一次学习！</p>
+      <div class="reward-xp-info" id="reward-xp-info">
+        <span class="reward-xp-gain" id="reward-xp-gain">+35 XP</span>
+        <div class="reward-xp-bar">
+          <div class="reward-xp-fill" id="reward-xp-fill" style="width:0%"></div>
+        </div>
+        <span class="reward-xp-text" id="reward-xp-text">Lv.0 16/16</span>
+      </div>
+      <div class="reward-cards" id="reward-cards"></div>
+      <div class="reward-buttons">
+        <button class="primary-btn" onclick="repeatLastLearnMode()">再来一次</button>
+        <button class="secondary-btn" onclick="showReview()">📖 复习</button>
+        <button class="text-btn" onclick="goHome()">回到主页</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 技能背包 ======== -->
+  <div id="screen-backpack" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+    </div>
+    <h2>🎒 技能背包</h2>
+    <div id="backpack-content">
+      <p class="hint" id="backpack-empty" style="display:none">还没有收集到单词卡，快去学习吧！</p>
+      <div class="backpack-grid" id="backpack-grid"></div>
+    </div>
+  </div>
+
+  <!-- ======== 物品背包 ======== -->
+  <div id="screen-items" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+    </div>
+    <h2>🎒 物品背包</h2>
+    <p class="hint">使用道具获得永久属性加成</p>
+    <div id="items-content">
+      <p class="hint" id="items-empty" style="display:none">还没有收集到道具，去挑战模式获取吧！</p>
+      <div class="items-grid" id="items-grid"></div>
+    </div>
+    <!-- 道具详情/使用弹窗 -->
+    <div id="item-detail" class="items-detail" style="display:none">
+      <div id="item-detail-icon" class="items-detail-icon">✨</div>
+      <div id="item-detail-name" class="items-detail-name">道具名称</div>
+      <div id="item-detail-desc" class="items-detail-desc">道具说明</div>
+      <div class="items-detail-actions">
+        <button class="primary-btn" id="btn-item-use" onclick="useSelectedItem()">使用</button>
+        <button class="text-btn" onclick="closeItemDetail()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 级别选择 ======== -->
+  <div id="screen-level" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+    </div>
+    <h2>选择挑战级别</h2>
+    <div class="level-list" id="level-list"></div>
+  </div>
+
+  <!-- ======== 选Boss ======== -->
+  <div id="screen-boss" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-level')">← 返回</button>
+    </div>
+    <h2>选择你的对手</h2>
+    <p class="hint">五行神兽 · 选择一位挑战</p>
+    <div class="boss-grid" id="boss-grid"></div>
+  </div>
+
+  <!-- ======== 装备技能栏 ======== -->
+  <div id="screen-equip" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-boss')">← 返回</button>
+    </div>
+    <h2>装备技能牌</h2>
+    <div class="equip-info">
+      <span id="equip-count">已选 0/15</span>
+      <div class="equip-element-counts" id="equip-element-counts"></div>
+    </div>
+    <p class="hint" id="equip-hint">从背包中选择15张牌，必须包含全部五行</p>
+    <div class="equip-grid" id="equip-grid"></div>
+    <div class="equip-actions">
+      <button class="primary-btn" id="btn-equip-confirm" onclick="confirmEquip()" disabled>确认出战</button>
+    </div>
+  </div>
+
+  <!-- ======== 战斗 ======== -->
+  <div id="screen-battle" class="screen">
+    <!-- Boss HP -->
+    <div class="battle-hud-top">
+      <div class="battle-boss-info" id="b-boss-card">
+        <span class="battle-boss-icon" id="b-boss-icon">🐦</span>
+        <span class="battle-boss-name" id="b-boss-name">朱雀</span>
+        <span class="battle-level-badge">Lv.1</span>
+      </div>
+      <div class="battle-hp-row">
+        <div class="battle-hp-bar boss-hp">
+          <div class="battle-hp-fill" id="b-boss-hp-fill"></div>
+          <span class="battle-hp-text" id="b-boss-hp-text">150/150</span>
+        </div>
+      </div>
+      <div class="battle-boss-stats" id="b-boss-stats">
+        <span>⚔️ <span id="b-boss-atk">20</span></span>
+        <span>🛡️ <span id="b-boss-def">14</span></span>
+      </div>
+    </div>
+
+    <!-- 主战区 -->
+    <div class="battle-main" id="battle-main">
+      <!-- 回合标题 -->
+      <div class="battle-round-label" id="b-round-label">Boss的攻击！</div>
+
+      <!-- Boss出题区 -->
+      <div id="b-boss-turn" class="battle-phase">
+        <div class="bq-question" id="bq-question"></div>
+        <div class="bq-options" id="bq-options"></div>
+        <div id="bq-result" class="bq-result" style="display:none"></div>
+        <button class="primary-btn" id="bq-next-btn" style="display:none;margin:12px auto 0">继续</button>
+      </div>
+
+      <!-- 玩家攻击区 -->
+      <div id="b-player-turn" class="battle-phase" style="display:none">
+        <div class="bp-sentence-area">
+          <div class="bp-sentence-display" id="bp-sentence-display">
+            <span class="sentence-placeholder">点击手牌中的单词排列</span>
+          </div>
+          <div class="bp-error-msg" id="bp-error-msg"></div>
+        </div>
+        <div class="bp-actions">
+          <button class="secondary-btn" onclick="bpResetSentence()">重置</button>
+          <button class="primary-btn" onclick="bpAttack()" id="btn-bp-attack" disabled>⚔️ 攻击</button>
+        </div>
+      </div>
+
+      <!-- 过渡提示 -->
+      <div id="b-transition" class="battle-phase" style="display:none">
+        <div class="bt-content" id="bt-content"></div>
+        <button class="primary-btn" id="bt-next-btn" style="display:none">继续</button>
+      </div>
+    </div>
+
+    <!-- 手牌区 -->
+    <div class="battle-hand" id="battle-hand">
+      <div class="battle-hand-header">
+        <span class="battle-hand-label">手牌</span>
+        <span class="battle-hand-count" id="b-hand-count">15张</span>
+      </div>
+      <div class="battle-hand-cards" id="b-hand-cards"></div>
+      <div class="battle-hand-empty" id="b-hand-empty" style="display:none">手牌已空</div>
+    </div>
+
+    <!-- 玩家 HP -->
+    <div class="battle-hud-bottom">
+      <div class="battle-hp-row player-hp-row">
+        <span class="player-hp-label">❤️</span>
+        <div class="battle-hp-bar player-hp">
+          <div class="battle-hp-fill" id="b-player-hp-fill"></div>
+          <span class="battle-hp-text" id="b-player-hp-text">100/100</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 战斗结算 ======== -->
+  <div id="screen-battle-result" class="screen">
+    <div class="br-area">
+      <div class="br-icon" id="br-icon">🏆</div>
+      <h2 id="br-title">胜利！</h2>
+      <div class="br-boss-defeated" id="br-boss-defeated"></div>
+      <div class="br-stats">
+        <div class="br-stat">
+          <span class="br-stat-label">回合数</span>
+          <span class="br-stat-value" id="br-rounds">0</span>
+        </div>
+        <div class="br-stat">
+          <span class="br-stat-label">答对Boss题</span>
+          <span class="br-stat-value" id="br-correct">0</span>
+        </div>
+        <div class="br-stat">
+          <span class="br-stat-label">总输出伤害</span>
+          <span class="br-stat-value" id="br-damage">0</span>
+        </div>
+      </div>
+      <div class="br-reward-area" id="br-reward-area"></div>
+      <div class="br-buttons">
+        <button class="primary-btn" onclick="startChallengeMode()">再战一次</button>
+        <button class="text-btn" onclick="goHome()">回到主页</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 复习弹窗 ======== -->
+  <div id="review-overlay" class="modal-overlay" style="display:none" onclick="closeReview()"></div>
+  <div id="review-modal" class="modal-box modal-wide" style="display:none">
+    <h3>📖 本轮复习</h3>
+    <div id="review-word-list" class="review-word-list"></div>
+    <button class="primary-btn" onclick="closeReview()" style="margin-top:16px">知道了</button>
+  </div>
+
+  <!-- ======== 确认对话框 ======== -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none" onclick="closeModal()"></div>
+  <div id="modal-box" class="modal-box" style="display:none">
+    <p id="modal-text">确定退出吗？</p>
+    <div class="modal-buttons">
+      <button class="primary-btn" id="modal-confirm">确定</button>
+      <button class="secondary-btn" onclick="closeModal()">取消</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/speech.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
