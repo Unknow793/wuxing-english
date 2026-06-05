@@ -17,35 +17,11 @@ const STATE = {
   sentenceCorrect: false,
 };
 
-/* ========== 本地存储 ========== */
-const BACKPACK_KEY = 'wuxing_backpack';
-const XP_KEY = 'wuxing_xp';
-const ITEMS_KEY = 'wuxing_items';
-const BONUS_KEY = 'wuxing_bonus';
-
-function loadBackpack() {
-  try { return JSON.parse(localStorage.getItem(BACKPACK_KEY)) || []; }
-  catch { return []; }
-}
-
-function saveBackpack(bp) {
-  localStorage.setItem(BACKPACK_KEY, JSON.stringify(bp));
-}
-
+/* ========== 背包计数显示 ========== */
 function updateBackpackCount() {
   const bp = loadBackpack();
   const el = document.getElementById('backpack-count');
   if (el) el.textContent = `已收集 ${bp.length} 张`;
-}
-
-/* ========== 物品背包 ========== */
-function loadItems() {
-  try { return JSON.parse(localStorage.getItem(ITEMS_KEY)) || []; }
-  catch { return []; }
-}
-
-function saveItems(items) {
-  localStorage.setItem(ITEMS_KEY, JSON.stringify(items));
 }
 
 /** 从技能背包迁移旧道具到物品背包（一次性迁移） */
@@ -69,16 +45,6 @@ function migrateOldItems() {
 }
 
 /* ========== 永久属性加成 ========== */
-function loadBonus() {
-  try { return JSON.parse(localStorage.getItem(BONUS_KEY)) || { wood:0, fire:0, earth:0, water:0, metal:0 }; }
-  catch { return { wood:0, fire:0, earth:0, water:0, metal:0 }; }
-}
-
-function saveBonus(bonus) {
-  localStorage.setItem(BONUS_KEY, JSON.stringify(bonus));
-}
-
-/** 提升指定五行属性 +1 */
 const ELEMENT_TO_BONUS = { '火':'fire', '水':'water', '木':'wood', '金':'metal', '土':'earth' };
 
 function addAttributeBonus(element) {
@@ -89,7 +55,6 @@ function addAttributeBonus(element) {
   saveBonus(bonus);
 }
 
-/** 提升所有五行属性 +1 */
 function addAllAttributeBonus() {
   const bonus = loadBonus();
   bonus.wood++;
@@ -101,15 +66,6 @@ function addAllAttributeBonus() {
 }
 
 /* ========== 经验值 / 等级系统 ========== */
-function loadXp() {
-  try { return parseInt(localStorage.getItem(XP_KEY)) || 0; }
-  catch { return 0; }
-}
-
-function saveXp(xp) {
-  localStorage.setItem(XP_KEY, String(xp));
-}
-
 function addXp(amount) {
   const current = loadXp();
   const newXp = current + amount;
@@ -207,6 +163,8 @@ function updateHomeXpDisplay() {
   const title = getTitle(level);
   document.getElementById('home-level-text').textContent = `Lv.${level}`;
   document.getElementById('home-title-text').textContent = `${title.icon} ${title.name}`;
+  const userEl = document.getElementById('home-username');
+  if (userEl && USER_CACHE.username) userEl.textContent = `👤 ${USER_CACHE.username}`;
   document.getElementById('home-xp-fill').style.width = Math.min(100, pct) + '%';
   document.getElementById('home-xp-text').textContent = `${xpInLevel} / ${xpNeeded}`;
 
@@ -2079,9 +2037,23 @@ function returnUnusedCards() {
 /* ========== 初始化 ========== */
 const SPEAKER = SPEECH; // alias for readability
 
-document.addEventListener('DOMContentLoaded', () => {
-  updateBackpackCount();
-  updateHomeXpDisplay();
+document.addEventListener('DOMContentLoaded', async () => {
+  // 尝试自动登录
+  const savedUser = localStorage.getItem('wuxing_user');
+  if (savedUser) {
+    try {
+      await loginUser(savedUser);
+      showScreen('screen-home');
+      updateHomeXpDisplay();
+      updateBackpackCount();
+    } catch {
+      // 自动登录失败，显示登录页
+      localStorage.removeItem('wuxing_user');
+      showScreen('screen-login');
+    }
+  } else {
+    showScreen('screen-login');
+  }
 
   // Preload voices
   if (window.speechSynthesis) {

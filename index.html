@@ -11,8 +11,27 @@
 <body>
 <div id="app">
 
+  <!-- ======== 登录界面 ======== -->
+  <div id="screen-login" class="screen active">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-icon">🃏</div>
+        <h2>五行英语牌</h2>
+        <p class="login-subtitle">输入你的名字，开始冒险！</p>
+        <input type="text" id="login-name" class="login-input" placeholder="请输入名字" maxlength="12" autocomplete="off">
+        <button class="login-btn" id="login-btn" onclick="handleLogin()">开始游戏</button>
+        <p id="login-error" class="login-error"></p>
+        <div id="login-loading" class="login-loading" style="display:none">⏳ 加载中...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ======== 主界面 ======== -->
-  <div id="screen-home" class="screen active">
+  <div id="screen-home" class="screen">
+    <div class="user-bar">
+      <span id="home-username" class="user-name"></span>
+      <button class="user-logout-btn" onclick="handleLogout()">切换用户</button>
+    </div>
     <div class="title-block">
       <div class="title-icon">🃏</div>
       <h1>五行英语牌</h1>
@@ -381,6 +400,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/speech.js"></script>
+<script src="js/supabase.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
