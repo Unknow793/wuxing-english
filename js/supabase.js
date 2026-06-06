@@ -9,7 +9,7 @@ const SB_HEADERS = {
   'Prefer': 'return=representation',
 };
 
-// 当前用户数据缓存（内存，代替 localStorage）
+// 当前用户数据缓存
 const USER_CACHE = {
   id: null,
   username: '',
@@ -17,12 +17,24 @@ const USER_CACHE = {
   backpack: [],
   items: [],
   bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
+  avatar: '',
+  element: '',   // 本命五行
 };
 
-/* ---------- 用户登录 ---------- */
-async function loginUser(username) {
+/* ---------- 密码哈希 ---------- */
+async function hashPassword(password, username) {
+  const encoder = new TextEncoder();
+  // 加盐：用户名 + 固定 salt，确保同名用户密码不同
+  const data = encoder.encode(password + 'wuxing2026_' + username);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ---------- 用户登录/注册 ---------- */
+async function loginUser(username, password) {
   const name = username.trim();
-  if (!name) throw new Error('请输入名字');
+  if (!name) throw new Error('请输入用户名');
+  if (!password || password.length < 4) throw new Error('密码至少4位');
 
   // 查是否存在
   const res = await fetch(
@@ -32,31 +44,41 @@ async function loginUser(username) {
   const rows = await res.json();
 
   if (rows && rows.length > 0) {
-    // 已有用户
+    // === 已有用户：验证密码 ===
+    const user = rows[0];
+    const storedHash = user.password_hash || '';
+    if (!storedHash) {
+      // 旧账号无密码，直接登录（兼容迁移）
+    } else {
+      const inputHash = await hashPassword(password, name);
+      if (inputHash !== storedHash) throw new Error('密码错误');
+    }
     Object.assign(USER_CACHE, {
-      id: rows[0].id,
-      username: rows[0].username,
-      xp: rows[0].xp || 0,
-      backpack: rows[0].backpack || [],
-      items: rows[0].items || [],
-      bonus: rows[0].bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
+      id: user.id,
+      username: user.username,
+      xp: user.xp || 0,
+      backpack: user.backpack || [],
+      items: user.items || [],
+      bonus: user.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
+      avatar: user.avatar || '',
+      element: user.element || '',
     });
   } else {
-    // 新用户
+    // === 新用户：创建账号 ===
+    const passHash = await hashPassword(password, name);
     const body = JSON.stringify({
       username: name,
+      password_hash: passHash,
       xp: 0,
       backpack: [],
       items: [],
       bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
+      avatar: '',
+      element: '',
     });
     const createRes = await fetch(
       `${SUPABASE_URL}/rest/v1/user_profiles`,
-      {
-        method: 'POST',
-        headers: SB_HEADERS,
-        body,
-      }
+      { method: 'POST', headers: SB_HEADERS, body }
     );
     const newRows = await createRes.json();
     const created = Array.isArray(newRows) ? newRows[0] : newRows;
@@ -67,11 +89,32 @@ async function loginUser(username) {
       backpack: created.backpack || [],
       items: created.items || [],
       bonus: created.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
+      avatar: '',
+      element: '',
     });
   }
 
-  localStorage.setItem('wuxing_user', name); // 记住用户名
+  localStorage.setItem('wuxing_user', name);
   return USER_CACHE;
+}
+
+/* ---------- 更新用户头像和本命五行 ---------- */
+async function updateUserProfile(avatar, element) {
+  if (!USER_CACHE.id) return;
+  try {
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
+      {
+        method: 'PATCH',
+        headers: SB_HEADERS,
+        body: JSON.stringify({ avatar, element, updated_at: new Date().toISOString() }),
+      }
+    );
+    USER_CACHE.avatar = avatar;
+    USER_CACHE.element = element;
+  } catch (e) {
+    console.warn('更新头像/五行失败', e);
+  }
 }
 
 /* ---------- 同步数据到 Supabase ---------- */
@@ -79,8 +122,6 @@ let _syncTimer = null;
 
 function syncToSupabase() {
   if (!USER_CACHE.id) return;
-
-  // 防抖：连续调用只触发一次写入
   if (_syncTimer) clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async () => {
     try {
@@ -102,7 +143,7 @@ function syncToSupabase() {
       console.warn('数据同步失败，下次操作自动重试', e);
     }
     _syncTimer = null;
-  }, 300); // 300ms 防抖
+  }, 300);
 }
 
 /* ---------- 兼容原 localStorage load/save 函数 ---------- */
@@ -120,46 +161,56 @@ function saveBonus(bonus) { USER_CACHE.bonus = bonus; syncToSupabase(); }
 
 /* ---------- 登录UI处理 ---------- */
 async function handleLogin() {
-  const input = document.getElementById('login-name');
+  const nameInput = document.getElementById('login-name');
+  const passInput = document.getElementById('login-password');
   const errorEl = document.getElementById('login-error');
   const loadingEl = document.getElementById('login-loading');
   const btn = document.getElementById('login-btn');
 
-  const name = input.value.trim();
-  if (!name) { errorEl.textContent = '请输入名字'; return; }
+  const name = nameInput.value.trim();
+  const password = passInput.value;
+  if (!name) { errorEl.textContent = '请输入用户名'; return; }
+  if (!password || password.length < 4) { errorEl.textContent = '密码至少4位'; return; }
 
   errorEl.textContent = '';
   btn.disabled = true;
   loadingEl.style.display = 'block';
 
   try {
-    await loginUser(name);
-    showScreen('screen-home');
-    updateHomeXpDisplay();
-    updateBackpackCount();
+    await loginUser(name, password);
+    // 检查是否已完成注册（选过头像和五行）
+    if (USER_CACHE.avatar && USER_CACHE.element) {
+      goHomeAfterLogin();
+    } else {
+      showRegAvatarScreen();
+    }
   } catch (e) {
-    errorEl.textContent = '登录失败，请重试：' + e.message;
+    errorEl.textContent = e.message || '登录失败，请重试';
   } finally {
     btn.disabled = false;
     loadingEl.style.display = 'none';
   }
 }
 
-/* ---------- 登出UI处理 ---------- */
-function handleLogout() {
-  if (confirm('切换用户将返回登录页，确定吗？')) {
-    logoutUser();
-    showScreen('screen-login');
-  }
+function goHomeAfterLogin() {
+  showScreen('screen-home');
+  updateHomeXpDisplay();
+  updateBackpackCount();
 }
 
 /* ---------- 登出 ---------- */
-function logoutUser() {
-  localStorage.removeItem('wuxing_user');
-  USER_CACHE.id = null;
-  USER_CACHE.username = '';
-  USER_CACHE.xp = 0;
-  USER_CACHE.backpack = [];
-  USER_CACHE.items = [];
-  USER_CACHE.bonus = { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 };
+function handleLogout() {
+  if (confirm('切换用户将返回登录页，确定吗？')) {
+    localStorage.removeItem('wuxing_user');
+    USER_CACHE.id = null;
+    USER_CACHE.username = '';
+    USER_CACHE.xp = 0;
+    USER_CACHE.backpack = [];
+    USER_CACHE.items = [];
+    USER_CACHE.bonus = { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 };
+    USER_CACHE.avatar = '';
+    USER_CACHE.element = '';
+    showScreen('screen-login');
+    document.getElementById('login-password').value = '';
+  }
 }

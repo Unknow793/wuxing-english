@@ -3,6 +3,175 @@
  * 管理屏幕切换、游戏状态、UI 交互。
  */
 
+/* ========== 头像系统 ========== */
+const AVATARS = {
+  normal: [
+    { id: 'avatar1', label: '小狮子', color: '#FF7043', icon: '🦁' },
+    { id: 'avatar2', label: '小猫咪', color: '#FFB74D', icon: '🐱' },
+    { id: 'avatar3', label: '小兔子', color: '#F48FB1', icon: '🐰' },
+    { id: 'avatar4', label: '小熊猫', color: '#A1887F', icon: '🐼' },
+    { id: 'avatar5', label: '小狐狸', color: '#FF8A65', icon: '🦊' },
+    { id: 'avatar6', label: '小青蛙', color: '#81C784', icon: '🐸' },
+    { id: 'avatar7', label: '小猴子', color: '#D4E157', icon: '🐵' },
+    { id: 'avatar8', label: '独角兽', color: '#CE93D8', icon: '🦄' },
+    { id: 'avatar9', label: '小龙', color: '#4DB6AC', icon: '🐉' },
+    { id: 'avatar10', label: '小老虎', color: '#FFA726', icon: '🐯' },
+  ],
+  special: [
+    { id: 'special1', label: '⭐ 勇者', color: '#FFD700', icon: '🏆', desc: '击败一个Boss后解锁', unlock: () => false },
+    { id: 'special2', label: '👑 王者', color: '#FF6F00', icon: '👑', desc: '收集100张卡片后解锁', unlock: () => false },
+    { id: 'special3', label: '🌈 彩虹', color: '#E040FB', icon: '🌈', desc: '累计1000XP后解锁', unlock: () => false },
+  ],
+};
+
+/** 获取头像对象 */
+function getAvatarById(id) {
+  for (const cat of [AVATARS.normal, AVATARS.special]) {
+    const found = cat.find(a => a.id === id);
+    if (found) return found;
+  }
+  return null;
+}
+
+/** 生成头像占位 SVG */
+function avatarPlaceholderSvg(avatar) {
+  return `data:image/svg+xml,${encodeURIComponent(
+    `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="47" fill="${avatar.color}"/>
+      <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="2"/>
+      <text x="50" y="68" text-anchor="middle" font-size="48" fill="white" font-weight="bold">${avatar.icon}</text>
+    </svg>`
+  )}`;
+}
+
+/* ========== 注册-选头像 ========== */
+let _selectedAvatar = '';
+
+function showRegAvatarScreen() {
+  _selectedAvatar = '';
+  document.getElementById('avatar-error').textContent = '';
+  document.getElementById('btn-avatar-confirm').disabled = true;
+
+  const grid = document.getElementById('avatar-grid');
+  grid.innerHTML = '';
+
+  for (const av of AVATARS.normal) {
+    const el = document.createElement('div');
+    el.className = 'avatar-card';
+    el.dataset.id = av.id;
+    el.innerHTML = `
+      <div class="avatar-img-wrap">
+        <img src="${avatarPlaceholderSvg(av)}" alt="${av.label}" class="avatar-thumb">
+      </div>
+      <span class="avatar-label">${av.label}</span>
+    `;
+    el.addEventListener('click', () => selectAvatar(av.id));
+    grid.appendChild(el);
+  }
+
+  // 特殊头像
+  for (const av of AVATARS.special) {
+    const el = document.createElement('div');
+    el.className = 'avatar-card avatar-locked';
+    el.dataset.id = av.id;
+    el.innerHTML = `
+      <div class="avatar-img-wrap avatar-special-bg">
+        <img src="${avatarPlaceholderSvg(av)}" alt="${av.label}" class="avatar-thumb">
+        <div class="avatar-lock-badge">🔒</div>
+      </div>
+      <span class="avatar-label">${av.label}</span>
+      <span class="avatar-desc">${av.desc}</span>
+    `;
+    el.addEventListener('click', () => {
+      document.getElementById('avatar-error').textContent = '🔒 该头像尚未解锁';
+    });
+    grid.appendChild(el);
+  }
+
+  showScreen('screen-reg-avatar');
+}
+
+function selectAvatar(id) {
+  _selectedAvatar = id;
+  document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.avatar-card[data-id="${id}"]`)?.classList.add('selected');
+  document.getElementById('btn-avatar-confirm').disabled = false;
+  document.getElementById('avatar-error').textContent = '';
+}
+
+function confirmAvatar() {
+  if (!_selectedAvatar) return;
+  showRegElementScreen();
+}
+
+/* ========== 注册-选本命五行 ========== */
+let _selectedElement = '';
+
+const ELEMENT_STATS = {
+  '木': { hp: 18, atk: 8, def: 12, spd: 7, cri: 5, desc: '🌳 生命之木 · 血厚持久' },
+  '火': { hp: 7, atk: 18, def: 7, spd: 10, cri: 8, desc: '🔥 烈焰之火 · 高攻爆发' },
+  '土': { hp: 11, atk: 7, def: 18, spd: 7, cri: 7, desc: '⛰️ 不动之土 · 铁壁防守' },
+  '水': { hp: 7, atk: 8, def: 7, spd: 20, cri: 8, desc: '💧 流水之水 · 极速先手' },
+  '金': { hp: 8, atk: 10, def: 8, spd: 9, cri: 15, desc: '⭐ 锋锐之金 · 暴击制胜' },
+};
+
+function showRegElementScreen() {
+  _selectedElement = '';
+  document.getElementById('element-error').textContent = '';
+  document.getElementById('btn-element-confirm').disabled = true;
+  document.getElementById('reg-element-detail').style.display = 'none';
+
+  const grid = document.getElementById('reg-element-grid');
+  grid.innerHTML = '';
+
+  for (const el of DATA.ELEMENTS) {
+    const stats = ELEMENT_STATS[el.name];
+    const card = document.createElement('div');
+    card.className = `element-card ${el.cls}`;
+    card.dataset.element = el.name;
+    card.innerHTML = `<span class="elem-icon">${el.icon}</span><span class="elem-name">${el.name}</span>`;
+    card.addEventListener('click', () => selectRegElement(el.name));
+    grid.appendChild(card);
+  }
+
+  showScreen('screen-reg-element');
+}
+
+function selectRegElement(elementName) {
+  _selectedElement = elementName;
+  document.querySelectorAll('#reg-element-grid .element-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`#reg-element-grid .element-card[data-element="${elementName}"]`)?.classList.add('selected');
+
+  const stats = ELEMENT_STATS[elementName];
+  const elInfo = DATA.getElementInfo(elementName);
+  document.getElementById('reg-element-detail').style.display = 'block';
+  document.getElementById('reg-element-detail').innerHTML = `
+    <div style="font-size:28px;margin-bottom:8px">${elInfo.icon}</div>
+    <div style="font-weight:700;font-size:20px">${stats.desc}</div>
+    <div class="elem-stats-grid">
+      <span class="elem-stat">❤️HP <b>${stats.hp}</b></span>
+      <span class="elem-stat">⚔️ATK <b>${stats.atk}</b></span>
+      <span class="elem-stat">🛡️DEF <b>${stats.def}</b></span>
+      <span class="elem-stat">💨SPD <b>${stats.spd}</b></span>
+      <span class="elem-stat">💥CRI <b>${stats.cri}%</b></span>
+    </div>
+  `;
+
+  document.getElementById('btn-element-confirm').disabled = false;
+  document.getElementById('element-error').textContent = '';
+}
+
+async function confirmElement() {
+  if (!_selectedElement) return;
+  try {
+    // 保存到头像和五行到数据库
+    await updateUserProfile(_selectedAvatar, _selectedElement);
+    goHomeAfterLogin();
+  } catch (e) {
+    document.getElementById('element-error').textContent = '保存失败，请重试';
+  }
+}
+
 /* ========== 游戏状态 ========== */
 const STATE = {
   userElement: null,
@@ -163,8 +332,14 @@ function updateHomeXpDisplay() {
   const title = getTitle(level);
   document.getElementById('home-level-text').textContent = `Lv.${level}`;
   document.getElementById('home-title-text').textContent = `${title.icon} ${title.name}`;
-  const userEl = document.getElementById('home-username');
-  if (userEl && USER_CACHE.username) userEl.textContent = `👤 ${USER_CACHE.username}`;
+  const userEl = document.getElementById('home-userinfo');
+  if (userEl && USER_CACHE.username) {
+    const av = getAvatarById(USER_CACHE.avatar);
+    const avIcon = av ? av.icon : '👤';
+    const elemIcon = DATA.getElementInfo(USER_CACHE.element);
+    const elemStr = elemIcon ? `${elemIcon.icon}` : '';
+    userEl.innerHTML = `${avIcon} ${USER_CACHE.username} ${elemStr}`;
+  }
   document.getElementById('home-xp-fill').style.width = Math.min(100, pct) + '%';
   document.getElementById('home-xp-text').textContent = `${xpInLevel} / ${xpNeeded}`;
 
@@ -2055,22 +2230,13 @@ function returnUnusedCards() {
 const SPEAKER = SPEECH; // alias for readability
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // 尝试自动登录
+  // 预填上次登录的用户名
   const savedUser = localStorage.getItem('wuxing_user');
   if (savedUser) {
-    try {
-      await loginUser(savedUser);
-      showScreen('screen-home');
-      updateHomeXpDisplay();
-      updateBackpackCount();
-    } catch {
-      // 自动登录失败，显示登录页
-      localStorage.removeItem('wuxing_user');
-      showScreen('screen-login');
-    }
-  } else {
-    showScreen('screen-login');
+    const nameInput = document.getElementById('login-name');
+    if (nameInput) nameInput.value = savedUser;
   }
+  showScreen('screen-login');
 
   // Preload voices
   if (window.speechSynthesis) {

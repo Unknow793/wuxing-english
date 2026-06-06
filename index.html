@@ -17,19 +17,49 @@
       <div class="login-card">
         <div class="login-icon">🃏</div>
         <h2>五行英语牌</h2>
-        <p class="login-subtitle">输入你的名字，开始冒险！</p>
-        <input type="text" id="login-name" class="login-input" placeholder="请输入名字" maxlength="12" autocomplete="off">
-        <button class="login-btn" id="login-btn" onclick="handleLogin()">开始游戏</button>
+        <p class="login-subtitle">注册或登录你的账号</p>
+        <input type="text" id="login-name" class="login-input" placeholder="用户名" maxlength="12" autocomplete="off">
+        <input type="password" id="login-password" class="login-input" placeholder="密码（至少4位）" maxlength="20" autocomplete="off">
+        <button class="login-btn" id="login-btn" onclick="handleLogin()">登录 / 注册</button>
         <p id="login-error" class="login-error"></p>
         <div id="login-loading" class="login-loading" style="display:none">⏳ 加载中...</div>
       </div>
     </div>
   </div>
 
+  <!-- ======== 注册-选头像 ======== -->
+  <div id="screen-reg-avatar" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+    </div>
+    <h2>选择你的头像</h2>
+    <p class="hint">选一个你喜欢的角色</p>
+    <div class="avatar-grid" id="avatar-grid"></div>
+    <p id="avatar-error" class="login-error"></p>
+    <div class="reg-actions">
+      <button class="primary-btn" id="btn-avatar-confirm" onclick="confirmAvatar()" disabled>确认头像 →</button>
+    </div>
+  </div>
+
+  <!-- ======== 注册-选本命五行 ======== -->
+  <div id="screen-reg-element" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-reg-avatar')">← 返回</button>
+    </div>
+    <h2>选择你的本命五行</h2>
+    <p class="hint">这决定了你天生的属性偏向</p>
+    <div class="element-grid" id="reg-element-grid"></div>
+    <div id="reg-element-detail" class="elem-detail-box" style="display:none"></div>
+    <p id="element-error" class="login-error"></p>
+    <div class="reg-actions">
+      <button class="primary-btn" id="btn-element-confirm" onclick="confirmElement()" disabled>开始冒险！</button>
+    </div>
+  </div>
+
   <!-- ======== 主界面 ======== -->
   <div id="screen-home" class="screen">
     <div class="user-bar">
-      <span id="home-username" class="user-name"></span>
+      <span id="home-userinfo" class="user-name"></span>
       <button class="user-logout-btn" onclick="handleLogout()">切换用户</button>
     </div>
     <div class="title-block">
