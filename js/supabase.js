@@ -47,11 +47,16 @@ async function loginUser(username, password) {
     // === 已有用户：验证密码 ===
     const user = rows[0];
     const storedHash = user.password_hash || '';
+    const inputHash = await hashPassword(password, name);
     if (!storedHash) {
-      // 旧账号无密码，直接登录（兼容迁移）
-    } else {
-      const inputHash = await hashPassword(password, name);
-      if (inputHash !== storedHash) throw new Error('密码错误');
+      // 旧账号无密码 → 首次登录，将输入的密码设为永久密码
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${user.id}`,
+        { method: 'PATCH', headers: SB_HEADERS,
+          body: JSON.stringify({ password_hash: inputHash, updated_at: new Date().toISOString() }) }
+      );
+    } else if (inputHash !== storedHash) {
+      throw new Error('密码错误');
     }
     Object.assign(USER_CACHE, {
       id: user.id,
