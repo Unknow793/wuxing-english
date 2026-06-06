@@ -307,14 +307,16 @@ function getMaxBackpackCapacity(level) {
   return 100 + Math.floor(level / 10) * 50;
 }
 
-/** 玩家五行属性：基础10，每级+1，道具永久加成 */
+/** 玩家五行属性：等级成长 + 本命初始偏向 + 道具永久加成 */
 function getPlayerStats(level) {
   const bonus = loadBonus();
-  const wood = 10 + level + bonus.wood;   // 木 → HP
-  const fire = 10 + level + bonus.fire;   // 火 → ATK
-  const earth = 10 + level + bonus.earth; // 土 → DEF
-  const water = 10 + level + bonus.water; // 水 → INT (经验加成)
-  const metal = 10 + level + bonus.metal; // 金 → LUK (掉率加成)
+  const elemName = USER_CACHE.element;
+  const base = ELEMENT_STATS[elemName] || { hp: 10, atk: 10, def: 10, spd: 10, cri: 10 };
+  const wood = base.hp + level + bonus.wood;
+  const fire = base.atk + level + bonus.fire;
+  const earth = base.def + level + bonus.earth;
+  const water = base.spd + level + bonus.water;
+  const metal = base.cri + level + bonus.metal;
   return {
     wood, fire, earth, water, metal,
     maxHp: 60 + wood * 4,
@@ -328,10 +330,7 @@ function getPlayerStats(level) {
 function updateHomeXpDisplay() {
   const totalXp = loadXp();
   const { level, xpInLevel, xpNeeded } = getXpProgress(totalXp);
-  const pct = xpNeeded > 0 ? (xpInLevel / xpNeeded) * 100 : 100;
   const title = getTitle(level);
-  document.getElementById('home-level-text').textContent = `Lv.${level}`;
-  document.getElementById('home-title-text').textContent = `${title.icon} ${title.name}`;
   const userEl = document.getElementById('home-userinfo');
   if (userEl && USER_CACHE.username) {
     const av = getAvatarById(USER_CACHE.avatar);
@@ -340,16 +339,199 @@ function updateHomeXpDisplay() {
     const elemStr = elemIcon ? `${elemIcon.icon}` : '';
     userEl.innerHTML = `${avIcon} ${USER_CACHE.username} ${elemStr}`;
   }
-  document.getElementById('home-xp-fill').style.width = Math.min(100, pct) + '%';
-  document.getElementById('home-xp-text').textContent = `${xpInLevel} / ${xpNeeded}`;
+  const badge = document.getElementById('home-level-badge');
+  if (badge) badge.textContent = `Lv.${level} ${title.icon}`;
+}
 
-  // 更新五行属性显示
-  const stats = getPlayerStats(level);
-  document.getElementById('stat-wood').textContent = stats.wood;
-  document.getElementById('stat-fire').textContent = stats.fire;
-  document.getElementById('stat-earth').textContent = stats.earth;
-  document.getElementById('stat-water').textContent = stats.water;
-  document.getElementById('stat-metal').textContent = stats.metal;
+/* ========== 综合战力 ========== */
+function calcCombatPower(pStats) {
+  // maxHp权重高（生存），atk/def次之（战斗），int/luk辅助
+  return Math.floor(pStats.maxHp * 2 + pStats.atk * 5 + pStats.def * 3 + pStats.int + pStats.luk);
+}
+
+/* ========== 五维雷达图 ========== */
+function generateRadarChart(stats, maxVal = 100) {
+  const elements = [
+    { key: 'wood', label: '木', icon: '🌳', color: '#4caf50' },
+    { key: 'fire', label: '火', icon: '🔥', color: '#ff5722' },
+    { key: 'earth', label: '土', icon: '⛰️', color: '#795548' },
+    { key: 'metal', label: '金', icon: '⭐', color: '#f57f17' },
+    { key: 'water', label: '水', icon: '💧', color: '#2196f3' },
+  ];
+
+  const size = 240;
+  const cx = size / 2;
+  const cy = size / 2;
+  const R = 88;
+  const levels = 5;
+
+  const angles = elements.map((_, i) => (i * 72 - 90) * Math.PI / 180);
+
+  function vertex(angle, r) {
+    const x = (cx + r * Math.cos(angle)).toFixed(1);
+    const y = (cy + r * Math.sin(angle)).toFixed(1);
+    return { x, y };
+  }
+
+  function pentagonPoints(r) {
+    return angles.map(a => {
+      const v = vertex(a, r);
+      return `${v.x},${v.y}`;
+    }).join(' ');
+  }
+
+  const values = elements.map(el => Math.min(maxVal, Math.max(0, stats[el.key] || 0)));
+
+  let svg = `<svg viewBox="0 0 ${size} ${size}" class="radar-svg">`;
+
+  // 背景五边形网格
+  for (let i = 1; i <= levels; i++) {
+    const r = R * i / levels;
+    svg += `<polygon points="${pentagonPoints(r)}" fill="none" stroke="#e8e0f0" stroke-width="${i === levels ? 1.5 : 1}"/>`;
+  }
+
+  // 轴线
+  for (const a of angles) {
+    const end = vertex(a, R);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${end.x}" y2="${end.y}" stroke="#e8e0f0" stroke-width="1"/>`;
+  }
+
+  // 数据多边形
+  const dataPoints = angles.map((a, i) => {
+    const v = vertex(a, R * values[i] / maxVal);
+    return `${v.x},${v.y}`;
+  });
+  svg += `<polygon points="${dataPoints.join(' ')}" fill="rgba(124,77,255,0.12)" stroke="#7c4dff" stroke-width="2"/>`;
+
+  // 数据点
+  for (let i = 0; i < angles.length; i++) {
+    const v = vertex(angles[i], R * values[i] / maxVal);
+    svg += `<circle cx="${v.x}" cy="${v.y}" r="4" fill="${elements[i].color}" stroke="white" stroke-width="2"/>`;
+  }
+
+  // 顶点标签
+  const labelR = R + 20;
+  for (let i = 0; i < angles.length; i++) {
+    const v = vertex(angles[i], labelR);
+    svg += `<text x="${v.x}" y="${v.y}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="${elements[i].color}">${elements[i].icon}</text>`;
+    // 数值标注在数据点和顶点之间
+    const dataR = R * values[i] / maxVal;
+    const labelPosR = dataR + 14;
+    if (labelPosR < R - 4) {
+      const lp = vertex(angles[i], labelPosR);
+      svg += `<text x="${lp.x}" y="${lp.y}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#666" font-weight="600">${values[i]}</text>`;
+    }
+  }
+
+  // 中心标注
+  svg += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#aaa">五行</text>`;
+
+  svg += '</svg>';
+  return svg;
+}
+
+/* ========== 个人信息面板 ========== */
+async function showProfile() {
+  await DATA.load();
+  const container = document.getElementById('profile-content');
+  container.innerHTML = '';
+
+  // 数据准备
+  const totalXp = loadXp();
+  const { level, xpInLevel, xpNeeded } = getXpProgress(totalXp);
+  const pct = xpNeeded > 0 ? (xpInLevel / xpNeeded) * 100 : 100;
+  const title = getTitle(level);
+  const pStats = getPlayerStats(level);
+  const bonus = loadBonus();
+  const bp = loadBackpack();
+  const items = loadItems();
+  const av = getAvatarById(USER_CACHE.avatar);
+  const elInfo = DATA.getElementInfo(USER_CACHE.element);
+  const elStats = ELEMENT_STATS[USER_CACHE.element];
+  const avIcon = av ? av.icon : '👤';
+  const avColor = av ? av.color : '#7c4dff';
+  const elemColor = elInfo ? elInfo.color : '#888';
+  const elemBg = elInfo ? elInfo.bg : '#f5f5f5';
+  const power = calcCombatPower(pStats);
+
+  // 角色卡
+  const charCard = document.createElement('div');
+  charCard.className = 'profile-char-card';
+  charCard.style.background = `linear-gradient(180deg, ${elemBg} 0%, white 50%)`;
+  charCard.innerHTML = `
+    <div class="profile-avatar-wrap">
+      <img src="${avatarPlaceholderSvg({ icon: avIcon, color: avColor })}" alt="" class="profile-avatar-img">
+      <div class="profile-avatar-element-ring" style="border-color:${elemColor}"></div>
+    </div>
+    <div class="profile-name">${USER_CACHE.username}</div>
+    <div class="profile-element-badge" style="background:${elemBg};color:${elemColor}">
+      ${elInfo ? elInfo.icon : ''} 本命 · ${USER_CACHE.element}
+    </div>
+    <div class="profile-element-desc">${elStats ? elStats.desc : ''}</div>
+    <div class="profile-power">
+      <span class="profile-power-value">${power}</span>
+      <span class="profile-power-label">综合战力</span>
+    </div>
+  `;
+  container.appendChild(charCard);
+
+  // XP 卡片
+  const xpCard = document.createElement('div');
+  xpCard.className = 'profile-xp-card';
+  xpCard.innerHTML = `
+    <div class="profile-xp-row">
+      <span class="profile-xp-level">Lv.${level}</span>
+      <span class="profile-xp-title">${title.icon} ${title.name}</span>
+    </div>
+    <div class="profile-xp-track"><div class="profile-xp-fill" style="width:${Math.min(100, pct)}%"></div></div>
+    <div class="profile-xp-text">${xpInLevel} / ${xpNeeded} XP</div>
+  `;
+  container.appendChild(xpCard);
+
+  // 五维雷达图 + 属性详情卡片
+  const radarCard = document.createElement('div');
+  radarCard.className = 'profile-radar-card';
+  radarCard.innerHTML = `
+    <div class="profile-section-title">🎯 五行五维图</div>
+    <div class="radar-container">
+      ${generateRadarChart(pStats, 100)}
+      <div class="radar-legend">
+        <div class="radar-legend-item" style="color:#4caf50">🌳 木 <b>${pStats.wood}</b></div>
+        <div class="radar-legend-item" style="color:#ff5722">🔥 火 <b>${pStats.fire}</b></div>
+        <div class="radar-legend-item" style="color:#795548">⛰️ 土 <b>${pStats.earth}</b></div>
+        <div class="radar-legend-item" style="color:#f57f17">⭐ 金 <b>${pStats.metal}</b></div>
+        <div class="radar-legend-item" style="color:#2196f3">💧 水 <b>${pStats.water}</b></div>
+      </div>
+    </div>
+  `;
+  container.appendChild(radarCard);
+
+  // 收集进度卡片
+  const collectCard = document.createElement('div');
+  collectCard.className = 'profile-collect-card';
+  collectCard.innerHTML = `
+    <div class="profile-section-title">📊 收集进度</div>
+    <div class="profile-collect-row">
+      <div class="profile-collect-item">
+        <div class="profile-collect-num">${bp.length}</div>
+        <div class="profile-collect-label">🎴 技能卡</div>
+      </div>
+      <div class="profile-collect-item">
+        <div class="profile-collect-num">${items.length}</div>
+        <div class="profile-collect-label">🧰 道具</div>
+      </div>
+      <div class="profile-collect-item">
+        <div class="profile-collect-num">${totalXp}</div>
+        <div class="profile-collect-label">✨ 总经验</div>
+      </div>
+    </div>
+    <div class="profile-bonus-row" style="margin-top:12px;border-top:1px solid #f0f0f0;padding-top:12px">
+      <span class="profile-collect-label">头像: ${av ? av.label : '未选择'}</span>
+    </div>
+  `;
+  container.appendChild(collectCard);
+
+  showScreen('screen-profile');
 }
 
 /* ========== 屏幕切换 ========== */
@@ -364,6 +546,112 @@ function goHome() {
   showScreen('screen-home');
   updateBackpackCount();
   updateHomeXpDisplay();
+}
+
+/* ========== 练习（待实现） ========== */
+function showPractice() {
+  showToast('✏️ 练习模式即将上线，敬请期待！');
+}
+
+/* ========== 排行榜 ========== */
+let _lbData = [];
+let _lbTab = 'level';
+
+/** 给任意用户计算综合战力（不依赖全局 USER_CACHE） */
+function calcPowerForUser(element, bonus, level) {
+  const base = ELEMENT_STATS[element] || { hp: 10, atk: 10, def: 10, spd: 10, cri: 10 };
+  const bns = bonus || {};
+  const wood = base.hp + level + (bns.wood || 0);
+  const fire = base.atk + level + (bns.fire || 0);
+  const earth = base.def + level + (bns.earth || 0);
+  const water = base.spd + level + (bns.water || 0);
+  const metal = base.cri + level + (bns.metal || 0);
+  const maxHp = 60 + wood * 4;
+  return Math.floor(maxHp * 2 + fire * 5 + earth * 3 + water + metal);
+}
+
+async function showLeaderboard() {
+  showScreen('screen-leaderboard');
+  document.getElementById('lb-loading').style.display = 'block';
+  document.getElementById('lb-list').innerHTML = '';
+
+  const rows = await fetchAllUsers();
+  if (!rows || rows.length === 0) {
+    document.getElementById('lb-loading').textContent = '暂无数据';
+    return;
+  }
+
+  // 为每个用户计算等级和战力
+  _lbData = rows.map(u => {
+    const level = getLevel(u.xp || 0);
+    const bonus = typeof u.bonus === 'object' && u.bonus ? u.bonus : {};
+    const power = calcPowerForUser(u.element || '', bonus, level);
+    return {
+      username: u.username,
+      avatar: u.avatar || '',
+      element: u.element || '',
+      xp: u.xp || 0,
+      level,
+      bonus,
+      power,
+    };
+  });
+
+  document.getElementById('lb-loading').style.display = 'none';
+  renderLeaderboard(_lbTab);
+}
+
+function renderLeaderboard(tab) {
+  _lbTab = tab;
+  const container = document.getElementById('lb-list');
+  container.innerHTML = '';
+
+  // 排序
+  const sorted = [..._lbData].sort((a, b) =>
+    tab === 'level' ? b.xp - a.xp : b.power - a.power
+  );
+
+  for (let i = 0; i < sorted.length; i++) {
+    const u = sorted[i];
+    const rank = i + 1;
+    const isSelf = u.username === USER_CACHE.username;
+    const av = getAvatarById(u.avatar);
+    const elInfo = DATA.getElementInfo(u.element);
+
+    const row = document.createElement('div');
+    row.className = 'lb-row' + (isSelf ? ' lb-self' : '');
+
+    // 排名
+    let rankHtml;
+    if (rank === 1) rankHtml = '<span class="lb-medal">🥇</span>';
+    else if (rank === 2) rankHtml = '<span class="lb-medal">🥈</span>';
+    else if (rank === 3) rankHtml = '<span class="lb-medal">🥉</span>';
+    else rankHtml = `<span class="lb-rank">${rank}</span>`;
+
+    row.innerHTML = `
+      ${rankHtml}
+      <span class="lb-avatar">${av ? av.icon : '👤'}</span>
+      <span class="lb-name">${u.username}${isSelf ? ' （你）' : ''}</span>
+      <span class="lb-element" style="color:${elInfo ? elInfo.color : '#888'}">${elInfo ? elInfo.icon : ''}</span>
+      <div class="lb-stats">
+        <div class="lb-stat">
+          <span class="lb-stat-value">Lv.${u.level}</span>
+          <span class="lb-stat-label">等级</span>
+        </div>
+        <div class="lb-stat" style="border-left:1px solid #eee;padding-left:10px">
+          <span class="lb-stat-value">${u.power}</span>
+          <span class="lb-stat-label">战力</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(row);
+  }
+}
+
+function switchLeaderboardTab(tab) {
+  _lbTab = tab;
+  document.querySelectorAll('.lb-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  renderLeaderboard(tab);
 }
 
 /** 重复上次的学习模式（"再来一次"用） */
@@ -897,6 +1185,10 @@ function closeReview() {
 function showBackpack() {
   showScreen('screen-backpack');
   const bp = loadBackpack();
+  const level = getLevel(loadXp());
+  const maxCap = getMaxBackpackCapacity(level);
+  const capEl = document.getElementById('backpack-capacity');
+  if (capEl) capEl.textContent = `${bp.length} / ${maxCap}`;
   const grid = document.getElementById('backpack-grid');
   const empty = document.getElementById('backpack-empty');
 

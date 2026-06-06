@@ -203,6 +203,20 @@ function goHomeAfterLogin() {
   updateBackpackCount();
 }
 
+/* ---------- 获取所有用户（排行榜用） ---------- */
+async function fetchAllUsers() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus&order=xp.desc&limit=100`,
+      { headers: SB_HEADERS }
+    );
+    return await res.json();
+  } catch (e) {
+    console.warn('获取用户列表失败', e);
+    return [];
+  }
+}
+
 /* ---------- 登出 ---------- */
 function handleLogout() {
   if (confirm('切换用户将返回登录页，确定吗？')) {

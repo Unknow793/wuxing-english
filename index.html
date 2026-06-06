@@ -59,53 +59,75 @@
   <!-- ======== 主界面 ======== -->
   <div id="screen-home" class="screen">
     <div class="user-bar">
-      <span id="home-userinfo" class="user-name"></span>
-      <button class="user-logout-btn" onclick="handleLogout()">切换用户</button>
+      <div class="user-bar-left">
+        <span id="home-userinfo" class="user-name" onclick="showProfile()"></span>
+        <span id="home-level-badge" class="user-level-badge"></span>
+      </div>
+      <div class="user-bar-actions">
+        <button class="user-icon-btn" onclick="showProfile()" title="个人信息">📋</button>
+        <button class="user-logout-btn" onclick="handleLogout()">切换用户</button>
+      </div>
     </div>
     <div class="title-block">
       <div class="title-icon">🃏</div>
       <h1>五行英语牌</h1>
       <p class="subtitle">五元素之力 · 快乐学英语</p>
     </div>
-    <!-- 经验值/等级 -->
-    <div class="home-xp-bar">
-      <span class="home-level-text" id="home-level-text">Lv.0</span>
-      <span class="home-title-text" id="home-title-text">🌱 英语种子</span>
-      <div class="home-xp-track">
-        <div class="home-xp-fill" id="home-xp-fill" style="width:0%"></div>
-      </div>
-      <span class="home-xp-text" id="home-xp-text">0 / 16</span>
-    </div>
-    <!-- 五行属性 -->
-    <div class="home-stats-row">
-      <span class="home-stat" title="血量（木）">🌳 <span id="stat-wood">10</span></span>
-      <span class="home-stat" title="攻击（火）">🔥 <span id="stat-fire">10</span></span>
-      <span class="home-stat" title="防御（土）">⛰️ <span id="stat-earth">10</span></span>
-      <span class="home-stat" title="智慧（水）">💧 <span id="stat-water">10</span></span>
-      <span class="home-stat" title="幸运（金）">⭐ <span id="stat-metal">10</span></span>
-    </div>
-    <div class="menu-buttons">
-      <button class="menu-btn btn-fire" onclick="showStudyScreen()">
+    <div class="home-menu-grid">
+      <button class="menu-btn menu-btn-3rd btn-fire" onclick="showStudyScreen()">
         <span class="btn-icon">📚</span>
         <span class="btn-label">学习</span>
         <span class="btn-desc">单词 · 连句</span>
       </button>
-      <button class="menu-btn btn-challenge" onclick="startChallengeMode()">
+      <button class="menu-btn menu-btn-3rd btn-practice" onclick="showPractice()">
+        <span class="btn-icon">✏️</span>
+        <span class="btn-label">练习</span>
+        <span class="btn-desc">即将开放</span>
+      </button>
+      <button class="menu-btn menu-btn-3rd btn-challenge" onclick="startChallengeMode()">
         <span class="btn-icon">⚔️</span>
         <span class="btn-label">挑战</span>
-        <span class="btn-desc">回合制 · 五行打怪</span>
+        <span class="btn-desc">回合制打怪</span>
       </button>
-      <button class="menu-btn btn-earth" onclick="showBackpack()">
+      <button class="menu-btn menu-btn-half btn-earth" onclick="showBackpack()">
         <span class="btn-icon">🎒</span>
         <span class="btn-label">技能背包</span>
         <span class="btn-desc" id="backpack-count">已收集 0 张</span>
       </button>
-      <button class="menu-btn btn-water" onclick="showItemBackpack()">
+      <button class="menu-btn menu-btn-half btn-water" onclick="showItemBackpack()">
         <span class="btn-icon">🧰</span>
         <span class="btn-label">物品背包</span>
         <span class="btn-desc">道具 · 加成</span>
       </button>
+      <button class="menu-btn menu-btn-full btn-rank" onclick="showLeaderboard()">
+        <span class="btn-icon">🏆</span>
+        <span class="btn-label">排行榜</span>
+        <span class="btn-desc">战力 · 等级排行</span>
+      </button>
     </div>
+  </div>
+
+  <!-- ======== 个人信息面板 ======== -->
+  <div id="screen-profile" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">个人信息</span>
+    </div>
+    <div id="profile-content" class="profile-content"></div>
+  </div>
+
+  <!-- ======== 排行榜 ======== -->
+  <div id="screen-leaderboard" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">排行榜</span>
+    </div>
+    <div class="lb-tabs">
+      <button class="lb-tab active" data-tab="level" onclick="switchLeaderboardTab('level')">🏅 等级榜</button>
+      <button class="lb-tab" data-tab="power" onclick="switchLeaderboardTab('power')">⚔️ 战力榜</button>
+    </div>
+    <div id="lb-loading" class="lb-loading">⏳ 加载中...</div>
+    <div id="lb-list" class="lb-list"></div>
   </div>
 
   <!-- ======== 学习选年级 ======== -->
@@ -237,6 +259,7 @@
   <div id="screen-backpack" class="screen">
     <div class="screen-header">
       <button class="back-btn" onclick="goHome()">← 返回</button>
+      <span id="backpack-capacity" class="bp-capacity">0 / 100</span>
     </div>
     <h2>🎒 技能背包</h2>
     <div id="backpack-content">
