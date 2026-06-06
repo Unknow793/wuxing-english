@@ -142,10 +142,11 @@
       <div class="element-hint" id="learn-element"></div>
       <div class="word-display" id="word-display">
         <div class="word-main">
-          <span class="word-english" id="word-english">cat</span>
+          <span class="word-english" id="word-english" onclick="speakCurrentWord()">cat</span>
+          <button class="speak-btn" id="btn-speak" onclick="speakCurrentWord()" title="点击发音">🔊</button>
           <span class="word-chinese" id="word-chinese" style="display:none">猫</span>
         </div>
-        <div class="word-sentence" id="word-sentence">I see a cat.</div>
+        <div class="word-sentence" id="word-sentence" onclick="speakCurrentSentence()">I see a cat.</div>
       </div>
       <div class="learn-buttons">
         <button class="secondary-btn" id="btn-chinese" onclick="showChinese()">👀 中文</button>
