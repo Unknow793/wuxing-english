@@ -42,8 +42,8 @@ const SPEECH = (() => {
     });
   }
 
-  function speakWord(word, onEnd) { speak(word, 0.75, onEnd); }
-  function speakSentence(sentence, onEnd) { speak(sentence, 0.85, onEnd); }
+  function speakWord(word, onEnd) { speak(word, 0.5, onEnd); }
+  function speakSentence(sentence, onEnd) { speak(sentence, 0.65, onEnd); }
 
   function stop() { if (supported) ss.cancel(); }
   function toggle() { if (!supported) return false; enabled = !enabled; return enabled; }
