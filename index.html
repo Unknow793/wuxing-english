@@ -79,10 +79,10 @@
         <span class="btn-label">学习</span>
         <span class="btn-desc">单词 · 连句</span>
       </button>
-      <button class="menu-btn menu-btn-3rd btn-practice" onclick="showPractice()">
+      <button class="menu-btn menu-btn-3rd btn-practice" onclick="startPractice()">
         <span class="btn-icon">✏️</span>
         <span class="btn-label">练习</span>
-        <span class="btn-desc">即将开放</span>
+        <span class="btn-desc">完形 · 配对 · 词性</span>
       </button>
       <button class="menu-btn menu-btn-3rd btn-challenge" onclick="startChallengeMode()">
         <span class="btn-icon">⚔️</span>
@@ -114,6 +114,25 @@
       <span style="font-size:18px;font-weight:700;color:var(--text)">个人信息</span>
     </div>
     <div id="profile-content" class="profile-content"></div>
+  </div>
+
+  <!-- ======== 更换头像 ======== -->
+  <div id="screen-change-avatar" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showProfile()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">更换头像</span>
+    </div>
+    <div class="ca-tabs">
+      <button class="ca-tab active" data-tab="normal" onclick="switchAvatarTab('normal')">普通 (31)</button>
+      <button class="ca-tab" data-tab="special" onclick="switchAvatarTab('special')">特殊 (28)</button>
+      <span class="ca-unlock-info" id="ca-unlock-info">🔒</span>
+    </div>
+    <p class="hint" id="ca-hint">点击选择头像</p>
+    <div class="avatar-grid" id="change-avatar-grid"></div>
+    <p id="change-avatar-error" class="login-error"></p>
+    <div class="reg-actions">
+      <button class="primary-btn" id="btn-change-avatar-confirm" onclick="confirmChangeAvatar()" disabled>确认更换</button>
+    </div>
   </div>
 
   <!-- ======== 排行榜 ======== -->
@@ -427,6 +446,53 @@
       <div class="br-reward-area" id="br-reward-area"></div>
       <div class="br-buttons">
         <button class="primary-btn" onclick="startChallengeMode()">再战一次</button>
+        <button class="text-btn" onclick="goHome()">回到主页</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 练习模式 ======== -->
+  <div id="screen-practice" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="pracAbort()">← 退出</button>
+      <div class="progress-bar">
+        <div class="progress-fill" id="prac-progress-fill" style="width:0%"></div>
+      </div>
+      <span class="progress-text" id="prac-progress-text">0/10</span>
+    </div>
+    <div class="prac-area">
+      <div class="prac-type-badge" id="prac-type-badge">完形填空</div>
+      <div class="prac-question" id="prac-question">题目加载中...</div>
+      <div class="prac-options" id="prac-options"></div>
+      <div id="prac-feedback" class="prac-feedback" style="display:none"></div>
+    </div>
+    <div class="prac-footer">
+      <div class="prac-footer-left">
+        <span>✅ <span id="prac-score">0</span></span>
+        <span class="prac-streak-display" id="prac-streak-display">🔥 连对 <span id="prac-streak">0</span></span>
+      </div>
+      <button class="primary-btn prac-next-btn" id="prac-next-btn" onclick="pracNextQuestion()" style="display:none">下一题 →</button>
+    </div>
+  </div>
+
+  <!-- ======== 练习结果 ======== -->
+  <div id="screen-practice-result" class="screen">
+    <div class="pr-area">
+      <div class="pr-icon" id="pr-icon">🎉</div>
+      <h2 id="pr-title">做得好！</h2>
+      <p class="pr-subtitle" id="pr-subtitle">继续加油！</p>
+      <div class="pr-score">
+        <span class="pr-score-num" id="pr-score-num">8</span>
+        <span class="pr-score-div">/</span>
+        <span class="pr-score-total">10</span>
+      </div>
+      <div class="pr-detail" id="pr-detail">
+        <span>🔥 最高连对 <span id="pr-best-streak">0</span></span>
+        <span style="margin-left:16px">✨ +<span id="pr-xp-gain">0</span> XP</span>
+      </div>
+      <div class="pr-reward" id="pr-reward" style="display:none"></div>
+      <div class="pr-buttons">
+        <button class="primary-btn" onclick="startPractice()">再来一轮</button>
         <button class="text-btn" onclick="goHome()">回到主页</button>
       </div>
     </div>

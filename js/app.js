@@ -4,44 +4,123 @@
  */
 
 /* ========== 头像系统 ========== */
-const AVATARS = {
-  normal: [
-    { id: 'avatar1', label: '小狮子', color: '#FF7043', icon: '🦁' },
-    { id: 'avatar2', label: '小猫咪', color: '#FFB74D', icon: '🐱' },
-    { id: 'avatar3', label: '小兔子', color: '#F48FB1', icon: '🐰' },
-    { id: 'avatar4', label: '小熊猫', color: '#A1887F', icon: '🐼' },
-    { id: 'avatar5', label: '小狐狸', color: '#FF8A65', icon: '🦊' },
-    { id: 'avatar6', label: '小青蛙', color: '#81C784', icon: '🐸' },
-    { id: 'avatar7', label: '小猴子', color: '#D4E157', icon: '🐵' },
-    { id: 'avatar8', label: '独角兽', color: '#CE93D8', icon: '🦄' },
-    { id: 'avatar9', label: '小龙', color: '#4DB6AC', icon: '🐉' },
-    { id: 'avatar10', label: '小老虎', color: '#FFA726', icon: '🐯' },
-  ],
-  special: [
-    { id: 'special1', label: '⭐ 勇者', color: '#FFD700', icon: '🏆', desc: '击败一个Boss后解锁', unlock: () => false },
-    { id: 'special2', label: '👑 王者', color: '#FF6F00', icon: '👑', desc: '收集100张卡片后解锁', unlock: () => false },
-    { id: 'special3', label: '🌈 彩虹', color: '#E040FB', icon: '🌈', desc: '累计1000XP后解锁', unlock: () => false },
-  ],
-};
+const AVATARS_NORMAL = Array.from({length: 31}, (_, i) => ({
+  id: `avatar${i + 1}`,
+  label: `头像${i + 1}`,
+}));
+const AVATARS_SPECIAL = Array.from({length: 28}, (_, i) => ({
+  id: `special${i + 1}`,
+  label: `特殊头像${i + 1}`,
+}));
 
-/** 获取头像对象 */
-function getAvatarById(id) {
-  for (const cat of [AVATARS.normal, AVATARS.special]) {
-    const found = cat.find(a => a.id === id);
-    if (found) return found;
-  }
-  return null;
+/** 获取头像图片路径 */
+function getAvatarUrl(id) {
+  if (!id) return '';
+  if (id.startsWith('special')) return `img/avatars-special/avatars-${id}.jpg`;
+  return `img/avatars/avatars${id.replace('avatar', '')}.jpg`;
 }
 
-/** 生成头像占位 SVG */
-function avatarPlaceholderSvg(avatar) {
-  return `data:image/svg+xml,${encodeURIComponent(
-    `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="47" fill="${avatar.color}"/>
-      <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="2"/>
-      <text x="50" y="68" text-anchor="middle" font-size="48" fill="white" font-weight="bold">${avatar.icon}</text>
-    </svg>`
-  )}`;
+/** 获取头像标签 */
+function getAvatarLabel(id) {
+  const all = [...AVATARS_NORMAL, ...AVATARS_SPECIAL];
+  const found = all.find(a => a.id === id);
+  return found ? found.label : '未选择';
+}
+
+/** 获取已解锁的特殊头像 ID 集合（通过 avatar_unlock 道具） */
+function getUnlockedSpecials() {
+  const items = loadItems();
+  const unlocked = new Set();
+  for (const item of items) {
+    if (item.itemType === 'avatar_unlock' && item.specialId) {
+      unlocked.add(item.specialId);
+    }
+  }
+  return unlocked;
+}
+
+/* ========== 更换头像 ========== */
+let _changeAvatarSelectedId = '';
+let _caTab = 'normal';
+
+function showChangeAvatarScreen() {
+  _changeAvatarSelectedId = '';
+  _caTab = 'normal';
+  document.getElementById('btn-change-avatar-confirm').disabled = true;
+  document.getElementById('change-avatar-error').textContent = '';
+  document.getElementById('ca-hint').textContent = '点击选择头像';
+  switchAvatarTab('normal');
+  showScreen('screen-change-avatar');
+}
+
+function switchAvatarTab(tab) {
+  _caTab = tab;
+  _changeAvatarSelectedId = '';
+  document.getElementById('btn-change-avatar-confirm').disabled = true;
+  document.getElementById('change-avatar-error').textContent = '';
+  document.querySelectorAll('.ca-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+
+  const unlocked = getUnlockedSpecials();
+  const unlockCount = unlocked.size;
+  document.getElementById('ca-unlock-info').textContent = `🔓 ${unlockCount}/${AVATARS_SPECIAL.length}`;
+
+  const grid = document.getElementById('change-avatar-grid');
+  grid.innerHTML = '';
+
+  if (tab === 'normal') {
+    document.getElementById('ca-hint').textContent = '点击选择头像（普通头像全部可用）';
+    for (const av of AVATARS_NORMAL) {
+      const el = createAvatarCard(av.id, av.label, true);
+      grid.appendChild(el);
+    }
+  } else {
+    document.getElementById('ca-hint').textContent = unlocked.size > 0 ? '点击选择已解锁的特殊头像' : '尚未解锁任何特殊头像，挑战Boss有概率获得！';
+    for (const av of AVATARS_SPECIAL) {
+      const unlockedFlag = unlocked.has(av.id);
+      const el = createAvatarCard(av.id, av.label, unlockedFlag);
+      if (unlockedFlag) {
+        el.addEventListener('click', () => selectChangeAvatar(av.id));
+      }
+      grid.appendChild(el);
+    }
+  }
+}
+
+function createAvatarCard(id, label, unlocked) {
+  const el = document.createElement('div');
+  el.className = 'avatar-card' + (unlocked ? '' : ' avatar-locked');
+  el.dataset.id = id;
+  el.innerHTML = `
+    <div class="avatar-img-wrap">
+      <img src="${getAvatarUrl(id)}" alt="${label}" class="avatar-thumb">
+      ${unlocked ? '' : '<span class="avatar-lock-badge">🔒</span>'}
+    </div>
+    <span class="avatar-label">${label}</span>
+    ${unlocked ? '' : '<span class="avatar-desc">未解锁</span>'}
+  `;
+  if (unlocked) {
+    el.addEventListener('click', () => selectChangeAvatar(id));
+  }
+  return el;
+}
+
+function selectChangeAvatar(id) {
+  _changeAvatarSelectedId = id;
+  document.querySelectorAll('#change-avatar-grid .avatar-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`#change-avatar-grid .avatar-card[data-id="${id}"]`)?.classList.add('selected');
+  document.getElementById('btn-change-avatar-confirm').disabled = false;
+  document.getElementById('change-avatar-error').textContent = '';
+}
+
+async function confirmChangeAvatar() {
+  if (!_changeAvatarSelectedId) return;
+  try {
+    await updateUserProfile(_changeAvatarSelectedId, USER_CACHE.element);
+    showToast('✅ 头像已更换');
+    showProfile();
+  } catch (e) {
+    document.getElementById('change-avatar-error').textContent = '保存失败，请重试';
+  }
 }
 
 /* ========== 注册-选头像 ========== */
@@ -55,36 +134,17 @@ function showRegAvatarScreen() {
   const grid = document.getElementById('avatar-grid');
   grid.innerHTML = '';
 
-  for (const av of AVATARS.normal) {
+  for (const av of AVATARS_NORMAL) {
     const el = document.createElement('div');
     el.className = 'avatar-card';
     el.dataset.id = av.id;
     el.innerHTML = `
       <div class="avatar-img-wrap">
-        <img src="${avatarPlaceholderSvg(av)}" alt="${av.label}" class="avatar-thumb">
+        <img src="${getAvatarUrl(av.id)}" alt="${av.label}" class="avatar-thumb">
       </div>
       <span class="avatar-label">${av.label}</span>
     `;
     el.addEventListener('click', () => selectAvatar(av.id));
-    grid.appendChild(el);
-  }
-
-  // 特殊头像
-  for (const av of AVATARS.special) {
-    const el = document.createElement('div');
-    el.className = 'avatar-card avatar-locked';
-    el.dataset.id = av.id;
-    el.innerHTML = `
-      <div class="avatar-img-wrap avatar-special-bg">
-        <img src="${avatarPlaceholderSvg(av)}" alt="${av.label}" class="avatar-thumb">
-        <div class="avatar-lock-badge">🔒</div>
-      </div>
-      <span class="avatar-label">${av.label}</span>
-      <span class="avatar-desc">${av.desc}</span>
-    `;
-    el.addEventListener('click', () => {
-      document.getElementById('avatar-error').textContent = '🔒 该头像尚未解锁';
-    });
     grid.appendChild(el);
   }
 
@@ -333,11 +393,10 @@ function updateHomeXpDisplay() {
   const title = getTitle(level);
   const userEl = document.getElementById('home-userinfo');
   if (userEl && USER_CACHE.username) {
-    const av = getAvatarById(USER_CACHE.avatar);
-    const avIcon = av ? av.icon : '👤';
+    const avUrl = getAvatarUrl(USER_CACHE.avatar);
     const elemIcon = DATA.getElementInfo(USER_CACHE.element);
     const elemStr = elemIcon ? `${elemIcon.icon}` : '';
-    userEl.innerHTML = `${avIcon} ${USER_CACHE.username} ${elemStr}`;
+    userEl.innerHTML = `${avUrl ? `<img src="${avUrl}" class="user-avatar-mini" onerror="this.outerHTML='👤'">` : '👤'} ${USER_CACHE.username} ${elemStr}`;
   }
   const badge = document.getElementById('home-level-badge');
   if (badge) badge.textContent = `Lv.${level} ${title.icon}`;
@@ -445,11 +504,9 @@ async function showProfile() {
   const bonus = loadBonus();
   const bp = loadBackpack();
   const items = loadItems();
-  const av = getAvatarById(USER_CACHE.avatar);
+  const avUrl = getAvatarUrl(USER_CACHE.avatar);
   const elInfo = DATA.getElementInfo(USER_CACHE.element);
   const elStats = ELEMENT_STATS[USER_CACHE.element];
-  const avIcon = av ? av.icon : '👤';
-  const avColor = av ? av.color : '#7c4dff';
   const elemColor = elInfo ? elInfo.color : '#888';
   const elemBg = elInfo ? elInfo.bg : '#f5f5f5';
   const power = calcCombatPower(pStats);
@@ -460,7 +517,7 @@ async function showProfile() {
   charCard.style.background = `linear-gradient(180deg, ${elemBg} 0%, white 50%)`;
   charCard.innerHTML = `
     <div class="profile-avatar-wrap">
-      <img src="${avatarPlaceholderSvg({ icon: avIcon, color: avColor })}" alt="" class="profile-avatar-img">
+      <img src="${avUrl}" alt="" class="profile-avatar-img" onerror="this.src='data:image/svg+xml,${encodeURIComponent('<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="47" fill="#e0e0e0"/><text x="50" y="68" text-anchor="middle" font-size="48" fill="#aaa">👤</text></svg>')}'">
       <div class="profile-avatar-element-ring" style="border-color:${elemColor}"></div>
     </div>
     <div class="profile-name">${USER_CACHE.username}</div>
@@ -526,7 +583,8 @@ async function showProfile() {
       </div>
     </div>
     <div class="profile-bonus-row" style="margin-top:12px;border-top:1px solid #f0f0f0;padding-top:12px">
-      <span class="profile-collect-label">头像: ${av ? av.label : '未选择'}</span>
+      <span class="profile-collect-label">头像: ${getAvatarLabel(USER_CACHE.avatar)}</span>
+      <button class="text-btn" onclick="showChangeAvatarScreen()" style="margin-left:12px;font-size:13px">🔄 更换</button>
     </div>
   `;
   container.appendChild(collectCard);
@@ -548,9 +606,309 @@ function goHome() {
   updateHomeXpDisplay();
 }
 
-/* ========== 练习（待实现） ========== */
-function showPractice() {
-  showToast('✏️ 练习模式即将上线，敬请期待！');
+/* ========== 练习模式 ========== */
+const PRAC = {
+  questions: [],
+  index: 0,
+  correct: 0,
+  streak: 0,
+  bestStreak: 0,
+  answered: false,
+  totalXp: 0,
+};
+
+async function startPractice() {
+  try {
+    // Direct fetch vocabulary (bypass DATA to isolate SW/fetch issue)
+    let wordsData;
+    try {
+      const r = await fetch('vocabulary.json?_=' + Date.now());
+      const d = await r.json();
+      wordsData = d.words;
+    } catch (fetchErr) {
+      showToast('❌ 词库网络请求失败: ' + fetchErr.message);
+      return;
+    }
+
+    if (!wordsData || wordsData.length === 0) {
+      showToast('❌ 词库数据为空，请刷新页面重试');
+      return;
+    }
+
+    // Load sentence groups too (direct fetch as fallback)
+    await DATA.load();
+    if (!DATA.words || DATA.words.length === 0) {
+      DATA.words = wordsData;
+      DATA.byElement = {};
+      DATA.byPos = {};
+      for (const w of wordsData) {
+        if (!DATA.byElement[w.element]) DATA.byElement[w.element] = [];
+        DATA.byElement[w.element].push(w);
+        if (!DATA.byPos[w.pos]) DATA.byPos[w.pos] = [];
+        DATA.byPos[w.pos].push(w);
+      }
+    }
+    if (!DATA.sentenceGroups || DATA.sentenceGroups.length === 0) {
+      try {
+        const sg = await fetch('sentence_groups.json?_=' + Date.now());
+        const sgData = await sg.json();
+        DATA.sentenceGroups = sgData.groups;
+      } catch(e) { /* cloze questions unavailable */ }
+    }
+
+    PRAC.questions = [];
+    PRAC.index = 0;
+    PRAC.correct = 0;
+    PRAC.streak = 0;
+    PRAC.bestStreak = 0;
+    PRAC.answered = false;
+    PRAC.totalXp = 0;
+
+    const types = ['cloze', 'match-cn', 'pos', 'shengke'];
+    for (let i = 0; i < 10; i++) {
+      const type = DATA.randomPick(types);
+      const q = pracGenQuestion(type);
+      if (q) PRAC.questions.push(q);
+      else i--;
+    }
+
+    if (PRAC.questions.length === 0) {
+      showToast('❌ 题目生成失败，请先完成一轮学习');
+      return;
+    }
+
+    showScreen('screen-practice');
+    pracShowQuestion(0);
+  } catch (e) {
+    showToast('❌ ' + e.message);
+    console.error('Practice error:', e);
+  }
+}
+
+function pracGenQuestion(type) {
+  switch (type) {
+    case 'cloze': return pracGenCloze();
+    case 'match-cn': return pracGenMatchCn();
+    case 'pos': return pracGenPos();
+    case 'shengke': return pracGenShengke();
+  }
+}
+
+/* --- 完形填空 --- */
+function pracGenCloze() {
+  const q = DATA.generateClozeQuestion();
+  if (!q) return null;
+  return {
+    typeLabel: '完形填空',
+    question: `选择正确的词填入空白：<br>"${q.displaySentence}"`,
+    options: DATA.shuffleArray(q.options.map(o => ({
+      text: `${o.word} (${o.cn})`, isCorrect: o.isCorrect,
+    }))),
+    explanation: '正确答案：' + q.options.find(o => o.isCorrect).word,
+  };
+}
+
+/* --- 中英配对 --- */
+function pracGenMatchCn() {
+  const pool = DATA.words.filter(w => w.cn && w.cn.length < 8);
+  const word = DATA.randomPick(pool);
+  const correct = word.cn;
+  const others = DATA.shuffleArray(DATA.words.filter(w => w.cn !== correct)).slice(0, 3);
+  if (others.length < 3) return null;
+  return {
+    typeLabel: '中英配对',
+    question: `"${word.word}" 的中文意思是？`,
+    options: DATA.shuffleArray([
+      { text: correct, isCorrect: true },
+      ...others.map(w => ({ text: w.cn, isCorrect: false })),
+    ]),
+    explanation: `${word.word} = ${correct}`,
+  };
+}
+
+/* --- 词性判断 --- */
+function pracGenPos() {
+  const pool = DATA.words.filter(w => w.pos && DATA.POS_LABELS[w.pos]);
+  const word = DATA.randomPick(pool);
+  const correct = DATA.POS_LABELS[word.pos];
+  const wrongs = DATA.shuffleArray(
+    Object.values(DATA.POS_LABELS).filter(l => l !== correct)
+  ).slice(0, 3);
+  if (wrongs.length < 3) return null;
+  return {
+    typeLabel: '词性判断',
+    question: `"${word.word}" (${word.cn}) 是什么词性？`,
+    options: DATA.shuffleArray([
+      { text: correct, isCorrect: true },
+      ...wrongs.map(l => ({ text: l, isCorrect: false })),
+    ]),
+    explanation: `"${word.word}" 是${correct}`,
+  };
+}
+
+/* --- 五行生克 --- */
+function pracGenShengke() {
+  const ELEMENT_RELATIONS = {
+    '木': { sheng: '火', ke: '土' },
+    '火': { sheng: '土', ke: '金' },
+    '土': { sheng: '金', ke: '水' },
+    '金': { sheng: '水', ke: '木' },
+    '水': { sheng: '木', ke: '火' },
+  };
+  const el = DATA.randomPick(DATA.ELEMENTS.map(e => e.name));
+  const type = Math.random() < 0.5 ? 'sheng' : 'ke';
+  const correct = ELEMENT_RELATIONS[el][type];
+  const typeChar = type === 'sheng' ? '生' : '克';
+  const elInfo = DATA.getElementInfo(el);
+  const others = DATA.ELEMENTS.map(e => e.name).filter(n => n !== correct && n !== el);
+  const wrongs = DATA.shuffleArray(others).slice(0, 3);
+  return {
+    typeLabel: '五行生克',
+    question: `${elInfo.icon} ${el} ${typeChar}什么？`,
+    options: DATA.shuffleArray([
+      { text: correct, isCorrect: true },
+      ...wrongs.map(n => ({ text: n, isCorrect: false })),
+    ]),
+    explanation: `${el} ${typeChar} ${correct}`,
+  };
+}
+
+/* --- 显示题目 --- */
+function pracShowQuestion(index) {
+  if (index >= PRAC.questions.length) {
+    pracShowResult();
+    return;
+  }
+
+  PRAC.index = index;
+  PRAC.answered = false;
+  const q = PRAC.questions[index];
+
+  document.getElementById('prac-progress-fill').style.width = `${(index / 10) * 100}%`;
+  document.getElementById('prac-progress-text').textContent = `${index + 1}/10`;
+  document.getElementById('prac-score').textContent = PRAC.correct;
+  document.getElementById('prac-streak').textContent = PRAC.streak;
+  document.getElementById('prac-type-badge').textContent = q.typeLabel;
+  document.getElementById('prac-question').innerHTML = q.question;
+  document.getElementById('prac-next-btn').style.display = 'none';
+  document.getElementById('prac-feedback').style.display = 'none';
+
+  const optContainer = document.getElementById('prac-options');
+  optContainer.innerHTML = '';
+  for (let i = 0; i < q.options.length; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'prac-option';
+    btn.textContent = q.options[i].text;
+    btn.addEventListener('click', () => pracAnswer(i));
+    optContainer.appendChild(btn);
+  }
+}
+
+/* --- 作答 --- */
+function pracAnswer(optIndex) {
+  if (PRAC.answered) return;
+  PRAC.answered = true;
+
+  const q = PRAC.questions[PRAC.index];
+  const isCorrect = q.options[optIndex].isCorrect;
+  const allBtns = document.querySelectorAll('.prac-option');
+  allBtns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (q.options[i].isCorrect) btn.classList.add('prac-correct');
+    else if (i === optIndex) btn.classList.add('prac-wrong');
+  });
+
+  const fb = document.getElementById('prac-feedback');
+  if (isCorrect) {
+    PRAC.correct++;
+    PRAC.streak++;
+    if (PRAC.streak > PRAC.bestStreak) PRAC.bestStreak = PRAC.streak;
+    fb.className = 'prac-feedback prac-fb-correct';
+    fb.innerHTML = `✅ 正确！${q.explanation}`;
+  } else {
+    PRAC.streak = 0;
+    fb.className = 'prac-feedback prac-fb-wrong';
+    fb.innerHTML = `❌ 不对哦。${q.explanation}`;
+  }
+  fb.style.display = 'block';
+
+  document.getElementById('prac-score').textContent = PRAC.correct;
+  document.getElementById('prac-streak').textContent = PRAC.streak;
+
+  // 下一题按钮
+  const isLast = PRAC.index >= PRAC.questions.length - 1;
+  document.getElementById('prac-next-btn').textContent = isLast ? '查看成绩 →' : '下一题 →';
+  document.getElementById('prac-next-btn').style.display = 'inline-block';
+}
+
+/* --- 下一题 --- */
+function pracNextQuestion() {
+  pracShowQuestion(PRAC.index + 1);
+}
+
+/* --- 退出确认 --- */
+function pracAbort() {
+  showModal('确定退出练习吗？进度不会保存。', () => {
+    closeModal();
+    goHome();
+  });
+}
+
+/* --- 结算 --- */
+function pracShowResult() {
+  // 计算经验
+  let xp = PRAC.correct * 5;
+  // 连对加成：从第3次连续正确开始，每次+2
+  const streakBonus = Math.max(0, (PRAC.bestStreak - 2)) * 2;
+  xp += streakBonus;
+  PRAC.totalXp = xp;
+  addXp(xp);
+
+  // 评价
+  const rate = PRAC.correct / 10;
+  let icon, title, subtitle;
+  if (rate === 1) { icon = '🌟'; title = '完美通关！'; subtitle = '全部答对，太厉害了！'; }
+  else if (rate >= 0.8) { icon = '🎉'; title = '非常棒！'; subtitle = '再接再厉！'; }
+  else if (rate >= 0.5) { icon = '👍'; title = '还不错！'; subtitle = '继续加油哦！'; }
+  else { icon = '💪'; title = '继续加油！'; subtitle = '多练练一定会有进步的！'; }
+
+  showScreen('screen-practice-result');
+  document.getElementById('pr-icon').textContent = icon;
+  document.getElementById('pr-title').textContent = title;
+  document.getElementById('pr-subtitle').textContent = subtitle;
+  document.getElementById('pr-score-num').textContent = PRAC.correct;
+  document.getElementById('pr-best-streak').textContent = PRAC.bestStreak;
+  document.getElementById('pr-xp-gain').textContent = xp;
+
+  // 奖励
+  const rewardEl = document.getElementById('pr-reward');
+  rewardEl.style.display = 'none';
+  rewardEl.innerHTML = '';
+
+  if (rate >= 0.8) {
+    let rewards = [];
+    // 空白卡概率（12%）
+    if (Math.random() < 0.12) {
+      const items = loadItems();
+      items.push({ type: 'item', itemType: 'blank_card', date: new Date().toISOString().slice(0, 10) });
+      saveItems(items);
+      rewards.push('🃏 空白单词卡');
+    }
+    // 满分额外：随机属性提升（10%）
+    if (rate === 1 && Math.random() < 0.10) {
+      const elements = ['木', '火', '土', '金', '水'];
+      const randEl = DATA.randomPick(elements);
+      const key = ELEMENT_TO_BONUS[randEl];
+      const bonus = loadBonus();
+      bonus[key]++;
+      saveBonus(bonus);
+      rewards.push(`✨ ${randEl}属性 +1`);
+    }
+    if (rewards.length > 0) {
+      rewardEl.style.display = 'block';
+      rewardEl.innerHTML = `🎁 额外获得：${rewards.join('、')}`;
+    }
+  }
 }
 
 /* ========== 排行榜 ========== */
@@ -615,7 +973,7 @@ function renderLeaderboard(tab) {
     const u = sorted[i];
     const rank = i + 1;
     const isSelf = u.username === USER_CACHE.username;
-    const av = getAvatarById(u.avatar);
+    const avUrl = getAvatarUrl(u.avatar);
     const elInfo = DATA.getElementInfo(u.element);
 
     const row = document.createElement('div');
@@ -630,7 +988,7 @@ function renderLeaderboard(tab) {
 
     row.innerHTML = `
       ${rankHtml}
-      <span class="lb-avatar">${av ? av.icon : '👤'}</span>
+      <span class="lb-avatar">${avUrl ? `<img src="${avUrl}" class="lb-avatar-img" onerror="this.outerHTML='👤'">` : '👤'}</span>
       <span class="lb-name">${u.username}${isSelf ? ' （你）' : ''}</span>
       <span class="lb-element" style="color:${elInfo ? elInfo.color : '#888'}">${elInfo ? elInfo.icon : ''}</span>
       <div class="lb-stats">
@@ -1277,6 +1635,10 @@ function showBackpack() {
         icon = '🌟';
         label = '全属性提升';
         sublabel = '稀有道具';
+      } else if (item.itemType === 'avatar_unlock') {
+        icon = '🖼️';
+        label = '头像解锁';
+        sublabel = '特殊头像已解锁';
       } else {
         icon = '📦';
         label = '未知道具';
@@ -1332,6 +1694,8 @@ function showItemBackpack() {
       icon = '🌟'; label = '全属性提升'; sublabel = '全部永久+1';
     } else if (item.itemType === 'blank_card') {
       icon = '🃏'; label = '空白单词卡'; sublabel = '创造新单词';
+    } else if (item.itemType === 'avatar_unlock') {
+      icon = '🖼️'; label = '头像解锁'; sublabel = `「${getAvatarLabel(item.specialId)}」`;
     } else {
       icon = '📦'; label = '未知道具'; sublabel = '';
     }
@@ -1376,6 +1740,10 @@ function selectItem(index) {
   } else if (item.itemType === 'blank_card') {
     icon = '🃏'; name = '空白单词卡';
     desc = '消耗此卡创建一个自定义单词，输入英文和中文释义后加入技能背包。';
+  } else if (item.itemType === 'avatar_unlock') {
+    icon = '🖼️'; name = '头像解锁道具';
+    desc = `解锁特殊头像「${getAvatarLabel(item.specialId)}」。此道具会自动生效，可在更换头像界面使用该头像。`;
+    showUse = false;
   } else {
     icon = '📦'; name = '未知道具'; desc = ''; showUse = false;
   }
@@ -2466,6 +2834,23 @@ function endBattle(win) {
       });
       saveItems(items);
       extraRewards.push(`🌟 全属性提升道具`);
+    }
+
+    // 8% → 特殊头像解锁道具（仅限未解锁的）
+    if (Math.random() < 0.08 * lukMult) {
+      const unlocked = getUnlockedSpecials();
+      const locked = AVATARS_SPECIAL.filter(a => !unlocked.has(a.id));
+      if (locked.length > 0) {
+        const target = DATA.randomPick(locked);
+        const items = loadItems();
+        items.push({
+          type: 'item', itemType: 'avatar_unlock',
+          specialId: target.id,
+          date: new Date().toISOString().slice(0, 10),
+        });
+        saveItems(items);
+        extraRewards.push(`🖼️ 特殊头像「${target.label}」已解锁！`);
+      }
     }
 
     saveBackpack(bp);
