@@ -359,9 +359,8 @@ function showWord(index) {
   document.getElementById('btn-chinese').style.display = 'inline-block';
   document.getElementById('btn-next').textContent = index < STATE.words.length - 1 ? '下一个 →' : '开始连句 →';
 
-  // 停止前一个发音，稍后朗读当前单词（避免 cancel/speak 竞态）
-  SPEECH.stop();
-  setTimeout(() => SPEAKER.speakWord(w.word), 80);
+  // 自动朗读当前单词（speech.js 内部处理 cancel/speak 竞态）
+  SPEAKER.speakWord(w.word);
 }
 
 /** 主动发音按钮：朗读当前单词，读完后自动朗读句子 */
@@ -385,8 +384,7 @@ function showChinese() {
   const w = STATE.words[STATE.wordIndex];
   document.getElementById('word-chinese').style.display = 'block';
   document.getElementById('btn-chinese').style.display = 'none';
-  SPEECH.stop();
-  setTimeout(() => SPEAKER.speakSentence(w.sentence), 80);
+  SPEAKER.speakSentence(w.sentence);
 }
 
 function nextWord() {
