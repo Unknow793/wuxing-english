@@ -166,6 +166,7 @@ function confirmAvatar() {
 
 /* ========== 注册-选本命五行 ========== */
 let _selectedElement = '';
+let _changingElement = false;  // true=使用洗髓丹重选五行，false=注册流程
 
 const ELEMENT_STATS = {
   '木': { hp: 18, atk: 8, def: 12, spd: 7, cri: 5, desc: '🌳 生命之木 · 血厚持久' },
@@ -224,12 +225,33 @@ function selectRegElement(elementName) {
 async function confirmElement() {
   if (!_selectedElement) return;
   try {
-    // 保存到头像和五行到数据库
-    await updateUserProfile(_selectedAvatar, _selectedElement);
-    goHomeAfterLogin();
+    if (_changingElement) {
+      // 洗髓丹重选五行
+      await updateUserProfile(USER_CACHE.avatar, _selectedElement);
+      _changingElement = false;
+      showToast(`✅ 本命五行已变更为「${_selectedElement}」`);
+      showProfile();
+    } else {
+      // 注册流程
+      await updateUserProfile(_selectedAvatar, _selectedElement);
+      goHomeAfterLogin();
+    }
   } catch (e) {
     document.getElementById('element-error').textContent = '保存失败，请重试';
   }
+}
+
+/** 五行洗髓丹：打开重选五行界面 */
+function showChangeElementScreen() {
+  _changingElement = true;
+  showRegElementScreen();
+
+  // 改写UI适配重选场景
+  const backBtn = document.querySelector('#screen-reg-element .back-btn');
+  if (backBtn) backBtn.onclick = () => { _changingElement = false; goHome(); };
+
+  document.querySelector('#screen-reg-element h2').textContent = '重新选择本命五行';
+  document.getElementById('btn-element-confirm').textContent = '确认更改';
 }
 
 /* ========== 游戏状态 ========== */
@@ -276,6 +298,14 @@ function migrateOldItems() {
 /* ========== 永久属性加成 ========== */
 const ELEMENT_TO_BONUS = { '火':'fire', '水':'water', '木':'wood', '金':'metal', '土':'earth' };
 
+/* 装备槽配置：4个槽位对应4种词性 */
+const EQUIP_SLOTS = [
+  { pos: 'noun', label: '名词', icon: '📝' },
+  { pos: 'verb', label: '动词', icon: '🏃' },
+  { pos: 'adj',  label: '形容词', icon: '🎨' },
+  { pos: 'pron', label: '代词',   icon: '👤' },
+];
+
 function addAttributeBonus(element) {
   const key = ELEMENT_TO_BONUS[element];
   if (!key) return;
@@ -303,12 +333,12 @@ function addXp(amount) {
 }
 
 function getLevel(totalXp) {
-  const n = Math.floor((-1 + Math.sqrt(1 + totalXp / 2)) / 2);
+  const n = Math.floor((-1 + Math.sqrt(1 + totalXp / 3)) / 2);
   return Math.max(0, n);
 }
 
 function getXpForLevel(level) {
-  return level * (level + 1) * 8;
+  return level * (level + 1) * 12;
 }
 
 function getXpProgress(totalXp) {
@@ -336,10 +366,17 @@ function getStudyXp(attempts, mode) {
     else baseXp = 10; // 4次及以上，仅经验
   }
 
+  // 等级衰减：每档年级对应10级，超过阈值后每级衰减10%，阈值+5级到50%封底
+  // grade1-2阈值10级，grade3-4阈值20级，以此类推
+  const gradeMax = parseInt(mode.split('-')[1]);           // "grade1-2" → 2
+  const decayThreshold = gradeMax * 5;                     // 2→10, 4→20, 6→30 …
+  const exceed = Math.min(5, Math.max(0, level - decayThreshold));
+  const decay = 1 - exceed * 0.1;
+
   // 智慧（水属性）经验加成：每点超过10的部分+1%
   const pStats = getPlayerStats(level);
   const intBonus = 1 + (pStats.water - 10) * 0.01;
-  return Math.max(1, Math.round(baseXp * intBonus));
+  return Math.max(1, Math.round(baseXp * decay * intBonus));
 }
 
 /* ========== 称号系统 ========== */
@@ -367,16 +404,31 @@ function getMaxBackpackCapacity(level) {
   return 100 + Math.floor(level / 10) * 50;
 }
 
-/** 玩家五行属性：等级成长 + 本命初始偏向 + 道具永久加成 */
+/** 玩家五行属性：等级成长 + 本命初始偏向 + 道具永久加成 + 装备加成 */
 function getPlayerStats(level) {
   const bonus = loadBonus();
   const elemName = USER_CACHE.element;
   const base = ELEMENT_STATS[elemName] || { hp: 10, atk: 10, def: 10, spd: 10, cri: 10 };
-  const wood = base.hp + level + bonus.wood;
-  const fire = base.atk + level + bonus.fire;
-  const earth = base.def + level + bonus.earth;
-  const water = base.spd + level + bonus.water;
-  const metal = base.cri + level + bonus.metal;
+  let wood = base.hp + level + bonus.wood;
+  let fire = base.atk + level + bonus.fire;
+  let earth = base.def + level + bonus.earth;
+  let water = base.spd + level + bonus.water;
+  let metal = base.cri + level + bonus.metal;
+
+  // 装备加成：每张装备卡提供对应五行属性 +10%
+  const equip = loadEquip();
+  const eqBonus = { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 };
+  for (const slot of equip) {
+    if (!slot || !slot.element) continue;
+    const key = ELEMENT_TO_BONUS[slot.element];
+    if (key) eqBonus[key] += 0.1;
+  }
+  wood = Math.round(wood * (1 + eqBonus.wood));
+  fire = Math.round(fire * (1 + eqBonus.fire));
+  earth = Math.round(earth * (1 + eqBonus.earth));
+  water = Math.round(water * (1 + eqBonus.water));
+  metal = Math.round(metal * (1 + eqBonus.metal));
+
   return {
     wood, fire, earth, water, metal,
     maxHp: 60 + wood * 4,
@@ -586,10 +638,65 @@ async function showProfile() {
       <span class="profile-collect-label">头像: ${getAvatarLabel(USER_CACHE.avatar)}</span>
       <button class="text-btn" onclick="showChangeAvatarScreen()" style="margin-left:12px;font-size:13px">🔄 更换</button>
     </div>
+    <button class="primary-btn" onclick="showEquip()" style="margin-top:14px;width:100%">⚔️ 装备</button>
   `;
   container.appendChild(collectCard);
 
   showScreen('screen-profile');
+}
+
+/* ========== 奖励说明 ========== */
+function showRewardsInfo() {
+  const c = document.getElementById('rewards-content');
+  c.innerHTML = `
+    <div class="ri-section">
+      <h3>⚔️ 挑战模式 · Boss战胜利</h3>
+      <p>每次胜利必得：3张Boss同属性卡 + 经验（受智慧加成）</p>
+      <table class="ri-table">
+        <tr><td>额外同属性卡</td><td>50%</td></tr>
+        <tr><td>单属性提升道具（同Boss五行）</td><td>30%</td></tr>
+        <tr><td>空白单词卡</td><td>10%</td></tr>
+        <tr><td>特殊头像解锁</td><td>8%</td></tr>
+        <tr><td>全属性提升道具</td><td>2%</td></tr>
+        <tr><td>五行洗髓丹</td><td>1%</td></tr>
+      </table>
+      <p class="ri-note">* 除五行洗髓丹外，均受幸运（金属性）加成</p>
+      <p>Boss战失败：固定 +15 XP</p>
+    </div>
+    <div class="ri-section">
+      <h3>✏️ 练习模式</h3>
+      <p>得分 ≥ 80% 可获得额外奖励：</p>
+      <table class="ri-table">
+        <tr><td>空白单词卡</td><td>12%</td></tr>
+      </table>
+      <p>满分（100%）额外追加：</p>
+      <table class="ri-table">
+        <tr><td>随机五行属性 +1</td><td>10%</td></tr>
+      </table>
+    </div>
+    <div class="ri-section">
+      <h3>📚 学习模式 · 造句</h3>
+      <table class="ri-table">
+        <tr><td>第1次成功</td><td>3张单词卡 + 最高经验</td></tr>
+        <tr><td>第2次成功</td><td>2张单词卡</td></tr>
+        <tr><td>第3次成功</td><td>1张单词卡</td></tr>
+        <tr><td>4次及以上</td><td>仅经验，无卡</td></tr>
+      </table>
+      <p class="ri-note">* 经验值受年级档位影响，超出推荐等级后逐级衰减至50%</p>
+    </div>
+    <div class="ri-section">
+      <h3>🎒 技能背包 · 添加单词</h3>
+      <table class="ri-table">
+        <tr><td>填写已知单词</td><td>+15 XP</td></tr>
+        <tr><td>填写新单词</td><td>+30 XP</td></tr>
+      </table>
+    </div>
+    <div class="ri-section">
+      <h3>⚔️ 装备加成</h3>
+      <p>在个人信息面板进入「装备」，可将背包中的单词卡装备到4个词性槽位（名词/动词/形容词/代词），每张卡提供对应五行属性 +10% 的加成。</p>
+    </div>
+  `;
+  showScreen('screen-rewards-info');
 }
 
 /* ========== 屏幕切换 ========== */
@@ -1639,6 +1746,10 @@ function showBackpack() {
         icon = '🖼️';
         label = '头像解锁';
         sublabel = '特殊头像已解锁';
+      } else if (item.itemType === 'element_reset') {
+        icon = '💊';
+        label = '五行洗髓丹';
+        sublabel = '可重置本命五行';
       } else {
         icon = '📦';
         label = '未知道具';
@@ -1696,6 +1807,8 @@ function showItemBackpack() {
       icon = '🃏'; label = '空白单词卡'; sublabel = '创造新单词';
     } else if (item.itemType === 'avatar_unlock') {
       icon = '🖼️'; label = '头像解锁'; sublabel = `「${getAvatarLabel(item.specialId)}」`;
+    } else if (item.itemType === 'element_reset') {
+      icon = '💊'; label = '五行洗髓丹'; sublabel = '重置本命五行';
     } else {
       icon = '📦'; label = '未知道具'; sublabel = '';
     }
@@ -1744,6 +1857,9 @@ function selectItem(index) {
     icon = '🖼️'; name = '头像解锁道具';
     desc = `解锁特殊头像「${getAvatarLabel(item.specialId)}」。此道具会自动生效，可在更换头像界面使用该头像。`;
     showUse = false;
+  } else if (item.itemType === 'element_reset') {
+    icon = '💊'; name = '五行洗髓丹';
+    desc = '使用后可重新选择本命五行。注意：基础属性将按新五行重新计算，但等级成长和道具加成都不会丢失。';
   } else {
     icon = '📦'; name = '未知道具'; desc = ''; showUse = false;
   }
@@ -1784,6 +1900,13 @@ function useSelectedItem() {
   } else if (item.itemType === 'blank_card') {
     // 暂不处理，留待实现
     showBlankCardInput();
+  } else if (item.itemType === 'element_reset') {
+    showModal('确定使用「五行洗髓丹」重新选择本命五行吗？当前五行的等级成长和道具加成都不会丢失，仅基础属性按新五行重新计算。', () => {
+      closeModal();
+      consumeItem(_selectedItemIndex);
+      _changingElement = true;
+      showChangeElementScreen();
+    });
   }
 }
 
@@ -1795,6 +1918,139 @@ function consumeItem(index) {
   }
   // 刷新背包
   showItemBackpack();
+}
+
+/* ========== 装备系统 ========== */
+function showEquip() {
+  const equip = loadEquip();
+  renderEquipSlots(equip);
+  renderEquipSummary(equip);
+  document.getElementById('equip-card-picker').style.display = 'none';
+  showScreen('screen-equip-slots');
+}
+
+function renderEquipSlots(equip) {
+  const container = document.getElementById('equip-slots');
+  container.innerHTML = '';
+
+  for (let i = 0; i < EQUIP_SLOTS.length; i++) {
+    const slot = EQUIP_SLOTS[i];
+    const card = equip[i];
+    const div = document.createElement('div');
+    div.className = 'equip-slot' + (card ? ' filled' : '');
+
+    const posLabel = document.createElement('div');
+    posLabel.className = 'slot-pos';
+    posLabel.textContent = slot.icon + ' ' + slot.label;
+    div.appendChild(posLabel);
+
+    if (card) {
+      const elInfo = DATA.getElementInfo(card.element);
+      const word = document.createElement('div');
+      word.className = 'slot-word';
+      word.style.color = elInfo ? elInfo.color : '#333';
+      word.textContent = card.word;
+      div.appendChild(word);
+
+      const cn = document.createElement('div');
+      cn.className = 'slot-cn';
+      cn.textContent = card.cn;
+      div.appendChild(cn);
+
+      const bonus = document.createElement('div');
+      bonus.className = 'slot-bonus';
+      bonus.textContent = (elInfo ? elInfo.icon + ' ' : '') + card.element + ' +10%';
+      div.appendChild(bonus);
+    } else {
+      const emptyIcon = document.createElement('div');
+      emptyIcon.className = 'slot-empty-icon';
+      emptyIcon.textContent = '⬜';
+      div.appendChild(emptyIcon);
+
+      const emptyText = document.createElement('div');
+      emptyText.className = 'slot-empty-text';
+      emptyText.textContent = '点击装备';
+      div.appendChild(emptyText);
+    }
+
+    div.addEventListener('click', () => openEquipPicker(i));
+    container.appendChild(div);
+  }
+}
+
+function renderEquipSummary(equip) {
+  const container = document.getElementById('equip-summary');
+  const bonusMap = { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 };
+
+  for (const slot of equip) {
+    if (!slot || !slot.element) continue;
+    const key = ELEMENT_TO_BONUS[slot.element];
+    if (key) bonusMap[key] += 10;
+  }
+
+  const total = Object.values(bonusMap).filter(v => v > 0).length;
+  if (total === 0) {
+    container.innerHTML = '<p class="hint" style="margin:0">尚未装备任何卡片</p>';
+    return;
+  }
+
+  const names = { wood: '木❤️HP', fire: '火⚔️ATK', earth: '土🛡️DEF', water: '水✨SPD', metal: '金⚡CRI' };
+  let html = '<h3>当前加成</h3>';
+  for (const [key, val] of Object.entries(bonusMap)) {
+    if (val > 0) {
+      html += '<div class="sum-row">' + names[key] + ' +' + val + '%</div>';
+    }
+  }
+  container.innerHTML = html;
+}
+
+function openEquipPicker(slotIndex) {
+  const slot = EQUIP_SLOTS[slotIndex];
+  const bp = loadBackpack();
+  const candidates = bp.filter(w => w.pos === slot.pos);
+
+  const panel = document.getElementById('equip-card-picker');
+  const title = document.getElementById('equip-picker-title');
+  const list = document.getElementById('equip-picker-list');
+  const empty = document.getElementById('equip-picker-empty');
+
+  title.textContent = '选择' + slot.label + '卡（' + candidates.length + '张可用）';
+  list.innerHTML = '';
+  panel.style.display = 'block';
+  panel.dataset.slotIndex = slotIndex;
+
+  if (candidates.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  for (const w of candidates) {
+    const elInfo = DATA.getElementInfo(w.element);
+    const card = document.createElement('div');
+    card.className = 'equip-picker-card';
+    if (elInfo) card.style.background = elInfo.bg;
+    card.innerHTML = '<div class="ep-word" style="color:' + (elInfo ? elInfo.color : '#333') + '">' + w.word + '</div>' +
+      '<div class="ep-cn">' + w.cn + '</div>' +
+      '<div style="font-size:11px;color:#999;margin-top:2px">' + (elInfo ? elInfo.icon : '') + ' ' + w.element + '</div>';
+    card.addEventListener('click', () => equipSelectedCard(slotIndex, w));
+    list.appendChild(card);
+  }
+}
+
+function equipSelectedCard(slotIndex, card) {
+  const equip = loadEquip();
+  equip[slotIndex] = { word: card.word, cn: card.cn, element: card.element, pos: card.pos };
+  saveEquip(equip);
+
+  renderEquipSlots(equip);
+  renderEquipSummary(equip);
+  document.getElementById('equip-card-picker').style.display = 'none';
+  showToast('✅ 已装备「' + card.word + '」');
+}
+
+function closeEquipPicker() {
+  document.getElementById('equip-card-picker').style.display = 'none';
 }
 
 /** 简单Toast提示 */
@@ -2834,6 +3090,17 @@ function endBattle(win) {
       });
       saveItems(items);
       extraRewards.push(`🌟 全属性提升道具`);
+    }
+
+    // 1% → 五行洗髓丹（不受幸运加成）
+    if (Math.random() < 0.01) {
+      const items = loadItems();
+      items.push({
+        type: 'item', itemType: 'element_reset',
+        date: new Date().toISOString().slice(0, 10),
+      });
+      saveItems(items);
+      extraRewards.push(`💊 五行洗髓丹`);
     }
 
     // 8% → 特殊头像解锁道具（仅限未解锁的）

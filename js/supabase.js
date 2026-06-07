@@ -19,6 +19,7 @@ const USER_CACHE = {
   bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
   avatar: '',
   element: '',   // 本命五行
+  equip: [null, null, null, null],  // 4个装备槽
 };
 
 /* ---------- 密码哈希 ---------- */
@@ -67,6 +68,7 @@ async function loginUser(username, password) {
       bonus: user.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
       avatar: user.avatar || '',
       element: user.element || '',
+      equip: user.equip || [null, null, null, null],
     });
   } else {
     // === 新用户：创建账号 ===
@@ -80,6 +82,7 @@ async function loginUser(username, password) {
       bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
       avatar: '',
       element: '',
+      equip: [null, null, null, null],
     });
     const createRes = await fetch(
       `${SUPABASE_URL}/rest/v1/user_profiles`,
@@ -96,6 +99,7 @@ async function loginUser(username, password) {
       bonus: created.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
       avatar: '',
       element: '',
+      equip: [null, null, null, null],
     });
   }
 
@@ -140,6 +144,7 @@ function syncToSupabase() {
             backpack: USER_CACHE.backpack,
             items: USER_CACHE.items,
             bonus: USER_CACHE.bonus,
+            equip: USER_CACHE.equip,
             updated_at: new Date().toISOString(),
           }),
         }
@@ -163,6 +168,9 @@ function saveItems(items) { USER_CACHE.items = items; syncToSupabase(); }
 
 function loadBonus() { return USER_CACHE.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 }; }
 function saveBonus(bonus) { USER_CACHE.bonus = bonus; syncToSupabase(); }
+
+function loadEquip() { return USER_CACHE.equip || [null, null, null, null]; }
+function saveEquip(equip) { USER_CACHE.equip = equip; syncToSupabase(); }
 
 /* ---------- 登录UI处理 ---------- */
 async function handleLogin() {

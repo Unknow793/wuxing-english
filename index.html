@@ -310,10 +310,28 @@
     </div>
   </div>
 
+  <!-- ======== 装备 ======== -->
+  <div id="screen-equip-slots" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">⚔️ 装备</span>
+    </div>
+    <p class="hint">装备背包中的单词卡获得属性加成，每张卡+10%对应属性</p>
+    <div id="equip-slots" class="equip-slots"></div>
+    <div id="equip-card-picker" style="display:none;margin-top:12px">
+      <h3 id="equip-picker-title" style="font-size:16px;color:var(--text);margin-bottom:8px"></h3>
+      <p id="equip-picker-empty" class="hint" style="display:none">背包中没有符合条件的单词卡</p>
+      <div id="equip-picker-list" class="equip-picker-list"></div>
+      <button class="text-btn" onclick="closeEquipPicker()" style="margin-top:8px">取消</button>
+    </div>
+    <div id="equip-summary" class="equip-summary" style="margin-top:16px"></div>
+  </div>
+
   <!-- ======== 级别选择 ======== -->
   <div id="screen-level" class="screen">
     <div class="screen-header">
       <button class="back-btn" onclick="goHome()">← 返回</button>
+      <button class="info-btn" onclick="showRewardsInfo()" title="奖励说明">📋</button>
     </div>
     <h2>选择挑战级别</h2>
     <div class="level-list" id="level-list"></div>
@@ -451,6 +469,15 @@
     </div>
   </div>
 
+  <!-- ======== 奖励说明 ======== -->
+  <div id="screen-rewards-info" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">📋 奖励说明</span>
+    </div>
+    <div id="rewards-content" class="rewards-content" style="padding:8px 4px"></div>
+  </div>
+
   <!-- ======== 练习模式 ======== -->
   <div id="screen-practice" class="screen">
     <div class="screen-header">
@@ -459,6 +486,7 @@
         <div class="progress-fill" id="prac-progress-fill" style="width:0%"></div>
       </div>
       <span class="progress-text" id="prac-progress-text">0/10</span>
+      <button class="info-btn" onclick="showRewardsInfo()" title="奖励说明">📋</button>
     </div>
     <div class="prac-area">
       <div class="prac-type-badge" id="prac-type-badge">完形填空</div>
