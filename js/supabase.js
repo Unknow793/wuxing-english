@@ -215,7 +215,7 @@ function goHomeAfterLogin() {
 async function fetchAllUsers() {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus,equip&order=xp.desc&limit=100`,
+      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus&order=xp.desc&limit=100`,
       { headers: SB_HEADERS }
     );
     return await res.json();
