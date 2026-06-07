@@ -1023,14 +1023,29 @@ let _lbData = [];
 let _lbTab = 'level';
 
 /** 给任意用户计算综合战力（不依赖全局 USER_CACHE） */
-function calcPowerForUser(element, bonus, level) {
+function calcPowerForUser(element, bonus, level, equip) {
   const base = ELEMENT_STATS[element] || { hp: 10, atk: 10, def: 10, spd: 10, cri: 10 };
   const bns = bonus || {};
-  const wood = base.hp + level + (bns.wood || 0);
-  const fire = base.atk + level + (bns.fire || 0);
-  const earth = base.def + level + (bns.earth || 0);
-  const water = base.spd + level + (bns.water || 0);
-  const metal = base.cri + level + (bns.metal || 0);
+  let wood = base.hp + level + (bns.wood || 0);
+  let fire = base.atk + level + (bns.fire || 0);
+  let earth = base.def + level + (bns.earth || 0);
+  let water = base.spd + level + (bns.water || 0);
+  let metal = base.cri + level + (bns.metal || 0);
+
+  // 装备加成
+  const eq = equip || [null, null, null, null];
+  const eqBonus = { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 };
+  for (const slot of eq) {
+    if (!slot || !slot.element) continue;
+    const key = ELEMENT_TO_BONUS[slot.element];
+    if (key) eqBonus[key] += 0.1;
+  }
+  wood = Math.round(wood * (1 + eqBonus.wood));
+  fire = Math.round(fire * (1 + eqBonus.fire));
+  earth = Math.round(earth * (1 + eqBonus.earth));
+  water = Math.round(water * (1 + eqBonus.water));
+  metal = Math.round(metal * (1 + eqBonus.metal));
+
   const maxHp = 60 + wood * 4;
   return Math.floor(maxHp * 2 + fire * 5 + earth * 3 + water + metal);
 }
@@ -1050,7 +1065,8 @@ async function showLeaderboard() {
   _lbData = rows.map(u => {
     const level = getLevel(u.xp || 0);
     const bonus = typeof u.bonus === 'object' && u.bonus ? u.bonus : {};
-    const power = calcPowerForUser(u.element || '', bonus, level);
+    const equip = Array.isArray(u.equip) ? u.equip : [null, null, null, null];
+    const power = calcPowerForUser(u.element || '', bonus, level, equip);
     return {
       username: u.username,
       avatar: u.avatar || '',
@@ -1058,6 +1074,7 @@ async function showLeaderboard() {
       xp: u.xp || 0,
       level,
       bonus,
+      equip,
       power,
     };
   });
