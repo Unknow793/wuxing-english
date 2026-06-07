@@ -17,10 +17,14 @@
       <div class="login-card">
         <div class="login-icon">🃏</div>
         <h2>五行英语牌</h2>
-        <p class="login-subtitle">注册或登录你的账号</p>
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-mode="login" onclick="switchAuthMode('login')">登录</button>
+          <button class="auth-tab" data-mode="register" onclick="switchAuthMode('register')">注册</button>
+        </div>
+        <p class="login-subtitle" id="auth-subtitle">输入你的账号密码登录</p>
         <input type="text" id="login-name" class="login-input" placeholder="用户名" maxlength="12" autocomplete="off">
         <input type="password" id="login-password" class="login-input" placeholder="密码（至少4位）" maxlength="20" autocomplete="off">
-        <button class="login-btn" id="login-btn" onclick="handleLogin()">登录 / 注册</button>
+        <button class="login-btn" id="login-btn" onclick="handleAuth()">登录</button>
         <p id="login-error" class="login-error"></p>
         <div id="login-loading" class="login-loading" style="display:none">⏳ 加载中...</div>
       </div>

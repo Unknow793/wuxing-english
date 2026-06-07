@@ -31,78 +31,95 @@ async function hashPassword(password, username) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-/* ---------- 用户登录/注册 ---------- */
+/* ---------- 登录/注册模式 ---------- */
+let _authMode = 'login'; // 'login' | 'register'
+
+function switchAuthMode(mode) {
+  _authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+  document.getElementById('auth-subtitle').textContent = mode === 'login' ? '输入你的账号密码登录' : '创建一个新账号';
+  document.getElementById('login-btn').textContent = mode === 'login' ? '登录' : '注册';
+  document.getElementById('login-error').textContent = '';
+}
+
+/* ---------- 纯登录（仅验证已有用户） ---------- */
 async function loginUser(username, password) {
   const name = username.trim();
   if (!name) throw new Error('请输入用户名');
   if (!password || password.length < 4) throw new Error('密码至少4位');
 
-  // 查是否存在
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/user_profiles?username=eq.${encodeURIComponent(name)}&select=*`,
     { headers: SB_HEADERS }
   );
   const rows = await res.json();
 
-  if (rows && rows.length > 0) {
-    // === 已有用户：验证密码 ===
-    const user = rows[0];
-    const storedHash = user.password_hash || '';
-    const inputHash = await hashPassword(password, name);
-    if (!storedHash) {
-      // 旧账号无密码 → 首次登录，将输入的密码设为永久密码
-      await fetch(
-        `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${user.id}`,
-        { method: 'PATCH', headers: SB_HEADERS,
-          body: JSON.stringify({ password_hash: inputHash, updated_at: new Date().toISOString() }) }
-      );
-    } else if (inputHash !== storedHash) {
-      throw new Error('密码错误');
-    }
-    Object.assign(USER_CACHE, {
-      id: user.id,
-      username: user.username,
-      xp: user.xp || 0,
-      backpack: user.backpack || [],
-      items: user.items || [],
-      bonus: user.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
-      avatar: user.avatar || '',
-      element: user.element || '',
-      equip: user.equip || [null, null, null, null],
-    });
-  } else {
-    // === 新用户：创建账号 ===
-    const passHash = await hashPassword(password, name);
-    const body = JSON.stringify({
-      username: name,
-      password_hash: passHash,
-      xp: 0,
-      backpack: [],
-      items: [],
-      bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
-      avatar: '',
-      element: '',
-      equip: [null, null, null, null],
-    });
-    const createRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles`,
-      { method: 'POST', headers: SB_HEADERS, body }
-    );
-    const newRows = await createRes.json();
-    const created = Array.isArray(newRows) ? newRows[0] : newRows;
-    Object.assign(USER_CACHE, {
-      id: created.id,
-      username: created.username,
-      xp: created.xp || 0,
-      backpack: created.backpack || [],
-      items: created.items || [],
-      bonus: created.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
-      avatar: '',
-      element: '',
-      equip: [null, null, null, null],
-    });
+  if (!rows || rows.length === 0) {
+    throw new Error('用户不存在，请检查用户名或切换到注册');
   }
 
+  const user = rows[0];
+  const storedHash = user.password_hash || '';
+  const inputHash = await hashPassword(password, name);
+  if (!storedHash) {
+    // 旧账号无密码 → 首次登录，将输入的密码设为永久密码
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${user.id}`,
+      { method: 'PATCH', headers: SB_HEADERS,
+        body: JSON.stringify({ password_hash: inputHash, updated_at: new Date().toISOString() }) }
+    );
+  } else if (inputHash !== storedHash) {
+    throw new Error('密码错误');
+  }
+  Object.assign(USER_CACHE, {
+    id: user.id, username: user.username,
+    xp: user.xp || 0, backpack: user.backpack || [],
+    items: user.items || [], bonus: user.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
+    avatar: user.avatar || '', element: user.element || '',
+    equip: user.equip || [null, null, null, null],
+  });
+  localStorage.setItem('wuxing_user', name);
+  return USER_CACHE;
+}
+
+/* ---------- 纯注册（需确保用户名不重复） ---------- */
+async function registerUser(username, password) {
+  const name = username.trim();
+  if (!name) throw new Error('请输入用户名');
+  if (!password || password.length < 4) throw new Error('密码至少4位');
+
+  // 先查重
+  const checkRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/user_profiles?username=eq.${encodeURIComponent(name)}&select=id`,
+    { headers: SB_HEADERS }
+  );
+  const existing = await checkRes.json();
+  if (existing && existing.length > 0) {
+    throw new Error('用户名已存在，请换一个或切换到登录');
+  }
+
+  // 创建新账号
+  const passHash = await hashPassword(password, name);
+  const createRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/user_profiles`,
+    {
+      method: 'POST', headers: SB_HEADERS,
+      body: JSON.stringify({
+        username: name, password_hash: passHash,
+        xp: 0, backpack: [], items: [],
+        bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
+        avatar: '', element: '', equip: [null, null, null, null],
+      }),
+    }
+  );
+  const newRows = await createRes.json();
+  const created = Array.isArray(newRows) ? newRows[0] : newRows;
+  Object.assign(USER_CACHE, {
+    id: created.id, username: created.username,
+    xp: 0, backpack: [], items: [],
+    bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
+    avatar: '', element: '', equip: [null, null, null, null],
+  });
   localStorage.setItem('wuxing_user', name);
   return USER_CACHE;
 }
@@ -172,8 +189,8 @@ function saveBonus(bonus) { USER_CACHE.bonus = bonus; syncToSupabase(); }
 function loadEquip() { return USER_CACHE.equip || [null, null, null, null]; }
 function saveEquip(equip) { USER_CACHE.equip = equip; syncToSupabase(); }
 
-/* ---------- 登录UI处理 ---------- */
-async function handleLogin() {
+/* ---------- 登录/注册UI处理 ---------- */
+async function handleAuth() {
   const nameInput = document.getElementById('login-name');
   const passInput = document.getElementById('login-password');
   const errorEl = document.getElementById('login-error');
@@ -190,7 +207,11 @@ async function handleLogin() {
   loadingEl.style.display = 'block';
 
   try {
-    await loginUser(name, password);
+    if (_authMode === 'login') {
+      await loginUser(name, password);
+    } else {
+      await registerUser(name, password);
+    }
     // 检查是否已完成注册（选过头像和五行）
     if (USER_CACHE.avatar && USER_CACHE.element) {
       goHomeAfterLogin();
@@ -198,7 +219,7 @@ async function handleLogin() {
       showRegAvatarScreen();
     }
   } catch (e) {
-    errorEl.textContent = e.message || '登录失败，请重试';
+    errorEl.textContent = e.message || '操作失败，请重试';
   } finally {
     btn.disabled = false;
     loadingEl.style.display = 'none';
