@@ -471,14 +471,19 @@ function calcCombatPower(pStats) {
 }
 
 /* ========== 五维雷达图 ========== */
-function generateRadarChart(stats, maxVal = 100) {
+function generateRadarChart(stats, maxVal = 'auto') {
   const elements = [
-    { key: 'wood', label: '木', icon: '🌳', color: '#4caf50' },
-    { key: 'fire', label: '火', icon: '🔥', color: '#ff5722' },
-    { key: 'earth', label: '土', icon: '⛰️', color: '#795548' },
-    { key: 'metal', label: '金', icon: '⭐', color: '#f57f17' },
-    { key: 'water', label: '水', icon: '💧', color: '#2196f3' },
+    { key: 'wood',  label: '木', icon: '🌳', attr: '血量',       color: '#4caf50' },
+    { key: 'fire',  label: '火', icon: '🔥', attr: '攻击',       color: '#ff5722' },
+    { key: 'earth', label: '土', icon: '⛰️', attr: '防御',       color: '#795548' },
+    { key: 'metal', label: '金', icon: '⭐', attr: '幸运·暴击',   color: '#f57f17' },
+    { key: 'water', label: '水', icon: '💧', attr: '智慧·速度',   color: '#2196f3' },
   ];
+  // 动态缩放：取当前最大值并保留余量，低等级也能撑起图形
+  if (maxVal === 'auto') {
+    const rawMax = Math.max(...elements.map(el => stats[el.key] || 0), 1);
+    maxVal = Math.ceil(Math.max(rawMax * 1.3, 60));
+  }
 
   const size = 240;
   const cx = size / 2;
@@ -530,18 +535,22 @@ function generateRadarChart(stats, maxVal = 100) {
     svg += `<circle cx="${v.x}" cy="${v.y}" r="4" fill="${elements[i].color}" stroke="white" stroke-width="2"/>`;
   }
 
-  // 顶点标签
-  const labelR = R + 20;
+  // 数值标签（数据点外侧）
   for (let i = 0; i < angles.length; i++) {
-    const v = vertex(angles[i], labelR);
-    svg += `<text x="${v.x}" y="${v.y}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="${elements[i].color}">${elements[i].icon}</text>`;
-    // 数值标注在数据点和顶点之间
     const dataR = R * values[i] / maxVal;
-    const labelPosR = dataR + 14;
-    if (labelPosR < R - 4) {
-      const lp = vertex(angles[i], labelPosR);
+    if (dataR < R - 6) {
+      const lp = vertex(angles[i], Math.min(dataR + 14, R - 4));
       svg += `<text x="${lp.x}" y="${lp.y}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#666" font-weight="600">${values[i]}</text>`;
     }
+  }
+
+  // 顶点标签：五行图标 + 属性说明
+  const labelR = R + 22;
+  for (let i = 0; i < angles.length; i++) {
+    const v = vertex(angles[i], labelR);
+    const yBase = +v.y;
+    svg += `<text x="${v.x}" y="${(yBase - 5).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="${elements[i].color}">${elements[i].icon}${elements[i].label}</text>`;
+    svg += `<text x="${v.x}" y="${(yBase + 9).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#999">${elements[i].attr}</text>`;
   }
 
   // 中心标注
@@ -613,13 +622,13 @@ async function showProfile() {
   radarCard.innerHTML = `
     <div class="profile-section-title">🎯 五行五维图</div>
     <div class="radar-container">
-      ${generateRadarChart(pStats, 100)}
+      ${generateRadarChart(pStats)}
       <div class="radar-legend">
-        <div class="radar-legend-item" style="color:#4caf50">🌳 木 <b>${pStats.wood}</b></div>
-        <div class="radar-legend-item" style="color:#ff5722">🔥 火 <b>${pStats.fire}</b></div>
-        <div class="radar-legend-item" style="color:#795548">⛰️ 土 <b>${pStats.earth}</b></div>
-        <div class="radar-legend-item" style="color:#f57f17">⭐ 金 <b>${pStats.metal}</b></div>
-        <div class="radar-legend-item" style="color:#2196f3">💧 水 <b>${pStats.water}</b></div>
+        <div class="radar-legend-item" style="color:#4caf50">🌳 木·血量 <b>${pStats.wood}</b></div>
+        <div class="radar-legend-item" style="color:#ff5722">🔥 火·攻击 <b>${pStats.fire}</b></div>
+        <div class="radar-legend-item" style="color:#795548">⛰️ 土·防御 <b>${pStats.earth}</b></div>
+        <div class="radar-legend-item" style="color:#f57f17">⭐ 金·幸运·暴击 <b>${pStats.metal}</b></div>
+        <div class="radar-legend-item" style="color:#2196f3">💧 水·智慧·速度 <b>${pStats.water}</b></div>
       </div>
     </div>
   `;
@@ -664,9 +673,9 @@ function showRewardsInfo() {
       <p>每次胜利必得：3张Boss同属性卡 + 经验（受智慧加成）</p>
       <table class="ri-table">
         <tr><td>额外同属性卡</td><td>50%</td></tr>
-        <tr><td>单属性提升道具（同Boss五行）</td><td>30%</td></tr>
+        <tr><td>单属性提升道具（同Boss五行）</td><td>25%</td></tr>
         <tr><td>空白单词卡</td><td>10%</td></tr>
-        <tr><td>特殊头像解锁</td><td>8%</td></tr>
+        <tr><td>特殊头像解锁</td><td>6%</td></tr>
         <tr><td>全属性提升道具</td><td>2%</td></tr>
         <tr><td>五行洗髓丹</td><td>1%</td></tr>
       </table>
@@ -691,8 +700,9 @@ function showRewardsInfo() {
         <tr><td>第2次成功</td><td>2张单词卡</td></tr>
         <tr><td>第3次成功</td><td>1张单词卡</td></tr>
         <tr><td>4次及以上</td><td>仅经验，无卡</td></tr>
+        <tr><td>随堂测验全对</td><td>额外 +1 张卡</td></tr>
       </table>
-      <p class="ri-note">* 经验值受年级档位影响，超出推荐等级后逐级衰减至50%</p>
+      <p class="ri-note">* 经验值受年级档位、智慧（水属性）加成、随堂测验准确率影响，超出推荐等级后逐级衰减至50%</p>
     </div>
     <div class="ri-section">
       <h3>🎒 技能背包 · 添加单词</h3>
@@ -3257,8 +3267,8 @@ function endBattle(win) {
       }
     }
 
-    // 30% → 属性提升道具（同Boss五行）
-    if (Math.random() < 0.3 * lukMult) {
+    // 25% → 属性提升道具（同Boss五行）
+    if (Math.random() < 0.25 * lukMult) {
       const items = loadItems();
       items.push({
         type: 'item', itemType: 'boost',
@@ -3301,8 +3311,8 @@ function endBattle(win) {
       extraRewards.push(`💊 五行洗髓丹`);
     }
 
-    // 8% → 特殊头像解锁道具（仅限未解锁的）
-    if (Math.random() < 0.08 * lukMult) {
+    // 6% → 特殊头像解锁道具（仅限未解锁的）
+    if (Math.random() < 0.06 * lukMult) {
       const unlocked = getUnlockedSpecials();
       const locked = AVATARS_SPECIAL.filter(a => !unlocked.has(a.id));
       if (locked.length > 0) {
