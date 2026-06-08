@@ -266,6 +266,13 @@ const STATE = {
   userSentence: [],
   matchedWords: [],
   sentenceCorrect: false,
+  /** 测验统计 */
+  quizCorrect: 0,
+  quizTotal: 0,
+  _quizAnswered: false,
+  /** 测验排程：哪些词位(index)触发测验 */
+  quizSchedule: [],
+  _quizzedWords: null,
 };
 
 /* ========== 背包计数显示 ========== */
@@ -348,7 +355,7 @@ function getXpProgress(totalXp) {
   return { level, xpInLevel: totalXp - current, xpNeeded: next - current };
 }
 
-function getStudyXp(attempts, mode) {
+function getStudyXp(attempts, mode, quizCorrect, quizTotal) {
   const totalXp = loadXp();
   const level = getLevel(totalXp);
   let baseXp;
@@ -357,26 +364,29 @@ function getStudyXp(attempts, mode) {
     if (attempts === 1) baseXp = 35;
     else if (attempts === 2) baseXp = 20;
     else if (attempts === 3) baseXp = 10;
-    else baseXp = 5;  // 4次及以上，仅经验
+    else baseXp = 5;
   } else {
-    // grade3-4
     if (attempts === 1) baseXp = 70;
     else if (attempts === 2) baseXp = 40;
     else if (attempts === 3) baseXp = 20;
-    else baseXp = 10; // 4次及以上，仅经验
+    else baseXp = 10;
   }
 
-  // 等级衰减：每档年级对应10级，超过阈值后每级衰减10%，阈值+5级到50%封底
-  // grade1-2阈值10级，grade3-4阈值20级，以此类推
-  const gradeMax = parseInt(mode.split('-')[1]);           // "grade1-2" → 2
-  const decayThreshold = gradeMax * 5;                     // 2→10, 4→20, 6→30 …
+  // 等级衰减
+  const gradeMax = parseInt(mode.split('-')[1]);
+  const decayThreshold = gradeMax * 5;
   const exceed = Math.min(5, Math.max(0, level - decayThreshold));
   const decay = 1 - exceed * 0.1;
 
-  // 智慧（水属性）经验加成：每点超过10的部分+1%
+  // 智慧（水属性）经验加成
   const pStats = getPlayerStats(level);
   const intBonus = 1 + (pStats.water - 10) * 0.01;
-  return Math.max(1, Math.round(baseXp * decay * intBonus));
+
+  // 测验准确率乘数: 0.25 + 0.75 × (正确数/总题数)
+  const accuracy = quizTotal > 0 ? quizCorrect / quizTotal : 1;
+  const quizMultiplier = 0.25 + 0.75 * accuracy;
+
+  return Math.max(1, Math.round(baseXp * decay * intBonus * quizMultiplier));
 }
 
 /* ========== 称号系统 ========== */
@@ -1274,8 +1284,29 @@ function confirmElements() {
 
 /* ========== 学单词 ========== */
 function startLearning() {
+  STATE.quizCorrect = 0;
+  STATE.quizTotal = 0;
+  STATE._quizAnswered = false;
+  STATE._quizzedWords = new Set();
+  STATE.quizSchedule = computeQuizSchedule(STATE.words.length);
   showScreen('screen-learn');
   showWord(0);
+}
+
+/** 计算测验排程：每轮约 2-3 次测验，均匀分布在词表中 */
+function computeQuizSchedule(totalWords) {
+  if (totalWords <= 1) return [];
+  const last = totalWords - 1;
+  if (totalWords <= 3) return [last];
+  if (totalWords <= 4) return [1, last];         // 4词 → 2次测验
+  if (totalWords <= 6) {                         // 5-6词 → 3次测验
+    const s = [1, 3];
+    if (!s.includes(last)) s.push(last);
+    return s;
+  }
+  const s = [1, 3, 5];                           // 7+词 → 4次测验
+  if (!s.includes(last)) s.push(last);
+  return s;
 }
 
 function showWord(index) {
@@ -1284,11 +1315,29 @@ function showWord(index) {
     return;
   }
   STATE.wordIndex = index;
+  STATE._quizAnswered = false;
   const w = STATE.words[index];
 
   // 更新进度
   document.getElementById('progress-fill').style.width = `${((index) / STATE.words.length) * 100}%`;
   document.getElementById('progress-text').textContent = `${index + 1}/${STATE.words.length}`;
+
+  // 隐藏测验，恢复单词显示
+  const quizEl = document.getElementById('learn-quiz');
+  quizEl.style.display = 'none';
+  document.getElementById('word-display').style.display = 'block';
+  document.getElementById('btn-chinese').style.display = 'inline-block';
+  document.getElementById('btn-next').style.display = 'inline-block';
+  // 根据排程决定按钮文字
+  const isQuizPoint = STATE.quizSchedule.includes(index);
+  const isLast = index >= STATE.words.length - 1;
+  if (isQuizPoint) {
+    document.getElementById('btn-next').textContent = '答题 →';
+  } else if (isLast) {
+    document.getElementById('btn-next').textContent = '完成学习 →';
+  } else {
+    document.getElementById('btn-next').textContent = '下一个 →';
+  }
 
   // 显示单词
   const elInfo = DATA.getElementInfo(w.element);
@@ -1300,11 +1349,7 @@ function showWord(index) {
   document.getElementById('word-chinese').style.display = 'none';
   document.getElementById('word-sentence').textContent = w.sentence;
 
-  // 重置按钮
-  document.getElementById('btn-chinese').style.display = 'inline-block';
-  document.getElementById('btn-next').textContent = index < STATE.words.length - 1 ? '下一个 →' : '开始连句 →';
-
-  // 自动朗读当前单词（speech.js 内部处理 cancel/speak 竞态）
+  // 自动朗读当前单词
   SPEAKER.speakWord(w.word);
 }
 
@@ -1332,8 +1377,135 @@ function showChinese() {
   SPEAKER.speakSentence(w.sentence);
 }
 
-function nextWord() {
-  showWord(STATE.wordIndex + 1);
+/** 点击"答题"或"下一个"按钮 */
+function onNextClick() {
+  if (STATE._quizAnswered) {
+    // 已回答过测验 → 进入下一个词
+    showWord(STATE.wordIndex + 1);
+  } else if (STATE.quizSchedule.includes(STATE.wordIndex)) {
+    // 排程测验点 → 展示测验
+    showQuiz();
+  } else {
+    // 非测验点 → 直接下一个词
+    showWord(STATE.wordIndex + 1);
+  }
+}
+
+/* ========== 随堂测验 ========== */
+
+/** 从已学单词中随机抽选，生成一道中英配对选择 */
+function showQuiz() {
+  // 从已学单词（含当前词）中挑一个未测过的词，都测过则随机
+  const seenWords = STATE.words.slice(0, STATE.wordIndex + 1);
+  const unquizzed = seenWords.filter(w => !STATE._quizzedWords.has(w.word));
+  const w = unquizzed.length > 0 ? DATA.randomPick(unquizzed) : DATA.randomPick(seenWords);
+  if (!w) return;
+  STATE._quizAnswered = false;
+  STATE._quizzedWords.add(w.word);
+
+  // 随机选择题型
+  const isEngToCn = Math.random() < 0.5;
+
+  // 生成干扰项：从当前词组的其他词中取 cn 或 word
+  const pool = STATE.words.filter(other => {
+    if (isEngToCn) return other.cn !== w.cn;
+    return other.word.toLowerCase() !== w.word.toLowerCase();
+  });
+  let distractors = DATA.shuffleArray([...pool]).slice(0, 3);
+  // 干扰项不足时从全局词库补充
+  if (distractors.length < 3) {
+    const allWords = Object.values(DATA.byElement).flat();
+    const extra = DATA.shuffleArray(allWords.filter(v => {
+      if (isEngToCn) return v.cn !== w.cn;
+      return v.word.toLowerCase() !== w.word.toLowerCase();
+    }));
+    for (const v of extra) {
+      if (distractors.length >= 3) break;
+      if (!distractors.some(d => d.word === v.word)) distractors.push(v);
+    }
+  }
+
+  // 构建选项：1 正确 + 3 干扰
+  const correctAnswer = isEngToCn ? w.cn : w.word;
+  const options = [
+    { text: correctAnswer, correct: true },
+    ...distractors.map(d => ({
+      text: isEngToCn ? d.cn : d.word,
+      correct: false,
+    })),
+  ];
+  DATA.shuffleArray(options);
+
+  // 渲染
+  const question = isEngToCn
+    ? `"${w.word}" 是什么意思？`
+    : `"${w.cn}" 对应的英文是？`;
+  document.getElementById('quiz-question').textContent = question;
+
+  const optsContainer = document.getElementById('quiz-options');
+  optsContainer.innerHTML = '';
+  for (const opt of options) {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = opt.text;
+    btn.dataset.correct = opt.correct ? '1' : '0';
+    btn.addEventListener('click', () => handleQuizAnswer(btn));
+    optsContainer.appendChild(btn);
+  }
+
+  // 隐藏反馈和继续按钮
+  document.getElementById('quiz-feedback').style.display = 'none';
+  document.getElementById('quiz-feedback').textContent = '';
+  document.getElementById('quiz-continue').style.display = 'none';
+
+  // 显示测验，隐藏单词（防止直接视觉匹配）
+  document.getElementById('word-display').style.display = 'none';
+  document.getElementById('btn-chinese').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('learn-quiz').style.display = 'block';
+}
+
+function handleQuizAnswer(selectedBtn) {
+  if (STATE._quizAnswered) return;
+  STATE._quizAnswered = true;
+  STATE.quizTotal++;
+
+  const isCorrect = selectedBtn.dataset.correct === '1';
+  if (isCorrect) STATE.quizCorrect++;
+
+  // 禁用所有选项
+  document.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.classList.add('quiz-disabled');
+    if (btn.dataset.correct === '1') btn.classList.add('quiz-correct');
+    if (btn === selectedBtn && !isCorrect) btn.classList.add('quiz-wrong');
+  });
+
+  // 显示反馈
+  const feedback = document.getElementById('quiz-feedback');
+  const isLast = STATE.wordIndex >= STATE.words.length - 1;
+  if (isCorrect) {
+    feedback.className = 'quiz-feedback fb-correct';
+    feedback.textContent = '✓ 正确！';
+  } else {
+    const correctBtn = document.querySelector('.quiz-option[data-correct="1"]');
+    feedback.className = 'quiz-feedback fb-wrong';
+    feedback.textContent = `✗ 正确答案是 "${correctBtn ? correctBtn.textContent : ''}"`;
+  }
+  feedback.style.display = 'block';
+
+  // 显示继续按钮
+  const contBtn = document.getElementById('quiz-continue');
+  contBtn.textContent = isLast ? '开始连句 →' : '继续 →';
+  contBtn.style.display = 'block';
+}
+
+function advanceAfterQuiz() {
+  const isLast = STATE.wordIndex >= STATE.words.length - 1;
+  if (isLast) {
+    startSentence();
+  } else {
+    showWord(STATE.wordIndex + 1);
+  }
 }
 
 /* ========== 连句子 ========== */
@@ -1360,9 +1532,12 @@ function resetSentenceUI() {
   const bank = document.getElementById('word-bank');
   bank.innerHTML = '';
   const shuffled = DATA.shuffleArray([...STATE.words]);
-  for (const w of shuffled) {
+  for (let i = 0; i < shuffled.length; i++) {
+    const w = shuffled[i];
+    const origIdx = STATE.words.indexOf(w);
     const card = document.createElement('div');
     card.className = 'bank-card';
+    card.dataset.widx = origIdx;
     card.dataset.word = w.word;
     card.innerHTML = `${w.word} <span class="bank-cn">${w.cn}</span>`;
     card.addEventListener('click', () => addToSentence(w));
@@ -1425,8 +1600,9 @@ function renderSentence() {
 
 function updateBank() {
   document.querySelectorAll('.bank-card').forEach(card => {
-    const word = card.dataset.word;
-    const inSentence = STATE.userSentence.some(w => w.word === word);
+    const widx = parseInt(card.dataset.widx, 10);
+    const w = STATE.words[widx];
+    const inSentence = STATE.userSentence.includes(w);
     card.classList.toggle('used', inSentence);
   });
 }
@@ -1515,12 +1691,17 @@ function showSentenceResultSuccess() {
   if (attempts === 1) cardCount = 3;
   else if (attempts === 2) cardCount = 2;
   else if (attempts === 3) cardCount = 1;
-  else cardCount = 0;  // 4次及以上无卡
+  else cardCount = 0;
 
-  // 计算经验值
-  const xpGain = getStudyXp(attempts, mode);
+  // 测验全对奖励：额外+1张卡
+  if (STATE.quizCorrect === STATE.quizTotal && STATE.quizTotal > 0) {
+    cardCount += 1;
+  }
 
-  // 存储奖励信息供 showReward 使用
+  // 计算经验值（含测验准确率乘数）
+  const xpGain = getStudyXp(attempts, mode, STATE.quizCorrect, STATE.quizTotal);
+
+  // 存储奖励信息
   STATE._rewardInfo = { cardCount, xpGain, attempts };
 
   const msg = document.getElementById('sentence-result-message');

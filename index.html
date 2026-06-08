@@ -223,9 +223,18 @@
         </div>
         <div class="word-sentence" id="word-sentence" onclick="speakCurrentSentence()">I see a cat.</div>
       </div>
+
+      <!-- 随堂测验 -->
+      <div class="learn-quiz" id="learn-quiz" style="display:none">
+        <p class="quiz-question" id="quiz-question"></p>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div class="quiz-feedback" id="quiz-feedback" style="display:none"></div>
+        <button class="primary-btn quiz-continue-btn" id="quiz-continue" style="display:none" onclick="advanceAfterQuiz()">继续 →</button>
+      </div>
+
       <div class="learn-buttons">
         <button class="secondary-btn" id="btn-chinese" onclick="showChinese()">👀 中文</button>
-        <button class="primary-btn" id="btn-next" onclick="nextWord()">下一个 →</button>
+        <button class="primary-btn" id="btn-next" onclick="onNextClick()">下一个 →</button>
       </div>
     </div>
   </div>

@@ -320,6 +320,24 @@ h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px
 .learn-buttons { display: flex; gap: 16px; }
 .learn-buttons button { min-width: 120px; }
 
+/* ========== 连句提示 ========== */
+.sentence-hint { font-size: 18px; font-weight: 700; color: var(--text); background: #fff8e1; padding: 12px 16px; border-radius: var(--radius-sm); border-left: 4px solid #ffa000; margin-bottom: 16px; line-height: 1.5; }
+
+/* ========== 随堂测验 ========== */
+.learn-quiz { width: 100%; margin-top: 12px; padding: 16px; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; animation: popIn 0.25s; }
+.quiz-question { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 14px; }
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 400px; margin: 0 auto; }
+.quiz-option { padding: 14px 8px; border-radius: var(--radius-sm); border: 2px solid #e0e0e0; background: #fafafa; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.15s; color: var(--text); }
+.quiz-option:hover { border-color: var(--primary); background: var(--primary-light); color: #fff; }
+.quiz-option:active { transform: scale(0.96); }
+.quiz-option.quiz-correct { border-color: #43a047; background: #e8f5e9; color: #2e7d32; cursor: default; }
+.quiz-option.quiz-wrong { border-color: #e53935; background: #ffebee; color: #c62828; cursor: default; }
+.quiz-option.quiz-disabled { pointer-events: none; }
+.quiz-feedback { margin-top: 12px; font-size: 15px; font-weight: 600; padding: 8px; border-radius: var(--radius-sm); }
+.quiz-feedback.fb-correct { background: #e8f5e9; color: #2e7d32; }
+.quiz-feedback.fb-wrong { background: #ffebee; color: #c62828; }
+.quiz-continue-btn { margin: 14px auto 0; }
+
 /* ========== 连句子 ========== */
 .sentence-area { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .sentence-display {
