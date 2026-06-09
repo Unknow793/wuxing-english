@@ -17398,5 +17398,301 @@
   {
     "w": "apology",
     "p": "noun"
+  },
+  {
+    "w": "frog",
+    "p": "noun"
+  },
+  {
+    "w": "panda",
+    "p": "noun"
+  },
+  {
+    "w": "tiger",
+    "p": "noun"
+  },
+  {
+    "w": "grandma",
+    "p": "noun"
+  },
+  {
+    "w": "grandpa",
+    "p": "noun"
+  },
+  {
+    "w": "noodle",
+    "p": "noun"
+  },
+  {
+    "w": "ice cream",
+    "p": "noun"
+  },
+  {
+    "w": "watermelon",
+    "p": "noun"
+  },
+  {
+    "w": "strawberry",
+    "p": "noun"
+  },
+  {
+    "w": "pear",
+    "p": "noun"
+  },
+  {
+    "w": "peach",
+    "p": "noun"
+  },
+  {
+    "w": "cherry",
+    "p": "noun"
+  },
+  {
+    "w": "pineapple",
+    "p": "noun"
+  },
+  {
+    "w": "coconut",
+    "p": "noun"
+  },
+  {
+    "w": "ruler",
+    "p": "noun"
+  },
+  {
+    "w": "eraser",
+    "p": "noun"
+  },
+  {
+    "w": "kite",
+    "p": "noun"
+  },
+  {
+    "w": "pants",
+    "p": "noun"
+  },
+  {
+    "w": "scarf",
+    "p": "noun"
+  },
+  {
+    "w": "triangle",
+    "p": "noun"
+  },
+  {
+    "w": "grey",
+    "p": "noun"
+  },
+  {
+    "w": "thirsty",
+    "p": "adj"
+  },
+  {
+    "w": "zero",
+    "p": "num"
+  },
+  {
+    "w": "in front of",
+    "p": "prep"
+  },
+  {
+    "w": "next to",
+    "p": "prep"
+  },
+  {
+    "w": "an",
+    "p": "art"
+  },
+  {
+    "w": "goodbye",
+    "p": "interj"
+  },
+  {
+    "w": "oops",
+    "p": "interj"
+  },
+  {
+    "w": "aha",
+    "p": "interj"
+  },
+  {
+    "w": "hmm",
+    "p": "interj"
+  },
+  {
+    "w": "ouch",
+    "p": "interj"
+  },
+  {
+    "w": "does",
+    "p": "aux"
+  },
+  {
+    "w": "is",
+    "p": "verb"
+  },
+  {
+    "w": "are",
+    "p": "verb"
+  },
+  {
+    "w": "has",
+    "p": "verb"
+  },
+  {
+    "w": "zoo",
+    "p": "noun"
+  },
+  {
+    "w": "playground",
+    "p": "noun"
+  },
+  {
+    "w": "taxi",
+    "p": "noun"
+  },
+  {
+    "w": "crayon",
+    "p": "noun"
+  },
+  {
+    "w": "clap",
+    "p": "verb"
+  },
+  {
+    "w": "delicious",
+    "p": "adj"
+  },
+  {
+    "w": "stairs",
+    "p": "noun"
+  },
+  {
+    "w": "autumn",
+    "p": "noun"
+  },
+  {
+    "w": "rainy",
+    "p": "adj"
+  },
+  {
+    "w": "cloudy",
+    "p": "adj"
+  },
+  {
+    "w": "windy",
+    "p": "adj"
+  },
+  {
+    "w": "snowy",
+    "p": "adj"
+  },
+  {
+    "w": "monday",
+    "p": "noun"
+  },
+  {
+    "w": "tuesday",
+    "p": "noun"
+  },
+  {
+    "w": "wednesday",
+    "p": "noun"
+  },
+  {
+    "w": "thursday",
+    "p": "noun"
+  },
+  {
+    "w": "friday",
+    "p": "noun"
+  },
+  {
+    "w": "saturday",
+    "p": "noun"
+  },
+  {
+    "w": "sunday",
+    "p": "noun"
+  },
+  {
+    "w": "toothache",
+    "p": "noun"
+  },
+  {
+    "w": "cough",
+    "p": "noun"
+  },
+  {
+    "w": "comb",
+    "p": "noun"
+  },
+  {
+    "w": "clever",
+    "p": "adj"
+  },
+  {
+    "w": "lazy",
+    "p": "adj"
+  },
+  {
+    "w": "naughty",
+    "p": "adj"
+  },
+  {
+    "w": "noisy",
+    "p": "adj"
+  },
+  {
+    "w": "violin",
+    "p": "noun"
+  },
+  {
+    "w": "pupil",
+    "p": "noun"
+  },
+  {
+    "w": "geography",
+    "p": "noun"
+  },
+  {
+    "w": "convenient",
+    "p": "adj"
+  },
+  {
+    "w": "polite",
+    "p": "adj"
+  },
+  {
+    "w": "easter",
+    "p": "noun"
+  },
+  {
+    "w": "halloween",
+    "p": "noun"
+  },
+  {
+    "w": "lantern",
+    "p": "noun"
+  },
+  {
+    "w": "firework",
+    "p": "noun"
+  },
+  {
+    "w": "dragon",
+    "p": "noun"
+  },
+  {
+    "w": "website",
+    "p": "noun"
+  },
+  {
+    "w": "email",
+    "p": "noun"
+  },
+  {
+    "w": "keyboard",
+    "p": "noun"
   }
 ]

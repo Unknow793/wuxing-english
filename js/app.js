@@ -340,12 +340,15 @@ function addXp(amount) {
 }
 
 function getLevel(totalXp) {
-  const n = Math.floor((-1 + Math.sqrt(1 + totalXp / 3)) / 2);
+  if (totalXp <= 0) return 0;
+  // 新公式：累计经验 = 15L² + 35L → L = (-35+√(1225+60*XP))/30
+  const n = Math.floor((-35 + Math.sqrt(1225 + 60 * totalXp)) / 30);
   return Math.max(0, n);
 }
 
 function getXpForLevel(level) {
-  return level * (level + 1) * 12;
+  // 返回升到该等级的累计总经验：15L² + 35L
+  return 15 * level * level + 35 * level;
 }
 
 function getXpProgress(totalXp) {
@@ -360,16 +363,22 @@ function getStudyXp(attempts, mode, quizCorrect, quizTotal) {
   const level = getLevel(totalXp);
   let baseXp;
 
+  // 按年级梯度：1-2=基准(原5-6级奖励), 3-4×1.5, 5-6×2.0
   if (mode === 'grade1-2') {
-    if (attempts === 1) baseXp = 35;
-    else if (attempts === 2) baseXp = 20;
-    else if (attempts === 3) baseXp = 10;
-    else baseXp = 5;
-  } else {
     if (attempts === 1) baseXp = 70;
     else if (attempts === 2) baseXp = 40;
     else if (attempts === 3) baseXp = 20;
     else baseXp = 10;
+  } else if (mode === 'grade3-4') {
+    if (attempts === 1) baseXp = 105;
+    else if (attempts === 2) baseXp = 60;
+    else if (attempts === 3) baseXp = 30;
+    else baseXp = 15;
+  } else {
+    if (attempts === 1) baseXp = 140;
+    else if (attempts === 2) baseXp = 80;
+    else if (attempts === 3) baseXp = 40;
+    else baseXp = 20;
   }
 
   // 等级衰减
@@ -730,7 +739,52 @@ function showScreen(id) {
 function goHome() {
   showScreen('screen-home');
   updateBackpackCount();
+  updateLetterBagCount();
   updateHomeXpDisplay();
+}
+
+function updateLetterBagCount() {
+  const bag = loadLetterBag();
+  const el = document.getElementById('letter-bag-count');
+  if (el) el.textContent = `已收集 ${bag.size}/26`;
+}
+
+function showLetterBag() {
+  const bag = loadLetterBag();
+  const grid = document.getElementById('letter-grid');
+  grid.innerHTML = '';
+
+  // 26个字母按五行分组展示
+  const elemOrder = ['木','火','金','水','土'];
+  for (const elName of elemOrder) {
+    const elInfo = DATA.getElementInfo(elName);
+    const letters = Object.entries(DATA.LETTER_ELEMENTS)
+      .filter(([_, v]) => v === elName)
+      .map(([k]) => k)
+      .sort();
+
+    for (const letter of letters) {
+      const unlocked = bag.has(letter);
+      const cell = document.createElement('div');
+      cell.className = `letter-cell ${unlocked ? 'unlocked' : 'locked'}`;
+      if (unlocked) {
+        cell.style.cssText = `background:${elInfo.bg};color:${elInfo.color};border:2px solid ${elInfo.color}`;
+      }
+      cell.innerHTML = `
+        <span style="font-size:32px;font-weight:800">${letter.toLowerCase()}</span>
+        <span class="letter-elem-label">${elInfo.icon} ${unlocked ? elName : '🔒'}</span>
+      `;
+      grid.appendChild(cell);
+    }
+  }
+
+  // 统计
+  const totalUnlocked = bag.size;
+  const pct = Math.round(totalUnlocked / 26 * 100);
+  document.getElementById('letter-bag-hint').textContent =
+    `已解锁 ${totalUnlocked}/26 个字母（${pct}%）— 在学习中拼对单词即可解锁字母`;
+
+  showScreen('screen-letter-bag');
 }
 
 /* ========== 练习模式 ========== */
@@ -742,9 +796,20 @@ const PRAC = {
   bestStreak: 0,
   answered: false,
   totalXp: 0,
+  mode: 'grade5-6',
 };
 
-async function startPractice() {
+/** 练习模式选年级 */
+function showPracticeScreen() {
+  showScreen('screen-practice-select');
+}
+
+async function startPractice(mode) {
+  PRAC.mode = mode || 'grade5-6';
+  // 确定词库和句子组的 tier 范围
+  const isLowGrade = (mode === 'grade1-2');
+  const noShengke = (mode !== 'grade5-6');
+
   try {
     // Direct fetch vocabulary (bypass DATA to isolate SW/fetch issue)
     let wordsData;
@@ -790,11 +855,10 @@ async function startPractice() {
     PRAC.bestStreak = 0;
     PRAC.answered = false;
     PRAC.totalXp = 0;
-
-    const types = ['cloze', 'match-cn', 'pos', 'shengke'];
+    const types = mode === "grade1-2" ? ["cloze", "match-cn", "word-class"] : mode === "grade3-4" ? ["cloze", "match-cn", "pos", "word-class"] : ["cloze", "match-cn", "pos", "shengke"];
     for (let i = 0; i < 10; i++) {
       const type = DATA.randomPick(types);
-      const q = pracGenQuestion(type);
+      const q = pracGenQuestion(type, mode);
       if (q) PRAC.questions.push(q);
       else i--;
     }
@@ -812,18 +876,20 @@ async function startPractice() {
   }
 }
 
-function pracGenQuestion(type) {
+function pracGenQuestion(type, mode) {
   switch (type) {
-    case 'cloze': return pracGenCloze();
-    case 'match-cn': return pracGenMatchCn();
-    case 'pos': return pracGenPos();
-    case 'shengke': return pracGenShengke();
+    case 'cloze': return pracGenCloze(mode);
+    case 'match-cn': return pracGenMatchCn(mode);
+    case 'pos': return pracGenPos(mode);
+    case 'word-class': return pracGenWordClass(mode);
+    case 'shengke': return pracGenShengke(mode);
   }
 }
 
 /* --- 完形填空 --- */
-function pracGenCloze() {
-  const q = DATA.generateClozeQuestion();
+function pracGenCloze(mode) {
+  const tier = mode === 'grade1-2' ? 'beginner' : undefined;
+  const q = DATA.generateClozeQuestion(tier);
   if (!q) return null;
   return {
     typeLabel: '完形填空',
@@ -836,11 +902,13 @@ function pracGenCloze() {
 }
 
 /* --- 中英配对 --- */
-function pracGenMatchCn() {
-  const pool = DATA.words.filter(w => w.cn && w.cn.length < 8);
+function pracGenMatchCn(mode) {
+  let pool = DATA.words.filter(w => w.cn && w.cn.length < 8);
+  if (mode === 'grade1-2') pool = pool.filter(w => w.tier === 'beginner');
+  // grade3-4 and grade5-6 use all words
   const word = DATA.randomPick(pool);
   const correct = word.cn;
-  const others = DATA.shuffleArray(DATA.words.filter(w => w.cn !== correct)).slice(0, 3);
+  const others = DATA.shuffleArray(pool.filter(w => w.cn !== correct)).slice(0, 3);
   if (others.length < 3) return null;
   return {
     typeLabel: '中英配对',
@@ -854,8 +922,9 @@ function pracGenMatchCn() {
 }
 
 /* --- 词性判断 --- */
-function pracGenPos() {
-  const pool = DATA.words.filter(w => w.pos && DATA.POS_LABELS[w.pos]);
+function pracGenPos(mode) {
+  let pool = DATA.words.filter(w => w.pos && DATA.POS_LABELS[w.pos]);
+  if (mode === 'grade1-2') pool = pool.filter(w => w.tier === 'beginner');
   const word = DATA.randomPick(pool);
   const correct = DATA.POS_LABELS[word.pos];
   const wrongs = DATA.shuffleArray(
@@ -873,8 +942,35 @@ function pracGenPos() {
   };
 }
 
+/* --- 单词分类（给单词选正确的主题分类） --- */
+function pracGenWordClass(mode) {
+  let pool = DATA.words.filter(w => w.category_cn && DATA.THEME_EMOJI[w.category_cn]);
+  if (mode === 'grade1-2') pool = pool.filter(w => w.tier === 'beginner');
+  if (pool.length < 4) return null;
+
+  const word = DATA.randomPick(pool);
+  const correct = `${DATA.THEME_EMOJI[word.category_cn]} ${word.category_cn}`;
+
+  // 找其他分类做干扰项
+  const allCategories = Object.keys(DATA.THEME_EMOJI);
+  const wrongCats = DATA.shuffleArray(
+    allCategories.filter(c => c !== word.category_cn)
+  ).slice(0, 3).map(c => `${DATA.THEME_EMOJI[c]} ${c}`);
+  if (wrongCats.length < 3) return null;
+
+  return {
+    typeLabel: '单词分类',
+    question: `"${word.word}"（${word.cn}）属于哪一类？`,
+    options: DATA.shuffleArray([
+      { text: correct, isCorrect: true },
+      ...wrongCats.map(t => ({ text: t, isCorrect: false })),
+    ]),
+    explanation: `${word.word} 属于「${word.category_cn}」类`,
+  };
+}
+
 /* --- 五行生克 --- */
-function pracGenShengke() {
+function pracGenShengke(mode) {
   const ELEMENT_RELATIONS = {
     '木': { sheng: '火', ke: '土' },
     '火': { sheng: '土', ke: '金' },
@@ -983,11 +1079,17 @@ function pracAbort() {
 
 /* --- 结算 --- */
 function pracShowResult() {
-  // 计算经验
-  let xp = PRAC.correct * 5;
+  // 计算经验（按年级倍率）
+  const pracMult = PRAC.mode === 'grade1-2' ? 1.0 : PRAC.mode === 'grade3-4' ? 1.5 : 2.0;
+  let xp = Math.round(PRAC.correct * 5 * pracMult);
   // 连对加成：从第3次连续正确开始，每次+2
   const streakBonus = Math.max(0, (PRAC.bestStreak - 2)) * 2;
   xp += streakBonus;
+  // 等级衰减：超出推荐等级逐级 -10%，最低 50%
+  const pracLevel = getLevel(loadXp());
+  const pracGradeMax = parseInt(PRAC.mode.split('-')[1]);
+  const pracExceed = Math.min(5, Math.max(0, pracLevel - pracGradeMax * 5));
+  if (pracExceed > 0) xp = Math.round(xp * (1 - pracExceed * 0.1));
   PRAC.totalXp = xp;
   addXp(xp);
 
@@ -1170,9 +1272,10 @@ function showStudyScreen() {
   const desc = document.getElementById('grade-3-4-desc');
   const lock = document.getElementById('grade-3-4-lock');
   btn.className = 'grade-card grade-unlocked';
-  desc.textContent = '中级单词 · 含虚词';
+  desc.textContent = '中级单词 · 主题学习';
   lock.textContent = '✅';
   btn.onclick = () => startStudy('grade3-4');
+  // 5-6年级按钮无需额外解锁
   showScreen('screen-study');
 }
 
@@ -1183,32 +1286,37 @@ function handleGrade3_4() {
 
 /** 从学习选级进入对应的模式 */
 async function startStudy(mode) {
-  // 等级不再锁定内容，任何年级均可直接进入
   lastLearnMode = mode;
   STATE.currentMode = mode;
   STATE.sentenceAttempts = 0;
   await DATA.load();
 
-  // 选择句子组
-  const tier = mode === 'grade1-2' ? 'beginner' : 'intermediate';
-  const result = DATA.selectAnySentenceGroup(tier);
-  if (result) {
-    STATE.words = result.words;
-    STATE.targetOrder = result.targetOrder;
-    STATE.targetSentence = result.targetSentence;
-    STATE.contextCn = result.contextCn;
+  if (mode === 'grade5-6') {
+    // 5-6年级：走原有连句模式（word → quiz → sentence）
+    const tier = 'intermediate';
+    const result = DATA.selectAnySentenceGroup(tier);
+    if (result) {
+      // 对齐 words 与 targetOrder：以 targetOrder 为准构建 word 列表
+      STATE.targetOrder = result.targetOrder;
+      // 直接使用 targetOrder 构建 words（保持完全一致，含重复词如 the the）
+      STATE.words = [...result.targetOrder];
+      STATE.targetSentence = result.targetSentence;
+      STATE.contextCn = result.contextCn;
+    } else {
+      STATE.words = DATA.selectWords4();
+      STATE.targetOrder = DATA.getTargetOrder(STATE.words);
+      STATE.targetSentence = '';
+      STATE.contextCn = '';
+    }
+    STATE.wordIndex = 0;
+    STATE.sentenceCorrect = false;
+    STATE.isThemeMode = false;
+    STATE.words = DATA.shuffleArray([...STATE.words]);
+    startLearning();
   } else {
-    STATE.words = DATA.selectWords4();
-    STATE.targetOrder = DATA.getTargetOrder(STATE.words);
-    STATE.targetSentence = '';
-    STATE.contextCn = '';
+    // 1-2 / 3-4年级：走主题学习模式（word → quiz → finish）
+    startThemeLearning(mode);
   }
-
-  STATE.wordIndex = 0;
-  STATE.sentenceCorrect = false;
-  STATE.words = DATA.shuffleArray([...STATE.words]);
-
-  startLearning();
 }
 
 /* ========== 选五行（保留给挑战模式） ========== */
@@ -1290,6 +1398,376 @@ function confirmElements() {
   STATE.words = DATA.shuffleArray([...STATE.words]);
 
   startLearning();
+}
+
+/* ========== 主题学习模式（1-2 / 3-4年级） ========== */
+function startThemeLearning(mode) {
+  STATE.isThemeMode = true;
+  // 从当前年级对应的主题分类中选 5 个词
+  STATE.words = DATA.selectThemeWords(mode, 5);
+  STATE.wordIndex = 0;
+  STATE.quizCorrect = 0;
+  STATE.quizTotal = 0;
+  STATE._quizAnswered = false;
+  STATE._quizzedWords = new Set();
+  STATE.quizSchedule = computeQuizSchedule(STATE.words.length);
+  STATE.sentenceCorrect = false;
+
+  // 设置主题头部
+  const cat = STATE.words[0].category_cn;
+  const emoji = DATA.THEME_EMOJI[cat] || '📖';
+  const themeEl = document.getElementById('theme-header');
+  themeEl.innerHTML = `<span class="theme-emoji">${emoji}</span><span class="theme-name">${cat}</span>`;
+  themeEl.style.display = 'flex';
+
+  // 隐藏五行提示（主题模式用 emoji 代替）
+  document.getElementById('learn-element').style.display = 'none';
+  // 隐藏句子行
+  document.getElementById('word-sentence').style.display = 'none';
+
+  showScreen('screen-learn');
+  showThemeWord(0);
+}
+
+function showThemeWord(index) {
+  if (index >= STATE.words.length) {
+    startSpellingPhase();
+    return;
+  }
+  STATE.wordIndex = index;
+  STATE._quizAnswered = false;
+  const w = STATE.words[index];
+
+  // 更新进度
+  document.getElementById('progress-fill').style.width = `${(index / STATE.words.length) * 100}%`;
+  document.getElementById('progress-text').textContent = `${index + 1}/${STATE.words.length}`;
+
+  // 隐藏测验，恢复单词
+  document.getElementById('learn-quiz').style.display = 'none';
+  document.getElementById('word-display').style.display = 'block';
+  document.getElementById('btn-chinese').style.display = 'inline-block';
+  document.getElementById('btn-next').style.display = 'inline-block';
+
+  // 按钮文字
+  const isQuizPoint = STATE.quizSchedule.includes(index);
+  const isLast = index >= STATE.words.length - 1;
+  if (isQuizPoint) {
+    document.getElementById('btn-next').textContent = '答题 →';
+  } else if (isLast) {
+    document.getElementById('btn-next').textContent = '完成 →';
+  } else {
+    document.getElementById('btn-next').textContent = '下一个 →';
+  }
+
+  // 显示单词（主题色）
+  document.getElementById('word-english').textContent = w.word;
+  document.getElementById('word-english').style.color = 'var(--text)';
+  document.getElementById('word-chinese').textContent = w.cn;
+  document.getElementById('word-chinese').style.display = 'none';
+
+  // 主题 emoji 提示（复用 learn-element 位置）
+  const cat = w.category_cn;
+  const emoji = DATA.THEME_EMOJI[cat] || '📖';
+  document.getElementById('learn-element').textContent = `${emoji} ${cat}`;
+  document.getElementById('learn-element').style.display = 'block';
+
+  SPEAKER.speakWord(w.word);
+}
+
+/* ========== 拼词阶段（低年级学习模式，替代连句） ========== */
+
+/** 主题学习完成后进入拼词阶段 */
+function startSpellingPhase() {
+  STATE.isSpelling = true;
+  STATE.spellWordIndex = 0;
+  STATE.spellResult = [];
+  // 只需要拼部分单词：1-2年级拼1个，3-4年级拼2个
+  STATE.spellRequiredCount = STATE.currentMode === 'grade1-2' ? 1 : 2;
+  document.getElementById('theme-header').style.display = 'none';
+  document.getElementById('learn-element').style.display = 'block';
+  document.getElementById('word-sentence').style.display = 'block';
+  // 确保按钮可见（从上次可能残留的隐藏状态恢复）
+  document.querySelector('.spell-area .learn-buttons').style.display = 'flex';
+  document.getElementById('spell-result').style.display = 'none';
+  showSpellingWord(0);
+}
+
+function showSpellingWord(index) {
+  if (index >= STATE.spellRequiredCount) {
+    finishThemeLearning();
+    return;
+  }
+  STATE.spellWordIndex = index;
+  const w = STATE.words[index];
+  if (!STATE.spellResult[index]) {
+    STATE.spellResult[index] = { word: w.word, attempts: 0, success: false };
+  }
+  STATE.spellResult[index].attempts = 0;
+
+  // 进度
+  document.getElementById('spell-progress-fill').style.width = `${(index / STATE.spellRequiredCount) * 100}%`;
+  document.getElementById('spell-progress-text').textContent = `${index + 1}/${STATE.spellRequiredCount}`;
+
+  // 线索
+  const themeEmoji = DATA.THEME_EMOJI[w.category_cn] || '📖';
+  document.getElementById('spell-emoji').textContent = themeEmoji;
+  document.getElementById('spell-cn').textContent = w.cn;
+  document.getElementById('spell-hint').textContent = `${w.word.length} 个字母`;
+
+  // 五行提示
+  const wordEl = DATA.getWordElementFromLetters(w.word);
+  const elInfo = DATA.getElementInfo(wordEl);
+  document.getElementById('spell-word-element').textContent = `${elInfo.icon} ${wordEl}`;
+  document.getElementById('spell-word-element').style.color = elInfo.color;
+
+  // 构建字母牌
+  const letters = w.word.toUpperCase().split('');
+  const letterPool = DATA.shuffleArray(letters.map((ch, i) => ({
+    id: i, letter: ch, used: false
+  })));
+
+  STATE._spellPool = letterPool;
+  STATE._spellPlaced = []; // { slotIndex: 0..n-1, poolId: int }
+
+  renderSpelling(letters.length);
+  hideSpellResult();
+  showScreen('screen-spell');
+}
+
+function renderSpelling(wordLen) {
+  // 槽位
+  const slotsEl = document.getElementById('spell-slots');
+  slotsEl.innerHTML = '';
+  for (let i = 0; i < wordLen; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'spell-slot';
+    slot.dataset.slotIdx = i;
+    slot.addEventListener('click', () => clickSlot(i));
+    slotsEl.appendChild(slot);
+  }
+  // 字母牌
+  renderSpellBank();
+  // 按钮状态
+  document.getElementById('btn-spell-check').disabled = true;
+  document.getElementById('spell-feedback').style.display = 'none';
+}
+
+function renderSpellBank() {
+  const bank = document.getElementById('spell-bank');
+  bank.innerHTML = '';
+  for (const pc of STATE._spellPool) {
+    if (pc.used) continue;
+    const el = DATA.getLetterElement(pc.letter);
+    const elInfo = DATA.getElementInfo(el);
+    const tile = document.createElement('div');
+    tile.className = `letter-tile tile-elem-${elInfo.id}`;
+    tile.dataset.poolId = String(pc.id);
+    tile.dataset.letter = pc.letter;
+    tile.textContent = pc.letter.toLowerCase();
+    tile.addEventListener('click', () => clickLetterTile(pc.id));
+    bank.appendChild(tile);
+  }
+}
+
+function clickLetterTile(poolId) {
+  const pc = STATE._spellPool.find(p => p.id === poolId);
+  if (!pc || pc.used) return;
+  pc.used = true;
+  STATE._spellPlaced.push(poolId);
+  syncSpellUI();
+}
+
+function clickSlot(slotIdx) {
+  if (!STATE._spellPlaced[slotIdx]) return;
+  const poolId = STATE._spellPlaced[slotIdx];
+  const pc = STATE._spellPool.find(p => p.id === poolId);
+  if (pc) pc.used = false;
+  STATE._spellPlaced[slotIdx] = null;
+  // 折叠空位
+  STATE._spellPlaced = STATE._spellPlaced.filter(v => v !== null);
+  syncSpellUI();
+}
+
+function syncSpellUI() {
+  const wordLen = STATE.words[STATE.spellWordIndex].word.length;
+  const slots = document.getElementById('spell-slots').querySelectorAll('.spell-slot');
+
+  for (let i = 0; i < wordLen; i++) {
+    const slot = slots[i];
+    const poolId = STATE._spellPlaced[i];
+    if (poolId !== undefined && poolId !== null) {
+      const pc = STATE._spellPool.find(p => p.id === poolId);
+      slot.textContent = pc ? pc.letter.toLowerCase() : '';
+      slot.className = 'spell-slot filled';
+    } else {
+      slot.textContent = '';
+      slot.className = 'spell-slot';
+    }
+  }
+
+  renderSpellBank();
+
+  // 检查按钮启用条件：所有槽位填满
+  const allFilled = STATE._spellPlaced.length === wordLen && STATE._spellPlaced.every(v => v !== null && v !== undefined);
+  document.getElementById('btn-spell-check').disabled = !allFilled;
+}
+
+function checkSpelling() {
+  const w = STATE.words[STATE.spellWordIndex];
+  const result = STATE.spellResult[STATE.spellWordIndex];
+  result.attempts++;
+
+  const correct = w.word.toUpperCase();
+  const placed = STATE._spellPlaced.map(poolId => {
+    const pc = STATE._spellPool.find(p => p.id === poolId);
+    return pc ? pc.letter : '';
+  }).join('');
+
+  const isCorrect = placed === correct;
+  const slots = document.getElementById('spell-slots').querySelectorAll('.spell-slot');
+
+  if (isCorrect) {
+    slots.forEach(s => s.className = 'spell-slot correct');
+    result.success = true;
+    showSpellFeedback('✅ 拼对了！', '#4caf50');
+    showSpellReward(result);
+  } else {
+    // 标记错误位置
+    for (let i = 0; i < correct.length; i++) {
+      if (placed[i] !== correct[i]) {
+        slots[i].className = 'spell-slot wrong';
+      }
+    }
+    showSpellFeedback('❌ 再想想，注意字母顺序', '#f44336');
+    // 自动清空重试
+    setTimeout(() => {
+      resetSpelling();
+      // 提示第一个字母
+      document.getElementById('spell-hint').textContent = `首字母: ${correct[0]}`;
+    }, 1000);
+  }
+}
+
+function showSpellFeedback(msg, color) {
+  const fb = document.getElementById('spell-feedback');
+  fb.textContent = msg;
+  fb.style.background = color || '#fff3e0';
+  fb.style.color = color ? '#fff' : '#e65100';
+  fb.style.display = 'block';
+}
+
+function resetSpelling() {
+  // 清空所有放置
+  for (const pc of STATE._spellPool) pc.used = false;
+  STATE._spellPlaced = [];
+  syncSpellUI();
+  document.getElementById('spell-feedback').style.display = 'none';
+}
+
+function showSpellReward(result) {
+  const w = STATE.words[STATE.spellWordIndex];
+  const isLast = STATE.spellWordIndex >= STATE.spellRequiredCount - 1;
+
+  // 解锁字母
+  const lb = loadLetterBag();
+  for (const ch of w.word.toUpperCase()) {
+    lb.add(ch);
+  }
+  saveLetterBag(lb);
+
+  // 计算 XP（按尝试次数衰减）
+  let xpGain = 0;
+  const baseXp = STATE.currentMode === 'grade1-2' ? 12 : STATE.currentMode === 'grade3-4' ? 18 : 24;
+  if (result.attempts === 1) xpGain = baseXp;
+  else if (result.attempts === 2) xpGain = Math.round(baseXp / 2);
+  // 第3次及以上：给卡不给 XP
+  // 等级衰减
+  if (xpGain > 0) {
+    const spellLevel = getLevel(loadXp());
+    const spellGradeMax = parseInt(STATE.currentMode.split('-')[1]);
+    const spellExceed = Math.min(5, Math.max(0, spellLevel - spellGradeMax * 5));
+    if (spellExceed > 0) xpGain = Math.round(xpGain * (1 - spellExceed * 0.1));
+  }
+  addXp(xpGain);
+
+  // 将单词加入技能背包
+  const bp = loadBackpack();
+  const maxCap = getMaxBackpackCapacity(getLevel(loadXp()));
+  if (bp.length < maxCap) {
+    bp.push({
+      word: w.word, cn: w.cn, element: w.element,
+      pos: w.pos || '', sentence: w.sentence || '',
+      date: new Date().toISOString().slice(0, 10),
+    });
+    saveBackpack(bp);
+  }
+
+  // 显示结果信息
+  const attemptLabel = result.attempts === 1 ? '一次成功！' : result.attempts === 2 ? '第二次成功！' : '拼出来了！';
+  const xpLabel = xpGain > 0 ? `+${xpGain}XP` : '';
+  const lettersUnlocked = [...new Set(w.word.toUpperCase())].join(' ');
+  const msgEl = document.getElementById('spell-result-message');
+  msgEl.innerHTML = `
+    <div style="font-size:24px;font-weight:700;color:var(--primary)">🎉 ${attemptLabel}</div>
+    <div style="font-size:14px;color:var(--text-light);margin-top:8px">
+      解锁字母: ${lettersUnlocked} | 获得「${w.word}」卡 ${xpLabel}
+    </div>
+  `;
+  document.getElementById('spell-result').style.display = 'block';
+  document.querySelector('.spell-area .learn-buttons').style.display = 'none';
+
+  const btns = document.getElementById('spell-result-buttons');
+  btns.innerHTML = '';
+  if (isLast) {
+    const btn = document.createElement('button');
+    btn.className = 'primary-btn';
+    btn.textContent = '领取全部奖励 →';
+    btn.addEventListener('click', finishThemeLearning);
+    btns.appendChild(btn);
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'primary-btn';
+    btn.textContent = '下一个单词 →';
+    btn.addEventListener('click', () => {
+      hideSpellResult();
+      document.querySelector('.spell-area .learn-buttons').style.display = 'flex';
+      showSpellingWord(STATE.spellWordIndex + 1);
+    });
+    btns.appendChild(btn);
+  }
+}
+
+function hideSpellResult() {
+  document.getElementById('spell-result').style.display = 'none';
+  document.getElementById('spell-result-buttons').innerHTML = '';
+}
+
+function confirmAbortSpell() {
+  showModal('确定退出拼词吗？进度不会保存。', () => {
+    closeModal();
+    STATE.isSpelling = false;
+    goHome();
+  });
+}
+
+function finishThemeLearning() {
+  STATE.isThemeMode = false;
+  STATE.isSpelling = false;
+
+  // 计算测验 XP + 拼词 XP
+  const totalSpelled = STATE.spellResult.filter(r => r.success).length;
+  const totalWords = STATE.words.length;
+  const quizAccuracy = STATE.quizTotal > 0 ? STATE.quizCorrect / STATE.quizTotal : 0;
+  const quizXp = Math.round(10 + quizAccuracy * 20); // 10~30
+
+  const cat = STATE.words[0]?.category_cn || '';
+  const emoji = DATA.THEME_EMOJI[cat] || '📖';
+  const msg = `${emoji} ${cat} 主题完成！拼对 ${totalSpelled}/${totalWords} 个词 +${quizXp}XP（测验）+ 拼词奖励`;
+  addXp(quizXp);
+  document.getElementById('theme-header').style.display = 'none';
+
+  showToast(msg);
+  goHome();
 }
 
 /* ========== 学单词 ========== */
@@ -1389,15 +1867,26 @@ function showChinese() {
 
 /** 点击"答题"或"下一个"按钮 */
 function onNextClick() {
+  if (STATE.isThemeMode) {
+    onThemeNextClick();
+    return;
+  }
   if (STATE._quizAnswered) {
-    // 已回答过测验 → 进入下一个词
     showWord(STATE.wordIndex + 1);
   } else if (STATE.quizSchedule.includes(STATE.wordIndex)) {
-    // 排程测验点 → 展示测验
     showQuiz();
   } else {
-    // 非测验点 → 直接下一个词
     showWord(STATE.wordIndex + 1);
+  }
+}
+
+function onThemeNextClick() {
+  if (STATE._quizAnswered) {
+    showThemeWord(STATE.wordIndex + 1);
+  } else if (STATE.quizSchedule.includes(STATE.wordIndex)) {
+    showQuiz();
+  } else {
+    showThemeWord(STATE.wordIndex + 1);
   }
 }
 
@@ -1505,12 +1994,24 @@ function handleQuizAnswer(selectedBtn) {
 
   // 显示继续按钮
   const contBtn = document.getElementById('quiz-continue');
-  contBtn.textContent = isLast ? '开始连句 →' : '继续 →';
+  if (STATE.isThemeMode) {
+    contBtn.textContent = isLast ? '完成 →' : '继续 →';
+  } else {
+    contBtn.textContent = isLast ? '开始连句 →' : '继续 →';
+  }
   contBtn.style.display = 'block';
 }
 
 function advanceAfterQuiz() {
   const isLast = STATE.wordIndex >= STATE.words.length - 1;
+  if (STATE.isThemeMode) {
+    if (isLast) {
+      startSpellingPhase();
+    } else {
+      showThemeWord(STATE.wordIndex + 1);
+    }
+    return;
+  }
   if (isLast) {
     startSentence();
   } else {
@@ -1572,7 +2073,10 @@ function showResultMode() {
 
 function addToSentence(word) {
   if (STATE.sentenceChecked) return;
-  if (STATE.userSentence.includes(word)) return;
+  // 允许重复词：按出现次数计数（如 the the 需要两个 the）
+  const countInSentence = STATE.userSentence.filter(w => w.word === word.word).length;
+  const countInWords = STATE.words.filter(w => w.word === word.word).length;
+  if (countInSentence >= countInWords) return;
   STATE.userSentence.push(word);
 
   renderSentence();
@@ -1609,11 +2113,18 @@ function renderSentence() {
 }
 
 function updateBank() {
+  // 统计 userSentence 中每个词的出现次数
+  const usedCount = {};
+  for (const w of STATE.userSentence) {
+    usedCount[w.word] = (usedCount[w.word] || 0) + 1;
+  }
   document.querySelectorAll('.bank-card').forEach(card => {
     const widx = parseInt(card.dataset.widx, 10);
     const w = STATE.words[widx];
-    const inSentence = STATE.userSentence.includes(w);
-    card.classList.toggle('used', inSentence);
+    // 看这个位置的词是否已被使用（按词出现次数计数）
+    const precedingSame = STATE.words.slice(0, widx).filter(x => x.word === w.word).length;
+    const used = (usedCount[w.word] || 0) > precedingSame;
+    card.classList.toggle('used', used);
   });
 }
 
@@ -2523,6 +3034,7 @@ function closeModal() {
 function confirmAbort() {
   showModal('确定退出学习吗？进度不会保存。', () => {
     closeModal();
+    STATE.isThemeMode = false;
     goHome();
   });
 }
@@ -2592,8 +3104,8 @@ function showLevelScreen() {
   container.innerHTML = '';
 
   const levels = [
-    { id: 'beginner', label: '初级', icon: '🌱', desc: 'Boss 150HP · 适合初学', locked: false },
-    { id: 'intermediate', label: '中级', icon: '🌿', desc: '即将开放', locked: true },
+    { id: 'letter', label: '初级·拼词', icon: '🔤', desc: '用字母拼单词攻击 · 适合1-4年级', locked: false },
+    { id: 'sentence', label: '中级·造句', icon: '📝', desc: '用单词卡造句攻击 · 适合5-6年级', locked: false },
     { id: 'advanced', label: '高级', icon: '🌳', desc: '即将开放', locked: true },
   ];
 
@@ -2615,6 +3127,7 @@ function showLevelScreen() {
 
 function selectLevel(level) {
   BATTLE.level = level;
+  BATTLE.isLetterMode = (level === 'letter');
   showBossScreen();
 }
 
@@ -2644,7 +3157,11 @@ function selectBoss(boss) {
   BATTLE.boss = { ...boss, ...bossStats };
   BATTLE.bossHp = bossStats.maxHp;
   BATTLE.bossMaxHp = bossStats.maxHp;
-  showEquipScreen();
+  if (BATTLE.isLetterMode) {
+    showLetterEquipScreen();
+  } else {
+    showEquipScreen();
+  }
 }
 
 /* ========== 装备技能 ========== */
@@ -2787,6 +3304,199 @@ function confirmEquip() {
   initBattle(selected);
 }
 
+/* ========== 字母装备（低年级拼词模式） ========== */
+function showLetterEquipScreen() {
+  const lb = loadLetterBag();
+  const availableLetters = [...lb].sort();
+  const grid = document.getElementById('equip-grid');
+  const hint = document.getElementById('equip-hint');
+  const count = document.getElementById('equip-count');
+
+  if (availableLetters.length < 12) {
+    hint.textContent = `❗ 需要至少解锁12个字母，你只有 ${availableLetters.length} 个。先去学习模式收集吧！`;
+    hint.style.color = '#e53935';
+    grid.innerHTML = '';
+    count.textContent = `已选 0 个字母`;
+    document.getElementById('equip-element-counts').innerHTML = '';
+    document.getElementById('btn-equip-confirm').disabled = true;
+    document.getElementById('btn-equip-confirm').onclick = null;
+    showScreen('screen-equip');
+    return;
+  }
+
+  // 检查五行覆盖
+  const elementSet = new Set();
+  for (const ch of availableLetters) {
+    elementSet.add(DATA.getLetterElement(ch));
+  }
+  const missing = DATA.ELEMENTS.map(e => e.name).filter(el => !elementSet.has(el));
+  if (missing.length > 0) {
+    hint.textContent = `❗ 缺少 ${missing.join('、')} 属性的字母，需要所有五行才能出战`;
+    hint.style.color = '#e53935';
+    grid.innerHTML = '';
+    count.textContent = `已选 0 个字母`;
+    document.getElementById('equip-element-counts').innerHTML = '';
+    document.getElementById('btn-equip-confirm').disabled = true;
+    document.getElementById('btn-equip-confirm').onclick = null;
+    showScreen('screen-equip');
+    return;
+  }
+
+  hint.textContent = '点击字母选择出战（至少12个，必须含全部五行）。战斗中字母可重复使用，同一个字母可多次放入槽位';
+  hint.style.color = '';
+  BATTLE._selectedLetters = [];
+
+  grid.innerHTML = '';
+  const elementOrder = DATA.ELEMENTS.map(e => e.name);
+  const grouped = {};
+  for (const el of elementOrder) grouped[el] = [];
+
+  for (const ch of availableLetters) {
+    const el = DATA.getLetterElement(ch);
+    if (grouped[el]) grouped[el].push(ch);
+  }
+
+  for (const el of elementOrder) {
+    const letters = grouped[el] || [];
+    if (letters.length === 0) continue;
+    const elInfo = DATA.getElementInfo(el);
+    const groupDiv = document.createElement('div');
+    groupDiv.style.cssText = 'margin-bottom:8px';
+    groupDiv.innerHTML = `<div style="font-size:12px;color:${elInfo.color};font-weight:700;margin-bottom:4px">${elInfo.icon} ${el} (${letters.length})</div>`;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap';
+    for (const ch of letters) {
+      const tile = document.createElement('div');
+      tile.className = `letter-tile tile-elem-${elInfo.id}`;
+      tile.style.width = '40px';
+      tile.style.height = '44px';
+      tile.style.fontSize = '18px';
+      tile.style.opacity = '0.4';        // 初始为未选中状态
+      tile.style.borderStyle = 'dashed';
+      tile.dataset.letter = ch;
+      tile.textContent = ch.toLowerCase();
+      tile.addEventListener('click', () => toggleLetterEquip(ch, tile));
+      row.appendChild(tile);
+    }
+    groupDiv.appendChild(row);
+    grid.appendChild(groupDiv);
+  }
+
+  BATTLE._selectedLetters = [];
+  count.textContent = `已选 0 个字母`;
+  document.getElementById('equip-element-counts').innerHTML = '';
+  document.getElementById('btn-equip-confirm').disabled = true;
+  document.getElementById('btn-equip-confirm').onclick = confirmLetterEquip;
+  showScreen('screen-equip');
+}
+
+function toggleLetterEquip(ch, tileEl) {
+  const idx = BATTLE._selectedLetters.indexOf(ch);
+  if (idx >= 0) {
+    BATTLE._selectedLetters.splice(idx, 1);
+    tileEl.style.opacity = '0.4';
+    tileEl.style.borderStyle = 'dashed';
+  } else {
+    BATTLE._selectedLetters.push(ch);
+    tileEl.style.opacity = '1';
+    tileEl.style.borderStyle = 'solid';
+    tileEl.style.borderWidth = '3px';
+  }
+
+  // 更新计数
+  const count = document.getElementById('equip-count');
+  count.textContent = `已选 ${BATTLE._selectedLetters.length} 个字母`;
+
+  // 五行统计
+  const counts = {};
+  for (const letter of BATTLE._selectedLetters) {
+    const el = DATA.getLetterElement(letter);
+    counts[el] = (counts[el] || 0) + 1;
+  }
+  const container = document.getElementById('equip-element-counts');
+  container.innerHTML = '';
+  for (const el of DATA.ELEMENTS) {
+    const n = counts[el.name] || 0;
+    const badge = document.createElement('span');
+    badge.className = `equip-el-badge ${n === 0 ? 'missing' : ''}`;
+    badge.style.cssText = `background:${el.bg};color:${el.color}`;
+    badge.textContent = `${el.icon} ${n}`;
+    container.appendChild(badge);
+  }
+
+  // 验证：至少12个 + 全五行
+  const allFive = DATA.ELEMENTS.every(e => (counts[e.name] || 0) > 0);
+  document.getElementById('btn-equip-confirm').disabled = !(BATTLE._selectedLetters.length >= 12 && allFive);
+}
+
+function confirmLetterEquip() {
+  const letters = BATTLE._selectedLetters;
+  if (letters.length < 12) {
+    document.getElementById('equip-hint').textContent = '❗ 至少选择12个字母';
+    document.getElementById('equip-hint').style.color = '#e53935';
+    return;
+  }
+  // 检查五行覆盖
+  const counts = {};
+  for (const ch of letters) {
+    const el = DATA.getLetterElement(ch);
+    counts[el] = (counts[el] || 0) + 1;
+  }
+  const allFive = DATA.ELEMENTS.every(e => (counts[e.name] || 0) > 0);
+  if (!allFive) {
+    document.getElementById('equip-hint').textContent = '❗ 需要覆盖全部五行';
+    document.getElementById('equip-hint').style.color = '#e53935';
+    return;
+  }
+
+  initLetterBattle(letters);
+}
+
+function initLetterBattle(selectedLetters) {
+  const boss = BATTLE.boss;
+  const playerLevel = getLevel(loadXp());
+  const pStats = getPlayerStats(playerLevel);
+  BATTLE.bossHp = boss.maxHp;
+  BATTLE.bossMaxHp = boss.maxHp;
+  BATTLE.playerHp = pStats.maxHp;
+  BATTLE.playerMaxHp = pStats.maxHp;
+  BATTLE.handCards = [];
+  BATTLE.consumedSet = new Set();
+  BATTLE.phase = 'boss';
+  BATTLE.roundCount = 0;
+  BATTLE.bossCorrectCount = 0;
+  BATTLE.totalDamageDealt = 0;
+  BATTLE.currentQuestion = null;
+  BATTLE.selectedIndices = [];
+  BATTLE.berserkSubRound = 0;
+
+  // 字母模式特有
+  BATTLE.isLetterMode = true;
+  BATTLE.battleLetters = [...selectedLetters];     // 当前可用字母
+  BATTLE.battleLetterPlaced = [];                   // 当前摆放的字母索引
+  BATTLE.battleLetterConsumed = new Set();          // 已消耗的字母索引
+
+  startLetterBattle();
+}
+
+function startLetterBattle() {
+  const boss = BATTLE.boss;
+  const elInfo = DATA.getElementInfo(boss.element);
+  document.getElementById('b-boss-icon').textContent = boss.icon;
+  document.getElementById('b-boss-name').textContent = boss.name;
+  document.getElementById('b-boss-atk').textContent = boss.atk;
+  document.getElementById('b-boss-def').textContent = boss.def;
+  const pLevel = getLevel(loadXp());
+  document.querySelector('.battle-level-badge').textContent = `Lv.${pLevel}`;
+
+  // 字母模式隐藏手牌区
+  document.getElementById('battle-hand').style.display = 'none';
+
+  updateHpBars();
+  showScreen('screen-battle');
+  bossTurn();
+}
+
 /* ========== 初始化战斗 ========== */
 function initBattle(equipped) {
   const boss = BATTLE.boss;
@@ -2821,6 +3531,9 @@ function startBattle() {
   const pLevel = getLevel(loadXp());
   document.querySelector('.battle-level-badge').textContent = `Lv.${pLevel}`;
 
+  // 确保手牌区显示（非字母模式）
+  document.getElementById('battle-hand').style.display = 'block';
+
   updateHpBars();
   showScreen('screen-battle');
 
@@ -2852,6 +3565,13 @@ function showPhase(phaseId) {
 }
 
 /* ========== Boss回合 ========== */
+/* === 初级挑战模式 Boss 出题（多种题型） === */
+function generateLetterBossQuestion() {
+  const types = ['cloze', 'match-cn', 'word-class'];
+  const type = DATA.randomPick(types);
+  return pracGenQuestion(type, 'grade3-4');
+}
+
 function bossTurn() {
   BATTLE.phase = 'boss';
   BATTLE.roundCount++;
@@ -2871,11 +3591,23 @@ function bossTurn() {
   }
 
   // 生成题目
-  const question = DATA.generateClozeQuestion();
+  let question;
+  if (BATTLE.isLetterMode) {
+    question = generateLetterBossQuestion();
+    if (!question) question = DATA.generateClozeQuestion();
+  } else {
+    question = DATA.generateClozeQuestion();
+  }
   BATTLE.currentQuestion = question;
 
   const qEl = document.getElementById('bq-question');
-  qEl.innerHTML = `"${question.displaySentence}"<br><small style="font-size:14px;color:#888;font-weight:400">选择正确的词填入空白</small>`;
+  if (question.typeLabel) {
+    // 通用多题型格式（letter mode）
+    qEl.innerHTML = `<span class="boss-q-badge">${question.typeLabel}</span> ${question.question}`;
+  } else {
+    // 传统完形填空格式（sentence mode）
+    qEl.innerHTML = `"${question.displaySentence}"<br><small style="font-size:14px;color:#888;font-weight:400">选择正确的词填入空白</small>`;
+  }
 
   const optContainer = document.getElementById('bq-options');
   optContainer.innerHTML = '';
@@ -2888,7 +3620,7 @@ function bossTurn() {
     const opt = question.options[i];
     const btn = document.createElement('button');
     btn.className = 'bq-option';
-    btn.textContent = `${opt.word} (${opt.cn})`;
+    btn.textContent = opt.text || `${opt.word} (${opt.cn})`;
     btn.addEventListener('click', () => answerBossQuestion(i));
     optContainer.appendChild(btn);
   }
@@ -2915,27 +3647,32 @@ function answerBossQuestion(optIndex) {
   resultEl.style.display = 'block';
 
   if (isCorrect) {
-    // Boss掉血 + 得牌（固定10点奖励伤害）
+    // Boss掉血（固定10点奖励伤害）
     BATTLE.bossCorrectCount++;
     BATTLE.bossHp -= 10;
     BATTLE.totalDamageDealt += 10;
     resultEl.className = 'bq-result bq-correct';
-    resultEl.innerHTML = `✅ 正确！Boss掉了10点HP！<br>「${opt.word}」加入你的手牌！`;
 
-    // 创建奖励牌（从词汇表补全数据）
-    const vocabWord = DATA.words.find(w =>
-      w.word.toLowerCase() === question.correctWord.word.toLowerCase() &&
-      w.element === question.correctWord.element
-    );
-    const rewardCard = {
-      word: question.correctWord.word,
-      cn: question.correctWord.cn,
-      element: question.correctWord.element,
-      pos: question.correctWord.pos,
-      sentence: (vocabWord && vocabWord.sentence) || question.correctWord.sentence || '',
-      source: 'reward',
-    };
-    BATTLE.handCards.push(rewardCard);
+    if (BATTLE.isLetterMode) {
+      resultEl.innerHTML = `✅ 正确！Boss掉了10点HP！`;
+    } else {
+      resultEl.innerHTML = `✅ 正确！Boss掉了10点HP！<br>「${opt.word}」加入你的手牌！`;
+
+      // 创建奖励牌（从词汇表补全数据）
+      const vocabWord = DATA.words.find(w =>
+        w.word.toLowerCase() === question.correctWord.word.toLowerCase() &&
+        w.element === question.correctWord.element
+      );
+      const rewardCard = {
+        word: question.correctWord.word,
+        cn: question.correctWord.cn,
+        element: question.correctWord.element,
+        pos: question.correctWord.pos,
+        sentence: (vocabWord && vocabWord.sentence) || question.correctWord.sentence || '',
+        source: 'reward',
+      };
+      BATTLE.handCards.push(rewardCard);
+    }
     updateHpBars();
 
     // 检查Boss是否归零
@@ -2956,7 +3693,9 @@ function answerBossQuestion(optIndex) {
     BATTLE.playerHp -= rawDmg;
     resultEl.className = 'bq-result bq-wrong';
     const berserkLabel = isBerserkDouble ? '（狂暴双倍伤害！）' : '';
-    resultEl.innerHTML = `❌ 答错了！你掉了${rawDmg}点HP！${berserkLabel}<br>正确答案是「${question.options.find(o => o.isCorrect).word}」`;
+    const correctOpt = question.options.find(o => o.isCorrect);
+    const correctText = correctOpt.text || correctOpt.word || '';
+    resultEl.innerHTML = `❌ 答错了！你掉了${rawDmg}点HP！${berserkLabel}<br>正确答案是「${correctText}」`;
     updateHpBars();
 
     if (BATTLE.playerHp <= 0) {
@@ -2976,8 +3715,13 @@ function answerBossQuestion(optIndex) {
       bossTurn();
     } else {
       BATTLE.berserkSubRound = 0;
-      showPhase('b-player-turn');
-      playerTurn();
+      if (BATTLE.isLetterMode) {
+        showPhase('b-player-letter-turn');
+        bpLetterTurn();
+      } else {
+        showPhase('b-player-turn');
+        playerTurn();
+      }
     }
   };
   document.getElementById('bq-next-btn').style.display = 'inline-block';
@@ -3102,6 +3846,332 @@ function bpResetSentence() {
   bpRenderSentence();
   updateBpAttackBtn();
   document.getElementById('bp-error-msg').textContent = '';
+}
+
+/* ========== 字母拼词攻击（低年级挑战模式） ========== */
+
+function bpLetterTurn() {
+  BATTLE.phase = 'player';
+  BATTLE.battleLetterPlaced = [];
+
+  // 检查是否还有可用字母（单字母也可攻击，但会消耗）
+  const available = BATTLE.battleLetters.filter((_, i) => !BATTLE.battleLetterConsumed.has(i));
+  if (available.length === 0) {
+    transitionMsg('💔 所有字母已消耗，无法继续战斗...', '查看结果', () => endBattle(false));
+    return;
+  }
+
+  document.getElementById('b-round-label').textContent = `🔤 你的回合！拼词攻击（2+字母不消耗）或单字母攻击（消耗字母）！`;
+
+  showPhase('b-player-letter-turn');
+  document.getElementById('bp-letter-clue-emoji').textContent = '🔤';
+  document.getElementById('bp-letter-clue-cn').textContent = '拼英文单词攻击Boss！单字母攻击会消耗该字母';
+  document.getElementById('bp-letter-hint').textContent = `可用字母 ${available.length} 个 · 2+字母拼词不消耗，1个字母攻击会消耗`;
+  document.getElementById('bp-letter-word-element').textContent = '';
+  document.getElementById('bp-letter-error-msg').textContent = '';
+  document.getElementById('bp-letter-slots').innerHTML = '';
+  renderBattleLetterBank();
+  bpLetterSyncUI();
+}
+
+function renderBattleLetterBank() {
+  const bank = document.getElementById('bp-letter-bank');
+  bank.innerHTML = '';
+  for (let i = 0; i < BATTLE.battleLetters.length; i++) {
+    if (BATTLE.battleLetterConsumed.has(i)) continue;
+    const ch = BATTLE.battleLetters[i];
+    const el = DATA.getLetterElement(ch);
+    const elInfo = DATA.getElementInfo(el);
+    const tile = document.createElement('div');
+    tile.className = `letter-tile tile-elem-${elInfo.id}`;
+    tile.dataset.letterIdx = String(i);
+    tile.textContent = ch.toLowerCase();
+    tile.addEventListener('click', () => bpLetterClickTile(i));
+    bank.appendChild(tile);
+  }
+
+  if (bank.children.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'color:#bbb;font-size:13px;padding:8px;text-align:center;width:100%';
+    empty.textContent = '所有字母已消耗';
+    bank.appendChild(empty);
+  }
+}
+
+function bpLetterClickTile(idx) {
+  if (BATTLE.battleLetterConsumed.has(idx)) return;
+  // 允许同一个字母多次放入槽位（如 too 需要2个o）
+  BATTLE.battleLetterPlaced.push(idx);
+  document.getElementById('bp-letter-error-msg').textContent = '';
+  bpLetterSyncUI();
+}
+
+function bpLetterClickSlot(slotIdx) {
+  if (slotIdx >= BATTLE.battleLetterPlaced.length) return;
+  const idx = BATTLE.battleLetterPlaced[slotIdx];
+  BATTLE.battleLetterPlaced.splice(slotIdx, 1);
+  bpLetterSyncUI();
+}
+
+function bpLetterSyncUI() {
+  // 渲染槽位
+  const slotsEl = document.getElementById('bp-letter-slots');
+  slotsEl.innerHTML = '';
+  if (BATTLE.battleLetterPlaced.length === 0) {
+    const placeholder = document.createElement('div');
+    placeholder.style.cssText = 'color:#bbb;font-size:14px;padding:8px;text-align:center;width:100%';
+    placeholder.textContent = '点击下方字母拼单词';
+    slotsEl.appendChild(placeholder);
+  } else {
+    for (let i = 0; i < BATTLE.battleLetterPlaced.length; i++) {
+      const idx = BATTLE.battleLetterPlaced[i];
+      const ch = BATTLE.battleLetters[idx];
+      const el = DATA.getLetterElement(ch);
+      const elInfo = DATA.getElementInfo(el);
+      const slot = document.createElement('div');
+      slot.className = 'spell-slot filled';
+      slot.style.borderColor = elInfo.color;
+      slot.style.background = elInfo.bg;
+      slot.style.color = elInfo.color;
+      slot.textContent = ch.toLowerCase();
+      slot.addEventListener('click', () => bpLetterClickSlot(i));
+      slotsEl.appendChild(slot);
+    }
+  }
+
+  // 渲染字母元素预览
+  const elemPreview = document.getElementById('bp-letter-word-element');
+  if (BATTLE.battleLetterPlaced.length > 0) {
+    const counts = {};
+    for (const idx of BATTLE.battleLetterPlaced) {
+      const el = DATA.getLetterElement(BATTLE.battleLetters[idx]);
+      counts[el] = (counts[el] || 0) + 1;
+    }
+    const parts = DATA.ELEMENTS.map(e => {
+      const n = counts[e.name] || 0;
+      return n > 0 ? `${e.icon}${n}` : '';
+    }).filter(Boolean);
+    elemPreview.textContent = '五行分布: ' + parts.join(' · ');
+  } else {
+    elemPreview.textContent = '';
+  }
+
+  // 渲染字母牌
+  renderBattleLetterBank();
+
+  // 攻击按钮：1个字母 → 单字母攻击(消耗)，2+字母 → 拼词攻击(不消耗)
+  const n = BATTLE.battleLetterPlaced.length;
+  const btn = document.getElementById('btn-bp-letter-attack');
+  if (n === 0) {
+    btn.disabled = true;
+    btn.textContent = '⚔️ 拼词攻击';
+  } else if (n === 1) {
+    btn.disabled = false;
+    btn.textContent = '💥 单字母攻击(消耗该字母)';
+  } else {
+    btn.disabled = false;
+    btn.textContent = '⚔️ 拼词攻击';
+  }
+}
+
+function bpLetterReset() {
+  BATTLE.battleLetterPlaced = [];
+  bpLetterSyncUI();
+  document.getElementById('bp-letter-error-msg').textContent = '';
+}
+
+function bpLetterPass() {
+  // 跳过本回合
+  BATTLE.battleLetterPlaced = [];
+  document.getElementById('b-round-label').textContent = '';
+  bossTurn();
+}
+
+async function bpLetterAttack() {
+  const letters = BATTLE.battleLetterPlaced.map(i => BATTLE.battleLetters[i]);
+
+  if (letters.length === 0) return;
+
+  const isSingle = letters.length === 1;
+
+  if (!isSingle) {
+    // 多字母拼词：验证单词
+    const word = letters.join('');
+    await DATA.loadReference();
+    const ref = DATA.lookupReferenceWord(word);
+    if (!ref) {
+      document.getElementById('bp-letter-error-msg').textContent = `❌ "${word}" 不是有效单词，请重试`;
+      return;
+    }
+
+    document.getElementById('bp-letter-error-msg').textContent = '';
+
+    // 计算伤害
+    const pLevel = getLevel(loadXp());
+    const pStats = getPlayerStats(pLevel);
+    const result = calculateLetterDamage(letters, BATTLE.boss.element, pStats.atk, BATTLE.boss.def);
+    BATTLE.bossHp = Math.max(0, BATTLE.bossHp - result.damage);
+    BATTLE.totalDamageDealt += result.damage;
+
+    // 多字母拼词：字母不消耗，放回字母库
+    BATTLE.battleLetterPlaced = [];
+
+    updateHpBars();
+
+    const formulaDetail = `${letters.length}个字母 × ${pStats.atk} × ${result.multiplier}`;
+    const defRatio = BATTLE.boss.def > 0 ? ` × 20/(20+${BATTLE.boss.def})` : '';
+    const message = `
+      <div style="font-weight:700;font-size:20px">${result.description}</div>
+      <span class="bt-damage">-${result.damage} HP</span>
+      <div style="font-size:13px;color:#888">${formulaDetail}${defRatio} = ${result.damage}</div>
+      <div>拼词：「${word}」</div>
+      <div style="font-size:12px;color:#999;margin-top:4px">${ref.pos ? '(' + (DATA.POS_LABELS[ref.pos] || ref.pos) + ')' : ''} ${letters.map(l => DATA.getLetterElement(l)).join('·')}</div>
+      <div style="font-size:11px;color:#4caf50;margin-top:2px">✅ 字母可继续使用</div>
+    `;
+
+    // 检查 Boss 是否被击败
+    if (BATTLE.bossHp <= 0) {
+      BATTLE.bossHp = 0;
+      updateHpBars();
+      transitionMsg(`🎉 ${message}`, '查看结果', () => endBattle(true));
+      return;
+    }
+
+    document.getElementById('bt-content').innerHTML = message;
+    showPhase('b-transition');
+    document.getElementById('b-round-label').textContent = '';
+    document.getElementById('bt-next-btn').textContent = '继续 → Boss回合';
+    document.getElementById('bt-next-btn').style.display = 'inline-block';
+    document.getElementById('bt-next-btn').onclick = () => { bossTurn(); };
+    return;
+  }
+
+  // === 单字母攻击（消耗字母） ===
+  const singleCh = letters[0];
+
+  // 验证：必须是字母（从字母库中来的，一定是合法字符）
+  document.getElementById('bp-letter-error-msg').textContent = '';
+
+  const pLevel = getLevel(loadXp());
+  const pStats = getPlayerStats(pLevel);
+  const result = calculateLetterDamage(letters, BATTLE.boss.element, pStats.atk, BATTLE.boss.def);
+  BATTLE.bossHp = Math.max(0, BATTLE.bossHp - result.damage);
+  BATTLE.totalDamageDealt += result.damage;
+
+  // 消耗该字母
+  for (const idx of BATTLE.battleLetterPlaced) {
+    BATTLE.battleLetterConsumed.add(idx);
+  }
+  BATTLE.battleLetterPlaced = [];
+
+  updateHpBars();
+
+  const formulaDetail = `1个字母 × ${pStats.atk} × ${result.multiplier}`;
+  const defRatio = BATTLE.boss.def > 0 ? ` × 20/(20+${BATTLE.boss.def})` : '';
+  const message = `
+    <div style="font-weight:700;font-size:20px">${result.description}</div>
+    <span class="bt-damage">-${result.damage} HP</span>
+    <div style="font-size:13px;color:#888">${formulaDetail}${defRatio} = ${result.damage}</div>
+    <div>单字母攻击：「${singleCh}」</div>
+    <div style="font-size:12px;color:#999;margin-top:4px">${DATA.getLetterElement(singleCh)} · 该字母已消耗</div>
+    <div style="font-size:11px;color:#e53935;margin-top:2px">💔 字母 ${singleCh} 永久消耗</div>
+  `;
+
+  if (BATTLE.bossHp <= 0) {
+    BATTLE.bossHp = 0;
+    updateHpBars();
+    transitionMsg(`🎉 ${message}`, '查看结果', () => endBattle(true));
+    return;
+  }
+
+  // 检查是否还有可用字母
+  const remaining = BATTLE.battleLetters.filter((_, i) => !BATTLE.battleLetterConsumed.has(i));
+  if (remaining.length === 0) {
+    transitionMsg(message + `<br><br>💔 所有字母已消耗，无法继续战斗！`, '查看结果', () => endBattle(false));
+    return;
+  }
+
+  document.getElementById('bt-content').innerHTML = message;
+  showPhase('b-transition');
+  document.getElementById('b-round-label').textContent = '';
+  document.getElementById('bt-next-btn').textContent = '继续 → Boss回合';
+  document.getElementById('bt-next-btn').style.display = 'inline-block';
+  document.getElementById('bt-next-btn').onclick = () => { bossTurn(); };
+}
+
+function calculateLetterDamage(letters, bossElement, playerAtk, bossDef) {
+  const n = letters.length;
+  let baseDamage = n * playerAtk;
+
+  // 统计字母五行
+  const elementCounts = {};
+  for (const ch of letters) {
+    const el = DATA.getLetterElement(ch);
+    elementCounts[el] = (elementCounts[el] || 0) + 1;
+  }
+
+  // 检测全五行
+  const allElements = DATA.ELEMENTS.map(e => e.name);
+  const hasAllFive = allElements.every(el => elementCounts[el] && elementCounts[el] > 0);
+
+  if (hasAllFive) {
+    const defMult = 20 / (20 + (bossDef || 0));
+    return { damage: Math.max(1, Math.round(baseDamage * 2 * defMult)), multiplier: 2.0, dominantElement: '全五行', description: '全五行·威力翻倍！' };
+  }
+
+  // 找最多
+  let maxCount = 0;
+  let dominantElement = null;
+  for (const [el, count] of Object.entries(elementCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominantElement = el;
+    }
+  }
+
+  // 检查是否有多个并列最多
+  const tiedElements = Object.entries(elementCounts).filter(([_, c]) => c === maxCount);
+  const isTie = tiedElements.length > 1;
+
+  if (isTie && Object.keys(elementCounts).length < allElements.length) {
+    // 平局且不全五行 → 随机 0.7-1.3
+    const randomMultiplier = Math.round((0.7 + Math.random() * 0.6) * 10) / 10;
+    const defMult = 20 / (20 + (bossDef || 0));
+    return { damage: Math.max(1, Math.round(baseDamage * randomMultiplier * defMult)), multiplier: randomMultiplier, dominantElement: '随机', description: `五行持平·随机系数×${randomMultiplier}` };
+  }
+
+  // 确定综合五行
+  const domEl = dominantElement || allElements[0];
+
+  // 双向查询生克关系
+  const domRel = BATTLE.ELEMENT_RELATIONS[domEl];
+  const bossRel = BATTLE.ELEMENT_RELATIONS[bossElement];
+  let multiplier = 1.0;
+  let description = '';
+
+  if (domEl === bossElement) {
+    multiplier = 1.0;
+    description = `同属性·持平 (×1.0)`;
+  } else if (domRel && domRel.ke === bossElement) {
+    multiplier = 1.5;
+    description = `${domEl}克${bossElement}·优势 (×1.5)`;
+  } else if (bossRel && bossRel.ke === domEl) {
+    multiplier = 0.5;
+    description = `${bossElement}克${domEl}·劣势 (×0.5)`;
+  } else if (DATA.SHENG[bossElement] === domEl) {
+    multiplier = 1.2;
+    description = `${bossElement}生${domEl}·借力 (×1.2)`;
+  } else if (DATA.SHENG[domEl] === bossElement) {
+    multiplier = 0.8;
+    description = `${domEl}生${bossElement}·减效 (×0.8)`;
+  } else {
+    multiplier = 1.0;
+    description = `持平 (×1.0)`;
+  }
+
+  const defMultiplier = 20 / (20 + (bossDef || 0));
+  const finalDamage = Math.round(baseDamage * multiplier * defMultiplier);
+  return { damage: Math.max(1, finalDamage), multiplier, dominantElement: domEl, description };
 }
 
 /* ========== 语法验证 ========== */
@@ -3299,8 +4369,10 @@ function endBattle(win) {
   document.getElementById('br-correct').textContent = BATTLE.bossCorrectCount;
   document.getElementById('br-damage').textContent = BATTLE.totalDamageDealt;
 
-  // 未消耗的手牌退回背包
-  returnUnusedCards();
+  // 未消耗的手牌退回背包（句子模式）
+  if (!BATTLE.isLetterMode) {
+    returnUnusedCards();
+  }
 
   // 奖励
   const rewardArea = document.getElementById('br-reward-area');
@@ -3311,7 +4383,12 @@ function endBattle(win) {
     const bossEl = boss.element;
     const pLevel = getLevel(loadXp());
     const pStats = getPlayerStats(pLevel);
-    const xpReward = Math.round(30 * (1 + (pStats.water - 10) * 0.01));
+    const chalMult = BATTLE.isLetterMode ? 1.0 : 2.0;
+    let xpReward = Math.round(30 * chalMult * (1 + (pStats.water - 10) * 0.01));
+    // 等级衰减：letter mode 阈值 20 级，sentence mode 阈值 30 级
+    const chalGradeMax = BATTLE.isLetterMode ? 4 : 6;
+    const chalExceed = Math.min(5, Math.max(0, pLevel - chalGradeMax * 5));
+    if (chalExceed > 0) xpReward = Math.round(xpReward * (1 - chalExceed * 0.1));
 
     const rewardCards = DATA.selectRandomCardsByElement(bossEl, 3);
     const bp = loadBackpack();

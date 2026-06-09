@@ -83,7 +83,7 @@
         <span class="btn-label">学习</span>
         <span class="btn-desc">单词 · 连句</span>
       </button>
-      <button class="menu-btn menu-btn-3rd btn-practice" onclick="startPractice()">
+      <button class="menu-btn menu-btn-3rd btn-practice" onclick="showPracticeScreen()">
         <span class="btn-icon">✏️</span>
         <span class="btn-label">练习</span>
         <span class="btn-desc">完形 · 配对 · 词性</span>
@@ -102,6 +102,11 @@
         <span class="btn-icon">🧰</span>
         <span class="btn-label">物品背包</span>
         <span class="btn-desc">道具 · 加成</span>
+      </button>
+      <button class="menu-btn menu-btn-half btn-letter" onclick="showLetterBag()">
+        <span class="btn-icon">🔤</span>
+        <span class="btn-label">字母背包</span>
+        <span class="btn-desc" id="letter-bag-count">已收集 0/26</span>
       </button>
       <button class="menu-btn menu-btn-full btn-rank" onclick="showLeaderboard()">
         <span class="btn-icon">🏆</span>
@@ -176,6 +181,45 @@
         </span>
         <span class="grade-lock" id="grade-3-4-lock">🔒</span>
       </button>
+      <button class="grade-card" id="grade-5-6-btn" onclick="startStudy('grade5-6')">
+        <span class="grade-icon">🌳</span>
+        <span class="grade-info">
+          <span class="grade-label">小学5-6年级</span>
+          <span class="grade-desc">高级单词 · 连句挑战</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ======== 练习选年级 ======== -->
+  <div id="screen-practice-select" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+    </div>
+    <h2>✏️ 选择年级</h2>
+    <p class="hint">根据孩子的年级选择练习内容</p>
+    <div class="grade-list" id="prac-grade-list">
+      <button class="grade-card grade-active" onclick="startPractice('grade1-2')">
+        <span class="grade-icon">🌱</span>
+        <span class="grade-info">
+          <span class="grade-label">小学1-2年级</span>
+          <span class="grade-desc">基础单词 · 拼词练习</span>
+        </span>
+      </button>
+      <button class="grade-card grade-active" onclick="startPractice('grade3-4')">
+        <span class="grade-icon">🌿</span>
+        <span class="grade-info">
+          <span class="grade-label">小学3-4年级</span>
+          <span class="grade-desc">中级单词 · 拼词练习</span>
+        </span>
+      </button>
+      <button class="grade-card grade-active" onclick="startPractice('grade5-6')">
+        <span class="grade-icon">🌳</span>
+        <span class="grade-info">
+          <span class="grade-label">小学5-6年级</span>
+          <span class="grade-desc">高级单词 · 完形配对词性</span>
+        </span>
+      </button>
     </div>
   </div>
 
@@ -214,6 +258,10 @@
       <span class="progress-text" id="progress-text">1/4</span>
     </div>
     <div class="learn-area">
+      <div class="theme-header" id="theme-header" style="display:none">
+        <span class="theme-emoji" id="theme-emoji">📖</span>
+        <span class="theme-name" id="theme-name">动物</span>
+      </div>
       <div class="element-hint" id="learn-element"></div>
       <div class="word-display" id="word-display">
         <div class="word-main">
@@ -263,6 +311,46 @@
         <div class="result-buttons" id="result-buttons"></div>
       </div>
     </div>
+  </div>
+
+  <!-- ======== 拼单词（低年级学习模式用） ======== -->
+  <div id="screen-spell" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="confirmAbortSpell()">← 退出</button>
+      <div class="progress-bar">
+        <div class="progress-fill" id="spell-progress-fill"></div>
+      </div>
+      <span class="progress-text" id="spell-progress-text">1/5</span>
+    </div>
+    <div class="spell-area">
+      <div class="spell-clue" id="spell-clue">
+        <span class="spell-emoji" id="spell-emoji">🐶</span>
+        <span class="spell-cn" id="spell-cn">狗</span>
+        <span class="spell-hint" id="spell-hint">3 个字母</span>
+      </div>
+      <div class="element-hint" id="spell-word-element"></div>
+      <div class="spell-slots" id="spell-slots"></div>
+      <div class="spell-bank" id="spell-bank"></div>
+      <div class="spell-feedback" id="spell-feedback" style="display:none"></div>
+      <div class="learn-buttons">
+        <button class="secondary-btn" id="btn-spell-reset" onclick="resetSpelling()">🔄 重置</button>
+        <button class="primary-btn" id="btn-spell-check" onclick="checkSpelling()" disabled>检查 ✓</button>
+      </div>
+      <div class="spell-result" id="spell-result" style="display:none">
+        <div id="spell-result-message" class="result-message"></div>
+        <div class="result-buttons" id="spell-result-buttons"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 字母背包 ======== -->
+  <div id="screen-letter-bag" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+    </div>
+    <h2>🔤 字母背包</h2>
+    <p class="hint" id="letter-bag-hint">收集字母解锁更强的组合！</p>
+    <div class="letter-grid" id="letter-grid"></div>
   </div>
 
   <!-- ======== 奖励 ======== -->
@@ -425,6 +513,26 @@
         </div>
       </div>
 
+      <!-- 玩家拼词攻击区（低年级字母模式） -->
+      <div id="b-player-letter-turn" class="battle-phase" style="display:none">
+        <div class="bp-letter-area">
+          <div class="spell-clue" style="padding:8px 16px;margin-bottom:6px">
+            <span class="spell-emoji" style="font-size:28px" id="bp-letter-clue-emoji">🔤</span>
+            <span class="spell-cn" id="bp-letter-clue-cn">用字母拼单词攻击！</span>
+          </div>
+          <div class="spell-hint" id="bp-letter-hint" style="font-size:12px;color:#999;margin-bottom:4px;text-align:center">点击字母拼成英文单词 → 攻击</div>
+          <div class="spell-word-element" id="bp-letter-word-element" style="text-align:center;font-size:13px;margin-bottom:4px"></div>
+          <div class="spell-slots" id="bp-letter-slots" style="min-height:44px;padding:6px"></div>
+          <div class="spell-bank" id="bp-letter-bank" style="min-height:44px;padding:4px"></div>
+          <div class="bp-actions" style="margin-top:6px;gap:6px">
+            <button class="secondary-btn" onclick="bpLetterReset()" style="font-size:13px;padding:6px 12px">重置</button>
+            <button class="secondary-btn" onclick="bpLetterPass()" style="font-size:13px;padding:6px 12px">跳过</button>
+            <button class="primary-btn" onclick="bpLetterAttack()" id="btn-bp-letter-attack" disabled style="font-size:13px;padding:6px 14px">⚔️ 拼词攻击</button>
+          </div>
+          <div id="bp-letter-error-msg" class="bp-error-msg"></div>
+        </div>
+      </div>
+
       <!-- 过渡提示 -->
       <div id="b-transition" class="battle-phase" style="display:none">
         <div class="bt-content" id="bt-content"></div>
@@ -533,7 +641,7 @@
       </div>
       <div class="pr-reward" id="pr-reward" style="display:none"></div>
       <div class="pr-buttons">
-        <button class="primary-btn" onclick="startPractice()">再来一轮</button>
+        <button class="primary-btn" onclick="startPractice(PRAC.mode)">再来一轮</button>
         <button class="text-btn" onclick="goHome()">回到主页</button>
       </div>
     </div>

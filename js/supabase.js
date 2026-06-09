@@ -15,6 +15,7 @@ const USER_CACHE = {
   username: '',
   xp: 0,
   backpack: [],
+  letterBag: [],
   items: [],
   bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
   avatar: '',
@@ -179,6 +180,9 @@ function saveXp(xp) { USER_CACHE.xp = xp; syncToSupabase(); }
 
 function loadBackpack() { return USER_CACHE.backpack || []; }
 function saveBackpack(bp) { USER_CACHE.backpack = bp; syncToSupabase(); }
+
+function loadLetterBag() { return new Set(USER_CACHE.letterBag || []); }
+function saveLetterBag(set) { USER_CACHE.letterBag = [...set]; syncToSupabase(); }
 
 function loadItems() { return USER_CACHE.items || []; }
 function saveItems(items) { USER_CACHE.items = items; syncToSupabase(); }
