@@ -1437,14 +1437,14 @@ function showQuiz() {
 
   // 构建选项：1 正确 + 3 干扰
   const correctAnswer = isEngToCn ? w.cn : w.word;
-  const options = [
+  let options = [
     { text: correctAnswer, correct: true },
     ...distractors.map(d => ({
       text: isEngToCn ? d.cn : d.word,
       correct: false,
     })),
   ];
-  DATA.shuffleArray(options);
+  options = DATA.shuffleArray(options);
 
   // 渲染
   const question = isEngToCn
@@ -2215,7 +2215,24 @@ function renderEquipSummary(equip) {
 function openEquipPicker(slotIndex) {
   const slot = EQUIP_SLOTS[slotIndex];
   const bp = loadBackpack();
-  const candidates = bp.filter(w => w.pos === slot.pos);
+  const equip = loadEquip();
+
+  // 收集已装备到其他槽的单词（当前槽可换，其他槽的不允许重复选）
+  const equippedInOtherSlots = new Set();
+  for (let i = 0; i < equip.length; i++) {
+    if (i !== slotIndex && equip[i]) {
+      equippedInOtherSlots.add(equip[i].word);
+    }
+  }
+
+  // 保留原始索引，排除其他槽已装备的卡片
+  const candidates = [];
+  for (let i = 0; i < bp.length; i++) {
+    const card = bp[i];
+    if (card.pos === slot.pos && !equippedInOtherSlots.has(card.word)) {
+      candidates.push({ index: i, card });
+    }
+  }
 
   const panel = document.getElementById('equip-card-picker');
   const title = document.getElementById('equip-picker-title');
@@ -2227,13 +2244,23 @@ function openEquipPicker(slotIndex) {
   panel.style.display = 'block';
   panel.dataset.slotIndex = slotIndex;
 
+  // 如果该槽已有装备，显示卸下按钮
+  if (equip[slotIndex]) {
+    const unequipBtn = document.createElement('div');
+    unequipBtn.className = 'equip-unequip-btn';
+    unequipBtn.innerHTML = '⬅ 卸下「' + equip[slotIndex].word + '」';
+    unequipBtn.addEventListener('click', () => unequipCard(slotIndex));
+    list.appendChild(unequipBtn);
+    list.appendChild(document.createElement('hr'));
+  }
+
   if (candidates.length === 0) {
     empty.style.display = 'block';
     return;
   }
   empty.style.display = 'none';
 
-  for (const w of candidates) {
+  for (const { index, card: w } of candidates) {
     const elInfo = DATA.getElementInfo(w.element);
     const card = document.createElement('div');
     card.className = 'equip-picker-card';
@@ -2241,20 +2268,57 @@ function openEquipPicker(slotIndex) {
     card.innerHTML = '<div class="ep-word" style="color:' + (elInfo ? elInfo.color : '#333') + '">' + w.word + '</div>' +
       '<div class="ep-cn">' + w.cn + '</div>' +
       '<div style="font-size:11px;color:#999;margin-top:2px">' + (elInfo ? elInfo.icon : '') + ' ' + w.element + '</div>';
-    card.addEventListener('click', () => equipSelectedCard(slotIndex, w));
+    card.addEventListener('click', () => equipSelectedCard(slotIndex, index));
     list.appendChild(card);
   }
 }
 
-function equipSelectedCard(slotIndex, card) {
+function equipSelectedCard(slotIndex, bpIndex) {
+  const bp = loadBackpack();
   const equip = loadEquip();
+
+  // 如果该槽已有装备，先退回背包
+  if (equip[slotIndex]) {
+    bp.push(equip[slotIndex]);
+  }
+
+  // 从背包移除新卡
+  const card = bp.splice(bpIndex, 1)[0];
+  if (!card) {
+    saveBackpack(bp);
+    saveEquip(equip);
+    return;
+  }
+
+  // 存入装备槽
   equip[slotIndex] = { word: card.word, cn: card.cn, element: card.element, pos: card.pos };
+
+  saveBackpack(bp);
   saveEquip(equip);
 
   renderEquipSlots(equip);
   renderEquipSummary(equip);
   document.getElementById('equip-card-picker').style.display = 'none';
   showToast('✅ 已装备「' + card.word + '」');
+}
+
+function unequipCard(slotIndex) {
+  const bp = loadBackpack();
+  const equip = loadEquip();
+
+  const card = equip[slotIndex];
+  if (!card) return;
+
+  // 退回背包
+  bp.push(card);
+  equip[slotIndex] = null;
+  saveBackpack(bp);
+  saveEquip(equip);
+
+  renderEquipSlots(equip);
+  renderEquipSummary(equip);
+  document.getElementById('equip-card-picker').style.display = 'none';
+  showToast('⬅ 已卸下「' + card.word + '」');
 }
 
 function closeEquipPicker() {
@@ -2273,7 +2337,10 @@ function showToast(msg) {
 /* ========== 空白单词卡 ========== */
 let _blankCardCallback = null;
 
-function showBlankCardInput() {
+async function showBlankCardInput() {
+  // 预先加载参考词库
+  await DATA.loadReference();
+
   // 构建输入弹窗
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -2284,9 +2351,12 @@ function showBlankCardInput() {
   modal.className = 'modal-box blank-card-modal';
   modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:16px;padding:24px;width:90%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,0.2);z-index:151;text-align:center';
 
+  // 初始化元素选择状态
+  _blankCardCallback = null;
+
   modal.innerHTML = `
     <div style="font-size:36px;margin-bottom:8px">🃏</div>
-    <h3 style="margin-bottom:8px">创建自定义单词</h3>
+    <h3 style="margin-bottom:8px;margin-top:0">创建自定义单词</h3>
     <p style="font-size:13px;color:#888;margin-bottom:16px">输入英文单词和中文释义，确认后加入技能背包</p>
     <div style="margin-bottom:12px">
       <input id="bc-english" type="text" placeholder="英文单词" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;outline:none;box-sizing:border-box">
@@ -2294,9 +2364,9 @@ function showBlankCardInput() {
     <div style="margin-bottom:16px">
       <input id="bc-chinese" type="text" placeholder="中文释义" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;outline:none;box-sizing:border-box">
     </div>
-    <div id="bc-error" style="font-size:13px;color:#e53935;margin-bottom:8px;min-height:18px"></div>
-    <div id="bc-element-picker" style="display:none;margin-bottom:12px">
-      <p style="font-size:13px;color:#666;margin-bottom:8px">选择这个词的五行属性：</p>
+    <div id="bc-error" style="font-size:14px;color:#e53935;margin-bottom:8px;min-height:20px;font-weight:600"></div>
+    <div id="bc-element-picker" style="display:none;margin-bottom:12px;padding:12px;background:#fafafa;border-radius:12px">
+      <p style="font-size:14px;color:#333;margin:0 0 10px 0;font-weight:600">选择这个词的五行属性：</p>
       <div id="bc-element-options" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"></div>
     </div>
     <div class="items-detail-actions" style="justify-content:center">
@@ -2310,10 +2380,7 @@ function showBlankCardInput() {
 
   overlay.addEventListener('click', cancelBlankCard);
 
-  // 预填充参考词库数据
-  _blankCardCallback = null;
   document.getElementById('bc-error').textContent = '';
-  document.getElementById('bc-element-picker').style.display = 'none';
 
   // 自动对焦
   setTimeout(() => document.getElementById('bc-english')?.focus(), 100);
@@ -2326,109 +2393,118 @@ function cancelBlankCard() {
 }
 
 async function confirmBlankCard() {
-  const engInput = document.getElementById('bc-english');
-  const cnInput = document.getElementById('bc-chinese');
-  const errorEl = document.getElementById('bc-error');
+  try {
+    const engInput = document.getElementById('bc-english');
+    const cnInput = document.getElementById('bc-chinese');
+    const errorEl = document.getElementById('bc-error');
 
-  const english = engInput.value.trim();
-  const chinese = cnInput.value.trim();
+    const english = engInput.value.trim();
+    const chinese = cnInput.value.trim();
 
-  if (!english) { errorEl.textContent = '请输入英文单词'; return; }
-  if (!chinese) { errorEl.textContent = '请输入中文释义'; return; }
+    if (!english) { errorEl.textContent = '请输入英文单词'; return; }
+    if (!chinese) { errorEl.textContent = '请输入中文释义'; return; }
 
-  // 只允许字母、空格、连字符
-  if (!/^[a-zA-Z\s\-']+$/.test(english)) {
-    errorEl.textContent = '英文单词只能包含字母、空格和连字符';
-    return;
-  }
-
-  // 确保词库已加载
-  await DATA.loadReference();
-
-  // 查参考词库
-  const ref = DATA.lookupReferenceWord(english);
-  if (!ref) {
-    errorEl.textContent = '这个词不在参考词库中，请重新输入';
-    return;
-  }
-
-  // 检查是否在已有词汇表中
-  const inVocabulary = DATA.words.some(w => w.word.toLowerCase() === english.toLowerCase());
-
-  // 显示五行选择（第一次通过验证后显示）
-  const elemPicker = document.getElementById('bc-element-picker');
-  if (elemPicker.style.display === 'none') {
-    // 第一次确认通过，显示五行选择
-    const options = document.getElementById('bc-element-options');
-    options.innerHTML = '';
-    for (const el of DATA.ELEMENTS) {
-      const btn = document.createElement('button');
-      btn.className = 'element-card';
-      btn.style.cssText = `background:${el.bg};padding:8px 12px;border-radius:10px;border:none;cursor:pointer;text-align:center;min-width:60px`;
-      btn.dataset.element = el.name;
-      btn.innerHTML = `<div style="font-size:24px">${el.icon}</div><div style="font-size:12px;font-weight:600;color:${el.color}">${el.name}</div>`;
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#bc-element-options .element-card').forEach(c => c.style.outline = 'none');
-        btn.style.outline = `3px solid ${el.color}`;
-        btn.dataset.selected = 'true';
-        _blankCardCallback = el.name;
-      });
-      options.appendChild(btn);
+    // 只允许字母、空格、连字符
+    if (!/^[a-zA-Z\s\-']+$/.test(english)) {
+      errorEl.textContent = '英文单词只能包含字母、空格和连字符';
+      return;
     }
-    elemPicker.style.display = 'block';
-    errorEl.textContent = '请选择单词的五行属性';
-    document.getElementById('bc-confirm').textContent = '完成创建';
-    return;
+
+    // 查参考词库（若预先加载失败则重试）
+    await DATA.loadReference();
+    const ref = DATA.lookupReferenceWord(english);
+    if (!ref) {
+      errorEl.textContent = '这个词不在参考词库中，请重新输入';
+      return;
+    }
+
+    // 检查是否在已有词汇表中
+    const inVocabulary = DATA.words.some(w => w.word.toLowerCase() === english.toLowerCase());
+
+    // 显示五行选择（第一次通过验证后显示）
+    const elemPicker = document.getElementById('bc-element-picker');
+    if (elemPicker.style.display === 'none') {
+      // 第一次确认通过，显示五行选择
+      const options = document.getElementById('bc-element-options');
+      options.innerHTML = '';
+      for (const el of DATA.ELEMENTS) {
+        const btn = document.createElement('button');
+        btn.className = 'element-card';
+        btn.style.cssText = `background:${el.bg};padding:10px 12px;border-radius:10px;border:2px solid transparent;cursor:pointer;text-align:center;min-width:64px;transition:all 0.15s`;
+        btn.dataset.element = el.name;
+        btn.innerHTML = `<div style="font-size:28px">${el.icon}</div><div style="font-size:13px;font-weight:700;color:${el.color}">${el.name}</div>`;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#bc-element-options .element-card').forEach(c => {
+            c.style.borderColor = 'transparent';
+            c.style.transform = 'scale(1)';
+          });
+          btn.style.borderColor = el.color;
+          btn.style.transform = 'scale(1.08)';
+          btn.dataset.selected = 'true';
+          _blankCardCallback = el.name;
+          document.getElementById('bc-error').textContent = '';
+        });
+        options.appendChild(btn);
+      }
+      elemPicker.style.display = 'block';
+      errorEl.textContent = '请选择一个五行属性';
+      document.getElementById('bc-confirm').textContent = '完成创建';
+      return;
+    }
+
+    // 第二次确认：检查五行是否已选
+    const selectedElement = _blankCardCallback;
+    if (!selectedElement) {
+      errorEl.textContent = '请先点击选择一个五行属性';
+      return;
+    }
+
+    // 创建单词卡
+    const pos = ref.pos;
+    const newCard = {
+      word: english,
+      cn: chinese,
+      element: selectedElement,
+      pos: pos,
+      sentence: '',
+      date: new Date().toISOString().slice(0, 10),
+    };
+
+    // 加入技能背包
+    const bp = loadBackpack();
+    const level = getLevel(loadXp());
+    const maxCap = getMaxBackpackCapacity(level);
+    if (bp.length >= maxCap) {
+      errorEl.textContent = '技能背包已满！';
+      return;
+    }
+    bp.push(newCard);
+    saveBackpack(bp);
+
+    // 计算XP奖励
+    let xpGain;
+    if (inVocabulary) {
+      xpGain = 15;  // 已知词
+    } else {
+      xpGain = 30;  // 新词
+    }
+    addXp(xpGain);
+
+    // 消耗空白卡
+    const items = loadItems();
+    if (_selectedItemIndex >= 0 && _selectedItemIndex < items.length) {
+      items.splice(_selectedItemIndex, 1);
+      saveItems(items);
+    }
+
+    cancelBlankCard();
+    showToast(`✅ "${english}" 已加入技能背包！+${xpGain}XP`);
+    showItemBackpack();
+  } catch (e) {
+    console.error('空白单词卡出错:', e);
+    const errorEl = document.getElementById('bc-error');
+    if (errorEl) errorEl.textContent = '操作失败：' + e.message;
   }
-
-  // 第二次确认：检查五行是否已选
-  const selectedElement = _blankCardCallback;
-  if (!selectedElement) {
-    errorEl.textContent = '请选择一个五行属性';
-    return;
-  }
-
-  // 创建单词卡
-  const pos = ref.pos;
-  const newCard = {
-    word: english,
-    cn: chinese,
-    element: selectedElement,
-    pos: pos,
-    sentence: '',
-    date: new Date().toISOString().slice(0, 10),
-  };
-
-  // 加入技能背包
-  const bp = loadBackpack();
-  const level = getLevel(loadXp());
-  const maxCap = getMaxBackpackCapacity(level);
-  if (bp.length >= maxCap) {
-    errorEl.textContent = '技能背包已满！';
-    return;
-  }
-  bp.push(newCard);
-  saveBackpack(bp);
-
-  // 计算XP奖励
-  let xpGain;
-  if (inVocabulary) {
-    xpGain = 15;  // 已知词
-  } else {
-    xpGain = 30;  // 新词
-  }
-  addXp(xpGain);
-
-  // 消耗空白卡
-  const items = loadItems();
-  if (_selectedItemIndex >= 0 && _selectedItemIndex < items.length) {
-    items.splice(_selectedItemIndex, 1);
-    saveItems(items);
-  }
-
-  cancelBlankCard();
-  showToast(`✅ "${english}" 已加入技能背包！+${xpGain}XP`);
-  showItemBackpack();
 }
 
 /* ========== 模态框 ========== */
