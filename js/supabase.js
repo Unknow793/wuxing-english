@@ -21,7 +21,21 @@ const USER_CACHE = {
   avatar: '',
   element: '',   // 本命五行
   equip: [null, null, null, null],  // 4个装备槽
+  achievements: [],   // [{id, status: 'locked'|'completed'|'reward_claimed'}]
+  avatarFrame: '',    // 头像框ID
+  title: '',          // 当前称号
 };
+
+/* ---------- localStorage辅助函数（仅本地，不同步Supabase） ---------- */
+function saveLocal(key, value) {
+  try { localStorage.setItem('wuxing_' + key, JSON.stringify(value)); } catch (e) {}
+}
+function loadLocal(key, fallback) {
+  try { const v = localStorage.getItem('wuxing_' + key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+}
+function removeLocal(key) {
+  try { localStorage.removeItem('wuxing_' + key); } catch (e) {}
+}
 
 /* ---------- 密码哈希 ---------- */
 async function hashPassword(password, username) {
@@ -78,6 +92,10 @@ async function loginUser(username, password) {
     items: user.items || [], bonus: user.bonus || { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
     avatar: user.avatar || '', element: user.element || '',
     equip: user.equip || [null, null, null, null],
+    achievements: user.achievements || [],
+    avatarFrame: user.avatarFrame || '',
+    title: user.title || '',
+    letterBag: user.letterBag || [],
   });
   localStorage.setItem('wuxing_user', name);
   return USER_CACHE;
@@ -110,6 +128,7 @@ async function registerUser(username, password) {
         xp: 0, backpack: [], items: [],
         bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
         avatar: '', element: '', equip: [null, null, null, null],
+        achievements: [], avatarFrame: '', title: '',
       }),
     }
   );
@@ -120,6 +139,7 @@ async function registerUser(username, password) {
     xp: 0, backpack: [], items: [],
     bonus: { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 },
     avatar: '', element: '', equip: [null, null, null, null],
+    achievements: [], avatarFrame: '', title: '',
   });
   localStorage.setItem('wuxing_user', name);
   return USER_CACHE;
@@ -163,6 +183,10 @@ function syncToSupabase() {
             items: USER_CACHE.items,
             bonus: USER_CACHE.bonus,
             equip: USER_CACHE.equip,
+            achievements: USER_CACHE.achievements,
+            avatarFrame: USER_CACHE.avatarFrame,
+            title: USER_CACHE.title,
+            letterBag: USER_CACHE.letterBag,
             updated_at: new Date().toISOString(),
           }),
         }
@@ -234,13 +258,14 @@ function goHomeAfterLogin() {
   showScreen('screen-home');
   updateHomeXpDisplay();
   updateBackpackCount();
+  checkAvatarFrameUnlocks();
 }
 
 /* ---------- 获取所有用户（排行榜用） ---------- */
 async function fetchAllUsers() {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus,equip&order=xp.desc&limit=100`,
+      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus,equip,avatarFrame&order=xp.desc&limit=100`,
       { headers: SB_HEADERS }
     );
     return await res.json();
@@ -258,10 +283,14 @@ function handleLogout() {
     USER_CACHE.username = '';
     USER_CACHE.xp = 0;
     USER_CACHE.backpack = [];
+    USER_CACHE.letterBag = [];
     USER_CACHE.items = [];
     USER_CACHE.bonus = { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 };
     USER_CACHE.avatar = '';
     USER_CACHE.element = '';
+    USER_CACHE.achievements = [];
+    USER_CACHE.avatarFrame = '';
+    USER_CACHE.title = '';
     showScreen('screen-login');
     document.getElementById('login-password').value = '';
   }

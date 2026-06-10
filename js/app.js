@@ -13,6 +13,57 @@ const AVATARS_SPECIAL = Array.from({length: 28}, (_, i) => ({
   label: `特殊头像${i + 1}`,
 }));
 
+/* ========== 成就定义 ========== */
+const ACHIEVEMENTS = [
+  { id:'first_boss_win',   name:'初战告捷',   desc:'第一次击败Boss',            icon:'🏆', titleUnlock:'初战告捷' },
+  { id:'spell_50_words',   name:'拼词达人',   desc:'累计拼对50个单词',          icon:'✍️' },
+  { id:'spell_200_words',  name:'拼词高手',   desc:'累计拼对200个单词',         icon:'✍️' },
+  { id:'all_elements_10',   name:'五行调和',   desc:'五行永久加成各达10',        icon:'⚖️' },
+  { id:'collect_500',      name:'收藏家',     desc:'累计收集500张单词卡',        icon:'📚' },
+  { id:'element_master',   name:'五行大师',   desc:'各五行收集率均达50%',        icon:'🌟' },
+  { id:'no_damage_win',    name:'完美防御',   desc:'无伤击败Boss',              icon:'🛡️', titleUnlock:'完美防御' },
+  { id:'lv10',             name:'初出茅庐',   desc:'达到10级',                  icon:'⭐', titleUnlock:'初出茅庐' },
+  { id:'lv20',             name:'小有所成',   desc:'达到20级',                  icon:'⭐' },
+  { id:'boss_10_wins',     name:'常胜将军',   desc:'累计击败Boss 10次',          icon:'⚔️' },
+  { id:'use_10_items',     name:'道具达人',   desc:'累计使用10个道具',           icon:'🧰' },
+];
+
+/* ========== 头像框定义 ========== */
+/*
+ * 头像框定义
+ * anim: none | glow | dynamic | rainbow | rainbow-dynamic
+ * condition.type: level | bossKills | allFive
+ */
+const AVATAR_FRAMES = [
+  { id:'', label:'无', anim:'none', condition:null },
+  // ★ 等级框
+  { id:'frame-lv10', label:'木之框·初', anim:'glow', condition:{type:'level',value:10} },
+  { id:'frame-lv20', label:'炎之框·极', anim:'glow', condition:{type:'level',value:20} },
+  { id:'frame-lv30', label:'金之框·臻', anim:'dynamic', condition:{type:'level',value:30} },
+  // ★ 五行·初（击杀5次）
+  { id:'frame-wood-1', label:'木·初', anim:'glow', condition:{type:'bossKills',element:'木',value:5} },
+  { id:'frame-fire-1', label:'火·初', anim:'glow', condition:{type:'bossKills',element:'火',value:5} },
+  { id:'frame-metal-1', label:'金·初', anim:'glow', condition:{type:'bossKills',element:'金',value:5} },
+  { id:'frame-water-1', label:'水·初', anim:'glow', condition:{type:'bossKills',element:'水',value:5} },
+  { id:'frame-earth-1', label:'土·初', anim:'glow', condition:{type:'bossKills',element:'土',value:5} },
+  // ★ 五行·极（击杀20次）
+  { id:'frame-wood-2', label:'木·极', anim:'glow', condition:{type:'bossKills',element:'木',value:20} },
+  { id:'frame-fire-2', label:'火·极', anim:'glow', condition:{type:'bossKills',element:'火',value:20} },
+  { id:'frame-metal-2', label:'金·极', anim:'glow', condition:{type:'bossKills',element:'金',value:20} },
+  { id:'frame-water-2', label:'水·极', anim:'glow', condition:{type:'bossKills',element:'水',value:20} },
+  { id:'frame-earth-2', label:'土·极', anim:'glow', condition:{type:'bossKills',element:'土',value:20} },
+  // ★ 五行·臻（击杀50次，动态特效）
+  { id:'frame-wood-3', label:'木·臻', anim:'dynamic', condition:{type:'bossKills',element:'木',value:50} },
+  { id:'frame-fire-3', label:'火·臻', anim:'dynamic', condition:{type:'bossKills',element:'火',value:50} },
+  { id:'frame-metal-3', label:'金·臻', anim:'dynamic', condition:{type:'bossKills',element:'金',value:50} },
+  { id:'frame-water-3', label:'水·臻', anim:'dynamic', condition:{type:'bossKills',element:'水',value:50} },
+  { id:'frame-earth-3', label:'土·臻', anim:'dynamic', condition:{type:'bossKills',element:'土',value:50} },
+  // ★ 五彩系列（全五行攻击次数解锁）
+  { id:'frame-rainbow-1', label:'彩·初', anim:'glow', condition:{type:'allFive',value:5} },
+  { id:'frame-rainbow-2', label:'彩·绚', anim:'rainbow', condition:{type:'allFive',value:20} },
+  { id:'frame-rainbow-3', label:'彩·幻', anim:'rainbow-dynamic', condition:{type:'allFive',value:50} },
+];
+
 /** 获取头像图片路径 */
 function getAvatarUrl(id) {
   if (!id) return '';
@@ -121,6 +172,50 @@ async function confirmChangeAvatar() {
   } catch (e) {
     document.getElementById('change-avatar-error').textContent = '保存失败，请重试';
   }
+}
+
+/* ========== 头像框选择 ========== */
+let _frameSortMode = 'all'; // all | unlocked
+
+function showFrameSelect() {
+  // 先检测新解锁
+  checkNewFrameUnlocks();
+  const grid = document.getElementById('frame-grid');
+  grid.innerHTML = '';
+  const unlocked = getUnlockedFrames();
+  const current = USER_CACHE.avatarFrame || '';
+
+  for (const f of AVATAR_FRAMES) {
+    const isUnlocked = !f.condition || unlocked.has(f.id);
+    const isActive = f.id === current;
+    const progress = f.condition ? getFrameProgress(f) : null;
+    const pct = progress && progress.target > 0 ? Math.min(100, Math.round(progress.current / progress.target * 100)) : 100;
+
+    const card = document.createElement('div');
+    card.className = 'frame-card' + (isActive ? ' frame-active' : '') + (isUnlocked ? '' : ' frame-locked');
+
+    // 确定五行元素色
+    const frameEl = getFrameElement(f.id);
+    const elInfo = frameEl ? DATA.getElementInfo(frameEl) : null;
+
+    card.innerHTML = `
+      <div class="frame-preview">
+        <div class="frame-avatar-mock${isUnlocked && f.anim !== 'none' ? ' frame-anim-' + f.anim : ''}${f.id ? ' frame-el-' + f.id.replace('frame-', '') : ''}">
+          <div class="frame-avatar-inner">👤</div>
+        </div>
+      </div>
+      <div class="frame-label">${f.label}</div>
+      ${!isUnlocked && progress ? `<div class="frame-progress"><div class="frame-progress-bar"><div class="frame-progress-fill" style="width:${pct}%"></div></div><span class="frame-progress-text">${progress.current}/${progress.target}</span></div>` : ''}
+      <div class="frame-status">${isActive ? '✅ 佩戴中' : isUnlocked ? '点击佩戴' : '🔒'}</div>
+    `;
+    card.addEventListener('click', () => {
+      if (!isUnlocked) { showToast('🔒 未解锁'); return; }
+      setAvatarFrame(f.id);
+      showFrameSelect(); // 刷新
+    });
+    grid.appendChild(card);
+  }
+  showScreen('screen-frame-select');
 }
 
 /* ========== 注册-选头像 ========== */
@@ -275,6 +370,353 @@ const STATE = {
   _quizzedWords: null,
 };
 
+/* ========== 道具增益状态 ========== */
+const BOOST_STATE = {
+  xpBoostEndTime: 0,
+  luckyCharmActive: false,
+};
+
+function initBoostState() {
+  BOOST_STATE.xpBoostEndTime = loadLocal('xpBoostEnd', 0);
+}
+function isXpBoostActive() {
+  return Date.now() < BOOST_STATE.xpBoostEndTime;
+}
+function getXpBoostRemaining() {
+  return Math.max(0, Math.ceil((BOOST_STATE.xpBoostEndTime - Date.now()) / 1000));
+}
+
+/* ========== 成就系统 ========== */
+const ACH_STATS_KEY = 'achStats';
+
+function loadAchStats() {
+  return loadLocal(ACH_STATS_KEY, { bossWins:0, bossPerfectWins:0, wordsSpelled:0, itemsUsed:0, totalCardsCollected:0 });
+}
+function saveAchStats(s) { saveLocal(ACH_STATS_KEY, s); }
+
+function checkAchievements(context) {
+  const stats = loadAchStats();
+  const bonus = loadBonus();
+  const bp = loadBackpack();
+  stats.bonus = bonus;
+  // element completion
+  const completion = {};
+  for (const el of ['火','水','木','金','土']) {
+    const total = (DATA.byElement[el] || []).length;
+    const owned = new Set(bp.filter(c => c.element === el).map(c => c.word)).size;
+    completion[el] = total > 0 ? Math.round(owned / total * 100) : 0;
+  }
+  stats.elementCompletion = completion;
+  stats.totalCardsCollected = bp.length;
+  stats.level = getLevel(loadXp());
+
+  let newAchievement = null;
+  for (const ach of ACHIEVEMENTS) {
+    const existing = (USER_CACHE.achievements || []).find(a => a.id === ach.id);
+    if (existing && existing.status === 'completed') continue;
+    let met = false;
+    switch (ach.id) {
+      case 'first_boss_win': met = stats.bossWins >= 1; break;
+      case 'spell_50_words': met = stats.wordsSpelled >= 50; break;
+      case 'spell_200_words': met = stats.wordsSpelled >= 200; break;
+      case 'all_elements_10': met = bonus.wood>=10 && bonus.fire>=10 && bonus.earth>=10 && bonus.water>=10 && bonus.metal>=10; break;
+      case 'collect_500': met = bp.length >= 500; break;
+      case 'element_master': met = Object.values(completion).every(v => v >= 50); break;
+      case 'no_damage_win': met = stats.bossPerfectWins >= 1; break;
+      case 'lv10': met = stats.level >= 10; break;
+      case 'lv20': met = stats.level >= 20; break;
+      case 'boss_10_wins': met = stats.bossWins >= 10; break;
+      case 'use_10_items': met = stats.itemsUsed >= 10; break;
+    }
+    if (met) {
+      if (!existing) {
+        if (!USER_CACHE.achievements) USER_CACHE.achievements = [];
+        USER_CACHE.achievements.push({ id: ach.id, status: 'completed' });
+        newAchievement = ach;
+      } else if (existing.status === 'locked') {
+        existing.status = 'completed';
+        newAchievement = ach;
+      }
+    }
+  }
+  if (newAchievement) {
+    showAchievementUnlock(newAchievement);
+  }
+  saveAchStats(stats);
+  syncToSupabase();
+}
+
+function showAchievementUnlock(ach) {
+  // 自动赋予称号（仅第一个称号自动装备）
+  if (ach.titleUnlock && !USER_CACHE.title) {
+    USER_CACHE.title = ach.titleUnlock;
+    syncToSupabase();
+  }
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#ffd700,#ff8f00);color:#fff;padding:20px 40px;border-radius:20px;z-index:200;text-align:center;animation:popIn 0.3s;box-shadow:0 8px 30px rgba(0,0,0,0.3)';
+  el.innerHTML = `
+    <div style="font-size:48px;margin-bottom:8px">${ach.icon}</div>
+    <div style="font-size:20px;font-weight:800">成就解锁！</div>
+    <div style="font-size:16px;margin-top:4px">${ach.name}</div>
+    <div style="font-size:13px;opacity:0.9;margin-top:2px">${ach.desc}</div>
+  `;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+async function showAchievements() {
+  await DATA.load();
+  const container = document.getElementById('ach-list');
+  const arr = ACHIEVEMENTS;
+  container.innerHTML = '';
+  const completed = (USER_CACHE.achievements || []).filter(a => a.status === 'completed').length;
+  const statsEl = document.getElementById('ach-stats');
+  if (statsEl) statsEl.textContent = `🏅 已解锁 ${completed}/${arr.length}`;
+
+  // 统计进度数据
+  const stats = loadAchStats();
+  const bonus = loadBonus();
+  const bp = loadBackpack();
+  const level = getLevel(loadXp());
+  const completion = {};
+  for (const el of ['火','水','木','金','土']) {
+    const total = (DATA.byElement[el] || []).length;
+    const owned = new Set(bp.filter(c => c.element === el).map(c => c.word)).size;
+    completion[el] = total > 0 ? Math.round(owned / total * 100) : 0;
+  }
+
+  for (const ach of arr) {
+    const state = (USER_CACHE.achievements || []).find(a => a.id === ach.id);
+    const status = state ? state.status : 'locked';
+
+    let progressStr = '';
+    switch (ach.id) {
+      case 'first_boss_win': progressStr = `${stats.bossWins}/1`; break;
+      case 'spell_50_words': progressStr = `${stats.wordsSpelled}/50`; break;
+      case 'spell_200_words': progressStr = `${stats.wordsSpelled}/200`; break;
+      case 'all_elements_10': {
+        const m = Math.min(bonus.wood||0, bonus.fire||0, bonus.earth||0, bonus.water||0, bonus.metal||0);
+        progressStr = `${m}/10`; break;
+      }
+      case 'collect_500': progressStr = `${bp.length}/500`; break;
+      case 'element_master': {
+        const m = Math.min(...Object.values(completion));
+        progressStr = `${m}%/50%`; break;
+      }
+      case 'no_damage_win': progressStr = `${stats.bossPerfectWins}/1`; break;
+      case 'lv10': progressStr = `${level}/10`; break;
+      case 'lv20': progressStr = `${level}/20`; break;
+      case 'boss_10_wins': progressStr = `${stats.bossWins}/10`; break;
+      case 'use_10_items': progressStr = `${stats.itemsUsed}/10`; break;
+    }
+
+    const card = document.createElement('div');
+    card.className = `achievement-card achievement-${status}`;
+    card.innerHTML = `
+      <span class="ach-icon">${ach.icon}</span>
+      <div class="ach-info">
+        <div class="ach-name">${ach.name}</div>
+        <div class="ach-desc">${ach.desc}</div>
+      </div>
+      <div class="ach-progress">${progressStr}</div>
+      <span class="ach-status-badge">${status === 'completed' ? '🔓' : '🔒'}</span>
+    `;
+    container.appendChild(card);
+  }
+  showScreen('screen-achievements');
+}
+
+/* ========== 卡片图鉴 ========== */
+async function showCollectionBook() {
+  await DATA.load();
+  const bp = loadBackpack();
+  showScreen('screen-collection');
+
+  // 计算收集信息
+  const elemOrder = ['木','火','金','水','土'];
+  let totalWords = 0;
+  let totalOwned = 0;
+  const elemData = {};
+  for (const el of elemOrder) {
+    const words = DATA.byElement[el] || [];
+    const owned = {};
+    let elTotal = 0;
+    let elOwned = 0;
+    const maxQualities = {}; // word -> highest quality
+    for (const w of words) {
+      const wordKey = w.word.toLowerCase();
+      if (!maxQualities[wordKey]) maxQualities[wordKey] = 'common';
+      elTotal++;
+      // check backpack
+      for (const c of bp) {
+        if (c.word.toLowerCase() === wordKey && c.element === el) {
+          owned[wordKey] = true;
+          const qi = QUALITY_ORDER.indexOf(c.quality || 'common');
+          const curQi = QUALITY_ORDER.indexOf(maxQualities[wordKey]);
+          if (qi > curQi) maxQualities[wordKey] = c.quality || 'common';
+          break;
+        }
+      }
+    }
+    elOwned = Object.keys(owned).length;
+    totalWords += elTotal;
+    totalOwned += elOwned;
+    elemData[el] = { words, owned: owned, ownCount: elOwned, total: elTotal, maxQualities };
+  }
+
+  // 进度
+  const pct = totalWords > 0 ? Math.round(totalOwned / totalWords * 100) : 0;
+  document.getElementById('collection-progress').innerHTML =
+    `<div class="collection-pct">📊 收集进度 ${totalOwned}/${totalWords} (${pct}%)</div>
+     <div class="collection-bar"><div class="collection-fill" style="width:${pct}%"></div></div>`;
+
+  // tabs
+  const tabsEl = document.getElementById('collection-tabs');
+  tabsEl.innerHTML = elemOrder.map(el => {
+    const info = DATA.getElementInfo(el);
+    const d = elemData[el];
+    return `<button class="collection-tab" data-el="${el}" onclick="showCollectionTab('${el}')">
+      ${info.icon} ${el} (${d.ownCount}/${d.total})
+    </button>`;
+  }).join('');
+
+  // 显示第一个tab
+  showCollectionTab(elemOrder[0]);
+}
+
+function showCollectionTab(element) {
+  // tab高亮
+  document.querySelectorAll('.collection-tab').forEach(t => t.classList.toggle('active', t.dataset.el === element));
+
+  const bp = loadBackpack();
+  const words = DATA.byElement[element] || [];
+  const grid = document.getElementById('collection-grid');
+  grid.innerHTML = '';
+
+  // 统计各词最高品质
+  const maxQualities = {};
+  for (const w of words) {
+    const wordKey = w.word.toLowerCase();
+    maxQualities[wordKey] = 'common';
+    for (const c of bp) {
+      if (c.word.toLowerCase() === wordKey && c.element === element) {
+        const qi = QUALITY_ORDER.indexOf(c.quality || 'common');
+        const curQi = QUALITY_ORDER.indexOf(maxQualities[wordKey]);
+        if (qi > curQi) maxQualities[wordKey] = c.quality || 'common';
+      }
+    }
+  }
+
+  for (const w of words) {
+    const wordKey = w.word.toLowerCase();
+    const q = maxQualities[wordKey];
+    const owned = q !== 'common' || bp.some(c => c.word.toLowerCase() === wordKey && c.element === element);
+    const qi = CARD_QUALITIES[q] || CARD_QUALITIES.common;
+    const card = document.createElement('div');
+    card.className = 'collection-card' + (owned ? '' : ' collection-locked');
+    card.innerHTML = owned
+      ? `<div class="collection-word">${w.word}</div>
+         <div class="collection-cn">${w.cn}</div>
+         <span class="collection-quality" style="background:${qi.color}">${qi.icon}${qi.label}</span>`
+      : `<div class="collection-word">?</div>
+         <div class="collection-cn">🔒</div>
+         <span class="collection-quality" style="background:#999">???</span>`;
+    grid.appendChild(card);
+  }
+}
+
+/* ========== 头像框系统 ========== */
+const FRAME_UNLOCK_KEY = 'unlockedFrames';
+
+function getFrameElement(id) {
+  if (!id) return null;
+  for (const el of ['木','火','金','水','土']) {
+    if (id.includes('-wood-') && el === '木') return el;
+    if (id.includes('-fire-') && el === '火') return el;
+    if (id.includes('-metal-') && el === '金') return el;
+    if (id.includes('-water-') && el === '水') return el;
+    if (id.includes('-earth-') && el === '土') return el;
+  }
+  return null;
+}
+
+function getUnlockedFrames() {
+  return new Set(loadLocal(FRAME_UNLOCK_KEY, []));
+}
+
+function isFrameUnlocked(id) {
+  if (!id) return true; // '无' always unlocked
+  return getUnlockedFrames().has(id);
+}
+
+function getFrameProgress(frame) {
+  if (!frame.condition) return { current: 0, target: 0 };
+  const c = frame.condition;
+  if (c.type === 'level') {
+    return { current: getLevel(loadXp()), target: c.value };
+  } else if (c.type === 'bossKills') {
+    return { current: loadLocal('bossKills_' + c.element, 0), target: c.value };
+  } else if (c.type === 'allFive') {
+    return { current: loadLocal('allFiveAttacks', 0), target: c.value };
+  }
+  return { current: 0, target: 0 };
+}
+
+/** 检测所有框的解锁状态，返回新解锁的框列表 */
+function checkNewFrameUnlocks() {
+  const unlocked = getUnlockedFrames();
+  const newly = [];
+  for (const f of AVATAR_FRAMES) {
+    if (!f.condition || unlocked.has(f.id)) continue;
+    const { current, target } = getFrameProgress(f);
+    if (current >= target) {
+      unlocked.add(f.id);
+      newly.push(f);
+    }
+  }
+  if (newly.length > 0) {
+    saveLocal(FRAME_UNLOCK_KEY, [...unlocked]);
+    for (const f of newly) {
+      showToast(`🖼️ 新头像框解锁：${f.label}！可在个人页更换`);
+    }
+  }
+  return newly;
+}
+
+/** 兼容旧函数名：主页/profile中调用 */
+function checkAvatarFrameUnlocks() {
+  return checkNewFrameUnlocks();
+}
+
+/** 获取头像框显示名称 */
+function getFrameLabel(id) {
+  if (!id) return '无';
+  const found = AVATAR_FRAMES.find(f => f.id === id);
+  return found ? found.label : '无';
+}
+
+/** 获取头像框的主色（用于排行榜等简略展示） */
+function getFrameColor(id) {
+  if (!id) return null;
+  const el = getFrameElement(id);
+  if (el) {
+    const info = DATA.getElementInfo(el);
+    if (info) return info.color;
+  }
+  if (id.includes('lv10')) return '#4caf50';
+  if (id.includes('lv20')) return '#ff5722';
+  if (id.includes('lv30')) return '#ffd700';
+  if (id.includes('rainbow')) return '#ffd700';
+  return '#888';
+}
+
+/** 设置当前佩戴的头像框 */
+function setAvatarFrame(frameId) {
+  USER_CACHE.avatarFrame = frameId;
+  syncToSupabase();
+  showToast(`🖼️ 已更换头像框`);
+}
+
 /* ========== 背包计数显示 ========== */
 function updateBackpackCount() {
   const bp = loadBackpack();
@@ -313,6 +755,16 @@ const EQUIP_SLOTS = [
   { pos: 'pron', label: '代词',   icon: '👤' },
 ];
 
+/* ========== 卡片品质等级 ========== */
+const QUALITY_ORDER = ['common','copper','silver','gold','legendary'];
+const CARD_QUALITIES = {
+  common:    { label:'普通', coeff:0.01, level:0, icon:'⚪', color:'#9e9e9e' },
+  copper:    { label:'铜',   coeff:0.015, level:1, icon:'🟫', color:'#b87333' },
+  silver:    { label:'银',   coeff:0.02,  level:2, icon:'⬜', color:'#c0c0c0' },
+  gold:      { label:'金',   coeff:0.025, level:3, icon:'🟨', color:'#ffd700' },
+  legendary: { label:'传说', coeff:0.03,  level:4, icon:'💎', color:'#ff6f00' },
+};
+
 function addAttributeBonus(element) {
   const key = ELEMENT_TO_BONUS[element];
   if (!key) return;
@@ -334,7 +786,8 @@ function addAllAttributeBonus() {
 /* ========== 经验值 / 等级系统 ========== */
 function addXp(amount) {
   const current = loadXp();
-  const newXp = current + amount;
+  const finalAmount = isXpBoostActive() ? Math.round(amount * 2) : amount;
+  const newXp = current + finalAmount;
   saveXp(newXp);
   return newXp;
 }
@@ -418,9 +871,15 @@ function getTitle(level) {
   return title;
 }
 
-/** 背包容量：基础100，每10级+50 */
+/** 背包容量：基础100，每级+2，额外奖励格 */
 function getMaxBackpackCapacity(level) {
-  return 100 + Math.floor(level / 10) * 50;
+  const extra = loadLocal('backpackExtra', 0);
+  return 100 + level * 2 + extra;
+}
+function getBackpackExtra() { return loadLocal('backpackExtra', 0); }
+function addBackpackSlot(n) {
+  const cur = getBackpackExtra();
+  saveLocal('backpackExtra', cur + n);
 }
 
 /** 玩家五行属性：等级成长 + 本命初始偏向 + 道具永久加成 + 装备加成 */
@@ -434,19 +893,30 @@ function getPlayerStats(level) {
   let water = base.spd + level + bonus.water;
   let metal = base.cri + level + bonus.metal;
 
-  // 装备加成：每张装备卡提供对应五行属性 +10%
+  // 装备加成公式：基础值 × Σ(字母数×品质系数) + Σ(字母数×品质等级)
   const equip = loadEquip();
-  const eqBonus = { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 };
+  let pctWood = 0, pctFire = 0, pctEarth = 0, pctWater = 0, pctMetal = 0;
+  let flatWood = 0, flatFire = 0, flatEarth = 0, flatWater = 0, flatMetal = 0;
   for (const slot of equip) {
     if (!slot || !slot.element) continue;
     const key = ELEMENT_TO_BONUS[slot.element];
-    if (key) eqBonus[key] += 0.1;
+    if (!key) continue;
+    const q = slot.quality || 'common';
+    const qi = CARD_QUALITIES[q] || CARD_QUALITIES.common;
+    const wlen = slot.word ? slot.word.length : 1;
+    const pct = wlen * qi.coeff;
+    const flat = wlen * qi.level;
+    if (key === 'wood') { pctWood += pct; flatWood += flat; }
+    else if (key === 'fire') { pctFire += pct; flatFire += flat; }
+    else if (key === 'earth') { pctEarth += pct; flatEarth += flat; }
+    else if (key === 'water') { pctWater += pct; flatWater += flat; }
+    else if (key === 'metal') { pctMetal += pct; flatMetal += flat; }
   }
-  wood = Math.round(wood * (1 + eqBonus.wood));
-  fire = Math.round(fire * (1 + eqBonus.fire));
-  earth = Math.round(earth * (1 + eqBonus.earth));
-  water = Math.round(water * (1 + eqBonus.water));
-  metal = Math.round(metal * (1 + eqBonus.metal));
+  wood = Math.round(wood * (1 + pctWood)) + flatWood;
+  fire = Math.round(fire * (1 + pctFire)) + flatFire;
+  earth = Math.round(earth * (1 + pctEarth)) + flatEarth;
+  water = Math.round(water * (1 + pctWater)) + flatWater;
+  metal = Math.round(metal * (1 + pctMetal)) + flatMetal;
 
   return {
     wood, fire, earth, water, metal,
@@ -471,6 +941,17 @@ function updateHomeXpDisplay() {
   }
   const badge = document.getElementById('home-level-badge');
   if (badge) badge.textContent = `Lv.${level} ${title.icon}`;
+  // XP boost indicator
+  const boostIndicator = document.getElementById('xp-boost-indicator');
+  if (boostIndicator) {
+    if (isXpBoostActive()) {
+      const sec = getXpBoostRemaining();
+      boostIndicator.style.display = 'inline-block';
+      boostIndicator.textContent = `⏫ ×2 ${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+    } else {
+      boostIndicator.style.display = 'none';
+    }
+  }
 }
 
 /* ========== 综合战力 ========== */
@@ -596,11 +1077,13 @@ async function showProfile() {
   charCard.className = 'profile-char-card';
   charCard.style.background = `linear-gradient(180deg, ${elemBg} 0%, white 50%)`;
   charCard.innerHTML = `
-    <div class="profile-avatar-wrap">
+    <div class="profile-avatar-wrap${USER_CACHE.avatarFrame ? ' profile-frame-' + USER_CACHE.avatarFrame : ''}">
       <img src="${avUrl}" alt="" class="profile-avatar-img" onerror="this.src='data:image/svg+xml,${encodeURIComponent('<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="47" fill="#e0e0e0"/><text x="50" y="68" text-anchor="middle" font-size="48" fill="#aaa">👤</text></svg>')}'">
       <div class="profile-avatar-element-ring" style="border-color:${elemColor}"></div>
     </div>
     <div class="profile-name">${USER_CACHE.username}</div>
+    <div class="profile-frame-name">🖼️ ${getFrameLabel(USER_CACHE.avatarFrame)}</div>
+    ${USER_CACHE.title ? `<div class="profile-title-badge">👑 ${USER_CACHE.title}</div>` : ''}
     <div class="profile-element-badge" style="background:${elemBg};color:${elemColor}">
       ${elInfo ? elInfo.icon : ''} 本命 · ${USER_CACHE.element}
     </div>
@@ -662,11 +1145,15 @@ async function showProfile() {
         <div class="profile-collect-label">✨ 总经验</div>
       </div>
     </div>
-    <div class="profile-bonus-row" style="margin-top:12px;border-top:1px solid #f0f0f0;padding-top:12px">
-      <span class="profile-collect-label">头像: ${getAvatarLabel(USER_CACHE.avatar)}</span>
-      <button class="text-btn" onclick="showChangeAvatarScreen()" style="margin-left:12px;font-size:13px">🔄 更换</button>
+    <div class="profile-bonus-row" style="margin-top:12px;border-top:1px solid #f0f0f0;padding-top:12px;flex-wrap:wrap;gap:6px">
+      <span class="profile-collect-label">${getAvatarLabel(USER_CACHE.avatar)}</span>
+      <span class="profile-collect-label" style="font-size:12px;color:#999">🖼️ ${getFrameLabel(USER_CACHE.avatarFrame)}</span>
+      <button class="text-btn" onclick="showChangeAvatarScreen()" style="font-size:13px;padding:2px 8px">🔄 头像</button>
+      <button class="text-btn" onclick="showFrameSelect()" style="font-size:13px;padding:2px 8px">🔄 头像框</button>
     </div>
-    <button class="primary-btn" onclick="showEquip()" style="margin-top:14px;width:100%">⚔️ 装备</button>
+    <button class="primary-btn" onclick="showAchievements()" style="margin-top:10px;width:100%">🏅 成就</button>
+    <button class="primary-btn" onclick="showCollectionBook()" style="margin-top:8px;width:100%">📖 卡片图鉴</button>
+    <button class="primary-btn" onclick="showEquip()" style="margin-top:8px;width:100%">⚔️ 装备</button>
   `;
   container.appendChild(collectCard);
 
@@ -687,6 +1174,9 @@ function showRewardsInfo() {
         <tr><td>特殊头像解锁</td><td>6%</td></tr>
         <tr><td>全属性提升道具</td><td>2%</td></tr>
         <tr><td>五行洗髓丹</td><td>1%</td></tr>
+        <tr><td>经验加倍符</td><td>15%</td></tr>
+        <tr><td>幸运护符</td><td>10%</td></tr>
+        <tr><td>复活石</td><td>8%</td></tr>
       </table>
       <p class="ri-note">* 除五行洗髓丹外，均受幸运（金属性）加成</p>
       <p>Boss战失败：固定 +15 XP</p>
@@ -696,6 +1186,7 @@ function showRewardsInfo() {
       <p>得分 ≥ 80% 可获得额外奖励：</p>
       <table class="ri-table">
         <tr><td>空白单词卡</td><td>12%</td></tr>
+        <tr><td>🎒 背包格 +2</td><td>10%</td></tr>
       </table>
       <p>满分（100%）额外追加：</p>
       <table class="ri-table">
@@ -741,6 +1232,7 @@ function goHome() {
   updateBackpackCount();
   updateLetterBagCount();
   updateHomeXpDisplay();
+  checkAvatarFrameUnlocks();
 }
 
 function updateLetterBagCount() {
@@ -1133,7 +1625,12 @@ function pracShowResult() {
       saveBonus(bonus);
       rewards.push(`✨ ${randEl}属性 +1`);
     }
-    if (rewards.length > 0) {
+    // 10% → 背包格+2
+    if (Math.random() < 0.10) {
+      addBackpackSlot(2);
+      rewards.push('🎒 背包格 +2');
+    }
+        if (rewards.length > 0) {
       rewardEl.style.display = 'block';
       rewardEl.innerHTML = `🎁 额外获得：${rewards.join('、')}`;
     }
@@ -1178,7 +1675,7 @@ async function showLeaderboard() {
   document.getElementById('lb-list').innerHTML = '';
 
   const rows = await fetchAllUsers();
-  if (!rows || rows.length === 0) {
+  if (!Array.isArray(rows) || rows.length === 0) {
     document.getElementById('lb-loading').textContent = '暂无数据';
     return;
   }
@@ -1193,6 +1690,7 @@ async function showLeaderboard() {
       username: u.username,
       avatar: u.avatar || '',
       element: u.element || '',
+      avatarFrame: u.avatarFrame || '',
       xp: u.xp || 0,
       level,
       bonus,
@@ -1221,6 +1719,8 @@ function renderLeaderboard(tab) {
     const isSelf = u.username === USER_CACHE.username;
     const avUrl = getAvatarUrl(u.avatar);
     const elInfo = DATA.getElementInfo(u.element);
+    const frameColor = getFrameColor(u.avatarFrame);
+    const frameStyle = frameColor ? `style="box-shadow:0 0 0 2px ${frameColor};border-radius:50%"` : '';
 
     const row = document.createElement('div');
     row.className = 'lb-row' + (isSelf ? ' lb-self' : '');
@@ -1234,7 +1734,7 @@ function renderLeaderboard(tab) {
 
     row.innerHTML = `
       ${rankHtml}
-      <span class="lb-avatar">${avUrl ? `<img src="${avUrl}" class="lb-avatar-img" onerror="this.outerHTML='👤'">` : '👤'}</span>
+      <span class="lb-avatar">${avUrl ? `<img src="${avUrl}" class="lb-avatar-img" ${frameStyle} onerror="this.outerHTML='👤'">` : '👤'}</span>
       <span class="lb-name">${u.username}${isSelf ? ' （你）' : ''}</span>
       <span class="lb-element" style="color:${elInfo ? elInfo.color : '#888'}">${elInfo ? elInfo.icon : ''}</span>
       <div class="lb-stats">
@@ -1690,6 +2190,14 @@ function showSpellReward(result) {
   }
   addXp(xpGain);
 
+  // track words spelled for achievements
+  if (xpGain > 0) {
+    const achStats2 = loadAchStats();
+    achStats2.wordsSpelled = (achStats2.wordsSpelled || 0) + 1;
+    saveAchStats(achStats2);
+    checkAchievements('after_spell');
+  }
+
   // 将单词加入技能背包
   const bp = loadBackpack();
   const maxCap = getMaxBackpackCapacity(getLevel(loadXp()));
@@ -1698,6 +2206,7 @@ function showSpellReward(result) {
       word: w.word, cn: w.cn, element: w.element,
       pos: w.pos || '', sentence: w.sentence || '',
       date: new Date().toISOString().slice(0, 10),
+      quality: 'common',
     });
     saveBackpack(bp);
   }
@@ -2295,6 +2804,7 @@ function showReward() {
       word: w.word, cn: w.cn, element: w.element,
       pos: w.pos || '', sentence: w.sentence || '',
       date: new Date().toISOString().slice(0, 10),
+      quality: 'common',
     });
   }
   saveBackpack(bp);
@@ -2370,7 +2880,12 @@ function showBackpack() {
   showScreen('screen-backpack');
   const bp = loadBackpack();
   const level = getLevel(loadXp());
-  const maxCap = getMaxBackpackCapacity(level);
+  let maxCap = getMaxBackpackCapacity(level);
+  // 兼容旧用户：卡片超过当前上限时自动补足
+  if (bp.length > maxCap) {
+    addBackpackSlot(bp.length - maxCap);
+    maxCap = getMaxBackpackCapacity(level);
+  }
   const capEl = document.getElementById('backpack-capacity');
   if (capEl) capEl.textContent = `${bp.length} / ${maxCap}`;
   const grid = document.getElementById('backpack-grid');
@@ -2415,6 +2930,8 @@ function showBackpack() {
       const card = document.createElement('div');
       card.className = 'bp-card';
       card.style.background = elInfo.bg;
+      const q = entry.quality || 'common';
+      const qi = CARD_QUALITIES[q] || CARD_QUALITIES.common;
       card.innerHTML = `
         <span class="bp-element">${elInfo.icon}</span>
         <div class="bp-info">
@@ -2422,6 +2939,7 @@ function showBackpack() {
           <div class="bp-cn">${entry.cn}</div>
           <div class="bp-date">${entry.date}</div>
         </div>
+        <span class="quality-badge" style="background:${qi.color};color:#fff;font-size:10px;padding:1px 5px;border-radius:6px;position:absolute;top:3px;right:3px;line-height:1.4">${qi.icon}</span>
       `;
       row.appendChild(card);
     }
@@ -2489,6 +3007,167 @@ function showBackpack() {
   }
 }
 
+/* ========== 卡片合成 ========== */
+let _fusionSelections = [null, null]; // [{index, card}]
+
+function showFusionScreen() {
+  _fusionSelections = [null, null];
+  document.getElementById('fusion-slot-0').innerHTML = '+';
+  document.getElementById('fusion-slot-0').className = 'fusion-slot';
+  document.getElementById('fusion-slot-1').innerHTML = '+';
+  document.getElementById('fusion-slot-1').className = 'fusion-slot';
+  document.getElementById('fusion-result').textContent = '?';
+  document.getElementById('btn-fusion-execute').disabled = true;
+  document.getElementById('fusion-hint').textContent = '选择两张同一单词、同一品质的卡片合成，提升品质';
+  renderFusionCardList();
+  showScreen('screen-fusion');
+}
+
+function renderFusionCardList() {
+  const bp = loadBackpack();
+  const container = document.getElementById('fusion-card-list');
+  container.innerHTML = '';
+
+  // 统计各单词各品质的数量
+  const countMap = {};
+  for (let i = 0; i < bp.length; i++) {
+    const card = bp[i];
+    if (card.type === 'item') continue;
+    const q = card.quality || 'common';
+    const key = card.word.toLowerCase() + '|' + q;
+    if (!countMap[key]) countMap[key] = [];
+    countMap[key].push(i);
+  }
+
+  // 仅显示可合成的（数量≥2且品质不是传说）
+  const eligible = [];
+  for (const [key, indices] of Object.entries(countMap)) {
+    if (indices.length < 2) continue;
+    const card = bp[indices[0]];
+    if (card.quality === 'legendary') continue;
+    eligible.push({ card, indices });
+  }
+
+  if (eligible.length === 0) {
+    container.innerHTML = '<p class="hint" style="width:100%;text-align:center">没有可合成的卡片，需要至少两张相同单词、相同品质</p>';
+    return;
+  }
+
+  for (const { card, indices } of eligible) {
+    const q = card.quality || 'common';
+    const qi = CARD_QUALITIES[q] || CARD_QUALITIES.common;
+    const nextQi = CARD_QUALITIES[QUALITY_ORDER[QUALITY_ORDER.indexOf(q) + 1]];
+    const elInfo = DATA.getElementInfo(card.element);
+    const div = document.createElement('div');
+    div.className = 'fusion-card-item';
+    div.style.background = elInfo ? elInfo.bg : '#fff';
+    div.innerHTML = `
+      <div class="fci-word" style="color:${elInfo ? elInfo.color : '#333'}">${card.word}</div>
+      <div class="fci-cn">${card.cn}</div>
+      <div><span class="fci-quality" style="color:${qi.color}">${qi.icon} ${qi.label}</span> ×${indices.length}</div>
+      <div style="font-size:11px;color:#888;margin-top:2px">→ ${nextQi ? nextQi.icon : '?'}</div>
+    `;
+    div.addEventListener('click', () => {
+      // 选择此组中的前两张卡
+      const idx0 = indices[0];
+      const idx1 = indices[1];
+      fusionSelectCards(idx0, idx1, card);
+    });
+    container.appendChild(div);
+  }
+}
+
+function fusionSelectCards(idx0, idx1, card) {
+  _fusionSelections = [
+    { index: idx0, card },
+    { index: idx1, card },
+  ];
+  const q = card.quality || 'common';
+  const qi = CARD_QUALITIES[q] || CARD_QUALITIES.common;
+  const nextQ = QUALITY_ORDER[QUALITY_ORDER.indexOf(q) + 1];
+  const nextQi = nextQ ? (CARD_QUALITIES[nextQ] || qi) : qi;
+
+  const elInfo = DATA.getElementInfo(card.element);
+  const color = elInfo ? elInfo.color : '#333';
+
+  // 更新槽位
+  for (let i = 0; i < 2; i++) {
+    const slot = document.getElementById('fusion-slot-' + i);
+    slot.className = 'fusion-slot selected';
+    slot.innerHTML = `<span class="fs-word" style="color:${color}">${card.word}</span><span class="fs-quality" style="color:${qi.color}">${qi.icon}</span>`;
+  }
+
+  // 更新结果
+  const result = document.getElementById('fusion-result');
+  result.innerHTML = nextQi ? `<span style="color:${nextQi.color}">${nextQi.icon}</span><span style="color:${color};font-size:13px">${card.word}</span><span style="font-size:11px;color:#888">${nextQi.label}</span>` : '?';
+
+  document.getElementById('btn-fusion-execute').disabled = false;
+  document.getElementById('fusion-hint').textContent = `确认将两张「${card.word}」(${qi.label})合成为${nextQi ? nextQi.label : '?'}？`;
+}
+
+function fusionSelectSlot(slotIndex) {
+  // 如果已选就取消选择
+  if (_fusionSelections[slotIndex]) {
+    _fusionSelections[slotIndex] = null;
+    const slot = document.getElementById('fusion-slot-' + slotIndex);
+    slot.className = 'fusion-slot';
+    slot.innerHTML = '+';
+    document.getElementById('btn-fusion-execute').disabled = true;
+    document.getElementById('fusion-hint').textContent = '选择两张同一单词、同一品质的卡片合成，提升品质';
+    return;
+  }
+  // 否则重新打开选择列表
+  renderFusionCardList();
+}
+
+function executeFusion() {
+  const sel = _fusionSelections;
+  if (!sel[0] || !sel[1]) return;
+  if (sel[0].index === sel[1].index) {
+    showToast('❌ 不能选择同一张卡');
+    return;
+  }
+
+  const bp = loadBackpack();
+  const card0 = bp[sel[0].index];
+  const card1 = bp[sel[1].index];
+  if (!card0 || !card1) {
+    showToast('❌ 卡片已不存在');
+    showFusionScreen();
+    return;
+  }
+
+  const q = card0.quality || 'common';
+  if ((card1.quality || 'common') !== q || card0.word.toLowerCase() !== card1.word.toLowerCase()) {
+    showToast('❌ 卡片不匹配，请重新选择');
+    showFusionScreen();
+    return;
+  }
+
+  const nextQ = QUALITY_ORDER[QUALITY_ORDER.indexOf(q) + 1];
+  if (!nextQ) {
+    showToast('❌ 已达到最高品质');
+    showFusionScreen();
+    return;
+  }
+
+  // 删除两张卡，加一张高一品质的卡
+  const removeIndices = [sel[0].index, sel[1].index].sort((a, b) => b - a);
+  for (const idx of removeIndices) {
+    bp.splice(idx, 1);
+  }
+  bp.push({
+    word: card0.word, cn: card0.cn, element: card0.element,
+    pos: card0.pos || '', sentence: card0.sentence || '',
+    date: new Date().toISOString().slice(0, 10),
+    quality: nextQ,
+  });
+  saveBackpack(bp);
+
+  showToast(`✅ ${card0.word} → ${CARD_QUALITIES[nextQ].label}`);
+  showFusionScreen();
+}
+
 /* ========== 物品背包 ========== */
 let _selectedItemIndex = -1;
 
@@ -2528,6 +3207,12 @@ function showItemBackpack() {
       icon = '🖼️'; label = '头像解锁'; sublabel = `「${getAvatarLabel(item.specialId)}」`;
     } else if (item.itemType === 'element_reset') {
       icon = '💊'; label = '五行洗髓丹'; sublabel = '重置本命五行';
+    } else if (item.itemType === 'xp_boost') {
+      icon = '⏫'; label = '经验加倍符'; sublabel = '15分钟×2经验';
+    } else if (item.itemType === 'lucky_charm') {
+      icon = '🍀'; label = '幸运护符'; sublabel = '一次Boss战掉落×1.5';
+    } else if (item.itemType === 'revival_stone') {
+      icon = '💎'; label = '复活石'; sublabel = 'HP归零恢复50%';
     } else {
       icon = '📦'; label = '未知道具'; sublabel = '';
     }
@@ -2579,6 +3264,15 @@ function selectItem(index) {
   } else if (item.itemType === 'element_reset') {
     icon = '💊'; name = '五行洗髓丹';
     desc = '使用后可重新选择本命五行。注意：基础属性将按新五行重新计算，但等级成长和道具加成都不会丢失。';
+  } else if (item.itemType === 'xp_boost') {
+    icon = '⏫'; name = '经验加倍符';
+    desc = '使用后15分钟内所有经验获得×2。重复使用重置计时。';
+  } else if (item.itemType === 'lucky_charm') {
+    icon = '🍀'; name = '幸运护符';
+    desc = '使用后下一次Boss战所有掉落率×1.5（最高不超过100%）。仅生效一次。';
+  } else if (item.itemType === 'revival_stone') {
+    icon = '💎'; name = '复活石';
+    desc = '战斗中HP归零时自动触发，恢复50%生命值。道具会被消耗。';
   } else {
     icon = '📦'; name = '未知道具'; desc = ''; showUse = false;
   }
@@ -2626,6 +3320,21 @@ function useSelectedItem() {
       _changingElement = true;
       showChangeElementScreen();
     });
+  } else if (item.itemType === 'xp_boost') {
+    showModal('确定使用「经验加倍符」吗？效果：15分钟内所有经验获得×2。重复使用重置计时。', () => {
+      closeModal();
+      BOOST_STATE.xpBoostEndTime = Date.now() + 15 * 60 * 1000;
+      saveLocal('xpBoostEnd', BOOST_STATE.xpBoostEndTime);
+      consumeItem(_selectedItemIndex);
+      showToast('⏫ 经验加倍已激活！持续15分钟');
+    });
+  } else if (item.itemType === 'lucky_charm') {
+    showModal('确定使用「幸运护符」吗？效果：下一次Boss战所有掉落率×1.5（最高不超过100%）。', () => {
+      closeModal();
+      BOOST_STATE.luckyCharmActive = true;
+      consumeItem(_selectedItemIndex);
+      showToast('🍀 幸运护符已激活！下次Boss战生效');
+    });
   }
 }
 
@@ -2634,6 +3343,11 @@ function consumeItem(index) {
   if (index >= 0 && index < items.length) {
     items.splice(index, 1);
     saveItems(items);
+    // track item usage
+    const achStats3 = loadAchStats();
+    achStats3.itemsUsed = (achStats3.itemsUsed || 0) + 1;
+    saveAchStats(achStats3);
+    checkAchievements('after_item_use');
   }
   // 刷新背包
   showItemBackpack();
@@ -2678,7 +3392,13 @@ function renderEquipSlots(equip) {
 
       const bonus = document.createElement('div');
       bonus.className = 'slot-bonus';
-      bonus.textContent = (elInfo ? elInfo.icon + ' ' : '') + card.element + ' +10%';
+      const q2 = card.quality || 'common';
+const qi2 = CARD_QUALITIES[q2] || CARD_QUALITIES.common;
+const wlen2 = card.word.length;
+const pct2 = Math.round(wlen2 * qi2.coeff * 100);
+const flat2 = wlen2 * qi2.level;
+const bonusText2 = flat2 > 0 ? `+${pct2}%+${flat2}` : `+${pct2}%`;
+bonus.textContent = `${qi2.icon} ${qi2.label} ${bonusText2}`;
       div.appendChild(bonus);
     } else {
       const emptyIcon = document.createElement('div');
@@ -2704,7 +3424,11 @@ function renderEquipSummary(equip) {
   for (const slot of equip) {
     if (!slot || !slot.element) continue;
     const key = ELEMENT_TO_BONUS[slot.element];
-    if (key) bonusMap[key] += 10;
+    if (!key) continue;
+    const q = (slot.quality || 'common');
+    const qi = CARD_QUALITIES[q] || CARD_QUALITIES.common;
+    const wlen = slot.word ? slot.word.length : 1;
+    bonusMap[key] += Math.round(wlen * qi.coeff * 100) + wlen * qi.level;
   }
 
   const total = Object.values(bonusMap).filter(v => v > 0).length;
@@ -2717,7 +3441,7 @@ function renderEquipSummary(equip) {
   let html = '<h3>当前加成</h3>';
   for (const [key, val] of Object.entries(bonusMap)) {
     if (val > 0) {
-      html += '<div class="sum-row">' + names[key] + ' +' + val + '%</div>';
+      html += '<div class="sum-row">' + names[key] + ' +' + val + '</div>';
     }
   }
   container.innerHTML = html;
@@ -2802,7 +3526,7 @@ function equipSelectedCard(slotIndex, bpIndex) {
   }
 
   // 存入装备槽
-  equip[slotIndex] = { word: card.word, cn: card.cn, element: card.element, pos: card.pos };
+  equip[slotIndex] = { word: card.word, cn: card.cn, element: card.element, pos: card.pos, quality: card.quality || 'common' };
 
   saveBackpack(bp);
   saveEquip(equip);
@@ -2979,6 +3703,7 @@ async function confirmBlankCard() {
       pos: pos,
       sentence: '',
       date: new Date().toISOString().slice(0, 10),
+      quality: 'common',
     };
 
     // 加入技能背包
@@ -3064,6 +3789,7 @@ function getBossBattleStats(boss, playerLevel) {
 const BATTLE = {
   level: null,
   boss: null,
+  _revived: false,  // 本场战斗是否已使用过复活石
   bossHp: 150,
   bossMaxHp: 150,
   playerHp: 100,
@@ -3469,6 +4195,7 @@ function initLetterBattle(selectedLetters) {
   BATTLE.currentQuestion = null;
   BATTLE.selectedIndices = [];
   BATTLE.berserkSubRound = 0;
+  BATTLE._revived = false;
 
   // 字母模式特有
   BATTLE.isLetterMode = true;
@@ -3515,6 +4242,7 @@ function initBattle(equipped) {
   BATTLE.totalDamageDealt = 0;
   BATTLE.currentQuestion = null;
   BATTLE.selectedIndices = [];
+  BATTLE._revived = false;
 
   startBattle();
 }
@@ -3698,12 +4426,18 @@ function answerBossQuestion(optIndex) {
     resultEl.innerHTML = `❌ 答错了！你掉了${rawDmg}点HP！${berserkLabel}<br>正确答案是「${correctText}」`;
     updateHpBars();
 
-    if (BATTLE.playerHp <= 0) {
-      BATTLE.playerHp = 0;
-      updateHpBars();
-      transitionMsg(`💔 你被 ${BATTLE.boss.name} 击败了...`, '查看结果', () => endBattle(false));
-      return;
-    }
+      if (BATTLE.playerHp <= 0) {
+        BATTLE.playerHp = 0;
+        updateHpBars();
+        // check revival stone
+        const reviveIdx = loadItems().findIndex(it => it.itemType === 'revival_stone');
+        if (reviveIdx >= 0 && !BATTLE._revived) {
+          showRevivalModal(reviveIdx);
+          return;
+        }
+        transitionMsg(`💔 你被 ${BATTLE.boss.name} 击败了...`, '查看结果', () => endBattle(false));
+        return;
+      }
   }
 
   // 继续（狂暴模式下可能进行第二击）
@@ -4013,6 +4747,11 @@ async function bpLetterAttack() {
     BATTLE.bossHp = Math.max(0, BATTLE.bossHp - result.damage);
     BATTLE.totalDamageDealt += result.damage;
 
+    // track all-five attacks
+    if (result.dominantElement === '全五行') {
+      saveLocal('allFiveAttacks', (loadLocal('allFiveAttacks', 0)) + 1);
+    }
+
     // 多字母拼词：字母不消耗，放回字母库
     BATTLE.battleLetterPlaced = [];
 
@@ -4310,6 +5049,11 @@ function bpAttack() {
   BATTLE.bossHp = Math.max(0, BATTLE.bossHp - result.damage);
   BATTLE.totalDamageDealt += result.damage;
 
+  // track all-five attacks
+  if (result.dominantElement === '全五行') {
+    saveLocal('allFiveAttacks', (loadLocal('allFiveAttacks', 0)) + 1);
+  }
+
   // 消耗卡牌
   for (const idx of BATTLE.selectedIndices) {
     BATTLE.consumedSet.add(idx);
@@ -4400,28 +5144,35 @@ function endBattle(win) {
         word: w.word, cn: w.cn, element: w.element,
         pos: w.pos || '', sentence: w.sentence || '',
         date: new Date().toISOString().slice(0, 10),
+        quality: 'common',
       });
     }
 
-    // ==== 独立概率奖励（受幸运加成） ====
-    const lukMult = 1 + (pStats.luk - 10) * 0.01;
+    // ==== 独立概率奖励（受幸运+护符加成） ====
+    let lukMult = 1 + (pStats.luk - 10) * 0.01;
+    if (BOOST_STATE.luckyCharmActive) {
+      lukMult *= 1.5;
+      BOOST_STATE.luckyCharmActive = false;
+    }
+    const roll = (p) => Math.random() < Math.min(1.0, p * lukMult);
     const extraRewards = [];
 
     // 50% → 额外一张同属性卡
-    if (Math.random() < 0.5 * lukMult) {
+    if (roll(0.5)) {
       const extra = DATA.selectRandomCardsByElement(bossEl, 1);
       if (extra.length > 0 && bp.length < maxCap) {
         bp.push({
           word: extra[0].word, cn: extra[0].cn, element: extra[0].element,
           pos: extra[0].pos || '', sentence: extra[0].sentence || '',
           date: new Date().toISOString().slice(0, 10),
+          quality: 'common',
         });
         extraRewards.push(`🎴 额外 ${bossEl} 属性卡「${extra[0].word}」`);
       }
     }
 
     // 25% → 属性提升道具（同Boss五行）
-    if (Math.random() < 0.25 * lukMult) {
+    if (roll(0.25)) {
       const items = loadItems();
       items.push({
         type: 'item', itemType: 'boost',
@@ -4432,7 +5183,7 @@ function endBattle(win) {
     }
 
     // 10% → 空白单词卡
-    if (Math.random() < 0.1 * lukMult) {
+    if (roll(0.1)) {
       const items = loadItems();
       items.push({
         type: 'item', itemType: 'blank_card',
@@ -4443,7 +5194,7 @@ function endBattle(win) {
     }
 
     // 2% → 全属性提升道具
-    if (Math.random() < 0.02 * lukMult) {
+    if (roll(0.02)) {
       const items = loadItems();
       items.push({
         type: 'item', itemType: 'all_boost',
@@ -4465,7 +5216,7 @@ function endBattle(win) {
     }
 
     // 6% → 特殊头像解锁道具（仅限未解锁的）
-    if (Math.random() < 0.06 * lukMult) {
+    if (roll(0.06)) {
       const unlocked = getUnlockedSpecials();
       const locked = AVATARS_SPECIAL.filter(a => !unlocked.has(a.id));
       if (locked.length > 0) {
@@ -4483,6 +5234,30 @@ function endBattle(win) {
 
     saveBackpack(bp);
     addXp(xpReward);
+
+    // 15% -> xp boost
+    if (roll(0.15)) {
+      const items = loadItems();
+      items.push({ type: 'item', itemType: 'xp_boost', date: new Date().toISOString().slice(0, 10) });
+      saveItems(items);
+      extraRewards.push(`⏫ 经验加倍符`);
+    }
+
+    // 10% -> lucky charm
+    if (roll(0.1)) {
+      const items = loadItems();
+      items.push({ type: 'item', itemType: 'lucky_charm', date: new Date().toISOString().slice(0, 10) });
+      saveItems(items);
+      extraRewards.push(`🍀 幸运护符`);
+    }
+
+    // 8% -> revival stone
+    if (roll(0.08)) {
+      const items = loadItems();
+      items.push({ type: 'item', itemType: 'revival_stone', date: new Date().toISOString().slice(0, 10) });
+      saveItems(items);
+      extraRewards.push(`💎 复活石`);
+    }
 
     // 构建显示
     const cardsHtml = rewardCards.map(w => {
@@ -4508,18 +5283,97 @@ function endBattle(win) {
     addXp(15);
     rewardArea.innerHTML = `<p style="color:var(--text-light)">💪 +15 XP · 下次一定能赢！</p>`;
   }
+
+  // ach stats
+  const achStats = loadAchStats();
+  if (win) {
+    achStats.bossWins = (achStats.bossWins || 0) + 1;
+    if (BATTLE.bossCorrectCount > 0 && BATTLE.playerHp >= BATTLE.playerMaxHp) {
+      achStats.bossPerfectWins = (achStats.bossPerfectWins || 0) + 1;
+    }
+  }
+  saveAchStats(achStats);
+  checkAchievements('after_battle');
+
+  // track boss kills for avatar frames
+  if (win) {
+    const bKey = 'bossKills_' + BATTLE.boss.element;
+    saveLocal(bKey, (loadLocal(bKey, 0)) + 1);
+  }
+}
+
+/* ========== 复活石 ========== */
+function showRevivalModal(itemIndex) {
+  // 创建自定义复活弹窗
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.style.zIndex = '150';
+  overlay.onclick = () => {}; // 阻止点击背景关闭
+
+  const box = document.createElement('div');
+  box.className = 'modal-box';
+  box.innerHTML = `
+    <p style="font-size:48px;margin:0">💎</p>
+    <p style="font-size:18px;font-weight:700">你被击败了...</p>
+    <p style="font-size:14px;color:#666">检测到你有复活石，是否使用？</p>
+    <p style="font-size:13px;color:#888">恢复50%生命值继续战斗</p>
+    <div class="modal-buttons">
+      <button class="primary-btn" id="revive-confirm-btn">💎 复活</button>
+      <button class="secondary-btn" onclick="document.getElementById('revival-overlay')?.remove();document.getElementById('revival-box')?.remove(); endBattle(false)">放弃</button>
+    </div>
+  `;
+  overlay.id = 'revival-overlay';
+  box.id = 'revival-box';
+  document.body.appendChild(overlay);
+  document.body.appendChild(box);
+
+  document.getElementById('revive-confirm-btn').onclick = () => {
+    // 消耗复活石
+    const items = loadItems();
+    const idx = items.findIndex(it => it.itemType === 'revival_stone');
+    if (idx >= 0) {
+      items.splice(idx, 1);
+      saveItems(items);
+    }
+    // 恢复50% HP
+    BATTLE._revived = true;
+    BATTLE.playerHp = Math.round(BATTLE.playerMaxHp * 0.5);
+    updateHpBars();
+    // 关闭弹窗
+    overlay.remove();
+    box.remove();
+    showToast('💎 已复活！恢复50%生命值');
+  };
 }
 
 function returnUnusedCards() {
   const bp = loadBackpack();
 
-  // 收集要移除的背包索引（消耗掉的 equip 卡）
+  // 收集要移除或降级的背包索引
   const toRemove = new Set();
+  const toDegrade = []; // {idx, newQuality}
   for (let i = 0; i < BATTLE.handCards.length; i++) {
     const card = BATTLE.handCards[i];
     if (card.source === 'equip' && BATTLE.consumedSet.has(i)) {
-      toRemove.add(card.bpIndex);
+      const existing = bp[card.bpIndex];
+      if (!existing) continue;
+      const q = existing.quality || 'common';
+      if (q === 'common') {
+        toRemove.add(card.bpIndex);
+      } else {
+        const qi = QUALITY_ORDER.indexOf(q);
+        if (qi > 0) {
+          toDegrade.push({ idx: card.bpIndex, newQuality: QUALITY_ORDER[qi - 1] });
+        } else {
+          toRemove.add(card.bpIndex);
+        }
+      }
     }
+  }
+
+  // 降级
+  for (const { idx, newQuality } of toDegrade) {
+    if (idx >= 0 && idx < bp.length) bp[idx].quality = newQuality;
   }
 
   // 从大到小排序移除（避免索引偏移）
@@ -4535,6 +5389,7 @@ function returnUnusedCards() {
 const SPEAKER = SPEECH; // alias for readability
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initBoostState();
   // 预填上次登录的用户名
   const savedUser = localStorage.getItem('wuxing_user');
   if (savedUser) {

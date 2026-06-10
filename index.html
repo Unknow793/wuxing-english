@@ -66,6 +66,7 @@
       <div class="user-bar-left">
         <span id="home-userinfo" class="user-name" onclick="showProfile()"></span>
         <span id="home-level-badge" class="user-level-badge"></span>
+        <span id="xp-boost-indicator" class="xp-boost-indicator" style="display:none"></span>
       </div>
       <div class="user-bar-actions">
         <button class="user-icon-btn" onclick="showProfile()" title="个人信息">📋</button>
@@ -108,10 +109,15 @@
         <span class="btn-label">字母背包</span>
         <span class="btn-desc" id="letter-bag-count">已收集 0/26</span>
       </button>
-      <button class="menu-btn menu-btn-full btn-rank" onclick="showLeaderboard()">
+      <button class="menu-btn menu-btn-half btn-rank" onclick="showLeaderboard()">
         <span class="btn-icon">🏆</span>
         <span class="btn-label">排行榜</span>
         <span class="btn-desc">战力 · 等级排行</span>
+      </button>
+      <button class="menu-btn menu-btn-half btn-ach" onclick="showAchievements()">
+        <span class="btn-icon">🏅</span>
+        <span class="btn-label">成就</span>
+        <span class="btn-desc">解锁称号</span>
       </button>
     </div>
   </div>
@@ -142,6 +148,16 @@
     <div class="reg-actions">
       <button class="primary-btn" id="btn-change-avatar-confirm" onclick="confirmChangeAvatar()" disabled>确认更换</button>
     </div>
+  </div>
+
+  <!-- ======== 头像框选择 ======== -->
+  <div id="screen-frame-select" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showProfile()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">🖼️ 头像框</span>
+    </div>
+    <p class="hint">完成挑战解锁更多头像框</p>
+    <div id="frame-grid" class="frame-grid"></div>
   </div>
 
   <!-- ======== 排行榜 ======== -->
@@ -382,10 +398,56 @@
       <span id="backpack-capacity" class="bp-capacity">0 / 100</span>
     </div>
     <h2>🎒 技能背包</h2>
+    <div style="text-align:center;margin:4px 0">
+      <button class="secondary-btn" onclick="showFusionScreen()" style="font-size:13px">✨ 合成</button>
+    </div>
     <div id="backpack-content">
       <p class="hint" id="backpack-empty" style="display:none">还没有收集到单词卡，快去学习吧！</p>
       <div class="backpack-grid" id="backpack-grid"></div>
     </div>
+  </div>
+
+  <!-- ======== 卡片合成 ======== -->
+  <div id="screen-fusion" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showBackpack()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">✨ 卡片合成</span>
+    </div>
+    <p class="hint" id="fusion-hint">选择两张同一单词、同一品质的卡片合成，提升品质</p>
+    <div id="fusion-content">
+      <div class="fusion-slots" id="fusion-slots">
+        <div class="fusion-slot" id="fusion-slot-0" onclick="fusionSelectSlot(0)">+</div>
+        <div class="fusion-arrow">+</div>
+        <div class="fusion-slot" id="fusion-slot-1" onclick="fusionSelectSlot(1)">+</div>
+        <div class="fusion-arrow">→</div>
+        <div class="fusion-result" id="fusion-result">?</div>
+      </div>
+      <div id="fusion-card-list" class="fusion-card-list"></div>
+      <div style="text-align:center;margin:12px 0">
+        <button class="primary-btn" id="btn-fusion-execute" onclick="executeFusion()" disabled style="font-size:16px;padding:10px 32px">合成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 成就 ======== -->
+  <div id="screen-achievements" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">🏆 成就</span>
+    </div>
+    <p class="hint" id="ach-stats">完成特定目标解锁成就，获得称号奖励</p>
+    <div id="ach-list" class="ach-list"></div>
+  </div>
+
+  <!-- ======== 卡片图鉴 ======== -->
+  <div id="screen-collection" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showProfile()">← 返回</button>
+      <span style="font-size:18px;font-weight:700;color:var(--text)">📖 卡片图鉴</span>
+    </div>
+    <div id="collection-progress" class="collection-progress"></div>
+    <div class="collection-tabs" id="collection-tabs"></div>
+    <div id="collection-grid" class="collection-grid"></div>
   </div>
 
   <!-- ======== 物品背包 ======== -->
@@ -417,7 +479,7 @@
       <button class="back-btn" onclick="goHome()">← 返回</button>
       <span style="font-size:18px;font-weight:700;color:var(--text)">⚔️ 装备</span>
     </div>
-    <p class="hint">装备背包中的单词卡获得属性加成，每张卡+10%对应属性</p>
+    <p class="hint">装备单词卡获得属性加成，品质越高加成越强</p>
     <div id="equip-slots" class="equip-slots"></div>
     <div id="equip-card-picker" style="display:none;margin-top:12px">
       <h3 id="equip-picker-title" style="font-size:16px;color:var(--text);margin-bottom:8px"></h3>
