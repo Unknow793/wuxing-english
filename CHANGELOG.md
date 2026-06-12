@@ -208,3 +208,5 @@
 - **登录合并取并集**：letterBag 登录时合并两地取并集，防止多设备互刷丢失
 - **sentence_groups 缺 elements 修复**：补上 25 组 beginner 句子的 elements 字段，修复个人页崩溃
 - **Supabase 表结构文档**：新增 docs/supabase-schema.md
+- **语音速度调回正常**：speak() 默认 1.0，speakWord/speakSentence 同步回调
+- **返回导航修复**：成就/装备页返回按钮改为 `showProfile()`，不再跳到主页
