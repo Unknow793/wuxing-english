@@ -210,7 +210,7 @@ function loadAllFromLocal() {
 /* ---------- 同步数据到 Supabase ---------- */
 let _syncTimer = null;
 
-/** PATCH body */
+/** 主数据 PATCH body（不含 letterBag，避免 schema cache 问题影响其他字段） */
 function _buildPatchBody() {
   return JSON.stringify({
     xp: USER_CACHE.xp,
@@ -221,9 +221,29 @@ function _buildPatchBody() {
     achievements: USER_CACHE.achievements,
     avatarFrame: USER_CACHE.avatarFrame,
     title: USER_CACHE.title,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+/** letterBag 单独 PATCH body（字段可能不被 schema cache 识别，单独发送避免影响主数据） */
+function _buildLetterBagPatch() {
+  return JSON.stringify({
     letterBag: USER_CACHE.letterBag,
     updated_at: new Date().toISOString(),
   });
+}
+
+/** 发送一次 PATCH，失败只 warn 不抛异常 */
+async function _doPatch(body) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
+      { method: 'PATCH', headers: SB_HEADERS, body }
+    );
+    if (!res.ok) console.warn('Supabase PATCH 返回', res.status, await res.text().catch(()=>''));
+  } catch (e) {
+    console.warn('Supabase同步失败，数据已保存在本地', e);
+  }
 }
 
 function syncToSupabase() {
@@ -232,15 +252,8 @@ function syncToSupabase() {
   saveAllToLocal();
   if (_syncTimer) clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async () => {
-    try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
-        { method: 'PATCH', headers: SB_HEADERS, body: _buildPatchBody() }
-      );
-      if (!res.ok) console.warn('Supabase PATCH 返回', res.status, await res.text().catch(()=>''));
-    } catch (e) {
-      console.warn('Supabase同步失败，数据已保存在本地', e);
-    }
+    await _doPatch(_buildPatchBody());
+    await _doPatch(_buildLetterBagPatch()); // 单独发送，失败不影响主数据
     _syncTimer = null;
   }, 300);
 }
@@ -316,15 +329,8 @@ async function syncToSupabaseNow() {
   if (!USER_CACHE.id) return;
   saveAllToLocal();
   if (_syncTimer) { clearTimeout(_syncTimer); _syncTimer = null; }
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
-      { method: 'PATCH', headers: SB_HEADERS, body: _buildPatchBody() }
-    );
-    if (!res.ok) console.warn('Supabase 即时同步返回', res.status, await res.text().catch(()=>''));
-  } catch (e) {
-    console.warn('Supabase同步失败，数据已保存在本地', e);
-  }
+  await _doPatch(_buildPatchBody());
+  await _doPatch(_buildLetterBagPatch());
 }
 
 async function fetchAllUsers() {
