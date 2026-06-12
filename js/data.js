@@ -467,12 +467,25 @@ const DATA = (() => {
     };
   }
 
-  return { load, words, byElement, byPos, byCategory, byTier, ELEMENTS, ELEM_MAP, ELEM_REVERSE, SHENG,
+  // 用 getter/setter 确保 DATA.words 等属性始终指向当前变量
+  // （load() 会重新赋值局部变量，不加 getter 则暴露的属性仍指向原始空数组）
+  const api = {
+    load, ELEMENTS, ELEM_MAP, ELEM_REVERSE, SHENG,
     POS_ORDER, POS_LABELS, THEME_EMOJI, LETTER_ELEMENTS, ELEM_ORDER,
     selectWords4, getTargetOrder, checkSubsequence,
     selectSentenceGroup, selectAnySentenceGroup, selectThemeWords, getElementInfo, randomPick, shuffleArray,
-    isFunctionWord, generateClozeQuestion, lookupWordPos, sentenceGroups,
+    isFunctionWord, generateClozeQuestion, lookupWordPos,
     selectRandomCardsByElement,
     getLetterElement, getWordElementFromLetters, getLetterElementCounts,
-    loadReference, lookupReferenceWord };
+    loadReference, lookupReferenceWord,
+  };
+  Object.defineProperties(api, {
+    words:          { get() { return words; },          set(v) { words = v; } },
+    byElement:      { get() { return byElement; },      set(v) { byElement = v; } },
+    byPos:          { get() { return byPos; },          set(v) { byPos = v; } },
+    byCategory:     { get() { return byCategory; },     set(v) { byCategory = v; } },
+    byTier:         { get() { return byTier; },         set(v) { byTier = v; } },
+    sentenceGroups: { get() { return sentenceGroups; }, set(v) { sentenceGroups = v; } },
+  });
+  return api;
 })();

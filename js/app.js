@@ -1398,6 +1398,7 @@ function pracGenMatchCn(mode) {
   let pool = DATA.words.filter(w => w.cn && w.cn.length < 8);
   if (mode === 'grade1-2') pool = pool.filter(w => w.tier === 'beginner');
   // grade3-4 and grade5-6 use all words
+  if (pool.length === 0) return null;
   const word = DATA.randomPick(pool);
   const correct = word.cn;
   const others = DATA.shuffleArray(pool.filter(w => w.cn !== correct)).slice(0, 3);
@@ -3497,12 +3498,15 @@ function openEquipPicker(slotIndex) {
 
   for (const { index, card: w } of candidates) {
     const elInfo = DATA.getElementInfo(w.element);
+    const q = w.quality || 'common';
+    const qi = CARD_QUALITIES[q] || CARD_QUALITIES.common;
     const card = document.createElement('div');
     card.className = 'equip-picker-card';
     if (elInfo) card.style.background = elInfo.bg;
     card.innerHTML = '<div class="ep-word" style="color:' + (elInfo ? elInfo.color : '#333') + '">' + w.word + '</div>' +
       '<div class="ep-cn">' + w.cn + '</div>' +
-      '<div style="font-size:11px;color:#999;margin-top:2px">' + (elInfo ? elInfo.icon : '') + ' ' + w.element + '</div>';
+      '<div style="font-size:11px;color:#999;margin-top:2px">' + (elInfo ? elInfo.icon : '') + ' ' + w.element + '</div>' +
+      '<div style="font-size:10px;color:#666;margin-top:1px">' + qi.icon + ' ' + qi.label + '</div>';
     card.addEventListener('click', () => equipSelectedCard(slotIndex, index));
     list.appendChild(card);
   }
@@ -3947,9 +3951,12 @@ function showEquipScreen() {
       div.className = `equip-card ${elInfo ? elInfo.cls : ''}`;
       div.dataset.index = i;
       div.dataset.element = card.element;
+    const qq = card.quality || 'common';
+    const qqi = CARD_QUALITIES[qq] || CARD_QUALITIES.common;
     div.innerHTML = `
       <span class="eq-word">${card.word}</span>
       <span class="eq-cn">${card.cn}</span>
+      <span style="font-size:9px;color:#999;margin-top:1px;display:block">${qqi.icon} ${qqi.label}</span>
     `;
     div.addEventListener('click', () => toggleEquipCard(i, bp));
     grid.appendChild(div);
@@ -4328,6 +4335,15 @@ function bossTurn() {
   }
   BATTLE.currentQuestion = question;
 
+  // 出题失败安全处理
+  if (!question) {
+    transitionMsg('❌ 题目生成失败，请稍后再试', '退出战斗', () => {
+      BATTLE.playerHp = 0;
+      endBattle(false);
+    });
+    return;
+  }
+
   const qEl = document.getElementById('bq-question');
   if (question.typeLabel) {
     // 通用多题型格式（letter mode）
@@ -4459,6 +4475,17 @@ function answerBossQuestion(optIndex) {
     }
   };
   document.getElementById('bq-next-btn').style.display = 'inline-block';
+}
+
+/* ========== 战斗退出 ========== */
+function confirmBattleExit() {
+  showModal('确定退出战斗吗？本次战斗不会保存进度。', () => {
+    closeModal();
+    // 重置战斗状态
+    BATTLE.bossHp = 0;
+    BATTLE.playerHp = 0;
+    endBattle(false);
+  });
 }
 
 /* ========== 过渡信息 ========== */

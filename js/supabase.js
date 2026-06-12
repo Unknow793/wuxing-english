@@ -86,6 +86,9 @@ async function loginUser(username, password) {
   } else if (inputHash !== storedHash) {
     throw new Error('密码错误');
   }
+  // 合并远程数据与本地备份（本地可能更新）
+  const localData = loadAllFromLocal();
+  const hasLocal = localData && localData.username === name;
   Object.assign(USER_CACHE, {
     id: user.id, username: user.username,
     xp: user.xp || 0, backpack: user.backpack || [],
@@ -97,6 +100,21 @@ async function loginUser(username, password) {
     title: user.title || '',
     letterBag: user.letterBag || [],
   });
+  // 有本地数据且用户名匹配 → 以本地为准（本地数据更新，可能Supabase未同步成功）
+  if (hasLocal) {
+    Object.assign(USER_CACHE, {
+      xp: localData.xp ?? USER_CACHE.xp,
+      backpack: localData.backpack ?? USER_CACHE.backpack,
+      items: localData.items ?? USER_CACHE.items,
+      bonus: localData.bonus ?? USER_CACHE.bonus,
+      equip: localData.equip ?? USER_CACHE.equip,
+      achievements: localData.achievements ?? USER_CACHE.achievements,
+      avatarFrame: localData.avatarFrame ?? USER_CACHE.avatarFrame,
+      title: localData.title ?? USER_CACHE.title,
+      letterBag: localData.letterBag ?? USER_CACHE.letterBag,
+    });
+  }
+  saveAllToLocal();
   localStorage.setItem('wuxing_user', name);
   return USER_CACHE;
 }
@@ -141,6 +159,7 @@ async function registerUser(username, password) {
     avatar: '', element: '', equip: [null, null, null, null],
     achievements: [], avatarFrame: '', title: '',
   });
+  saveAllToLocal();
   localStorage.setItem('wuxing_user', name);
   return USER_CACHE;
 }
@@ -159,9 +178,33 @@ async function updateUserProfile(avatar, element) {
     );
     USER_CACHE.avatar = avatar;
     USER_CACHE.element = element;
+    saveAllToLocal();
   } catch (e) {
     console.warn('更新头像/五行失败', e);
   }
+}
+
+/* ---------- 全量本地持久化（localStorage 备份） ---------- */
+function saveAllToLocal() {
+  saveLocal('user_data', {
+    id: USER_CACHE.id,
+    username: USER_CACHE.username,
+    xp: USER_CACHE.xp,
+    backpack: USER_CACHE.backpack,
+    letterBag: USER_CACHE.letterBag,
+    items: USER_CACHE.items,
+    bonus: USER_CACHE.bonus,
+    avatar: USER_CACHE.avatar,
+    element: USER_CACHE.element,
+    equip: USER_CACHE.equip,
+    achievements: USER_CACHE.achievements,
+    avatarFrame: USER_CACHE.avatarFrame,
+    title: USER_CACHE.title,
+  });
+}
+
+function loadAllFromLocal() {
+  return loadLocal('user_data', null);
 }
 
 /* ---------- 同步数据到 Supabase ---------- */
@@ -169,6 +212,8 @@ let _syncTimer = null;
 
 function syncToSupabase() {
   if (!USER_CACHE.id) return;
+  // 同时也存一份到 localStorage
+  saveAllToLocal();
   if (_syncTimer) clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async () => {
     try {
@@ -192,7 +237,7 @@ function syncToSupabase() {
         }
       );
     } catch (e) {
-      console.warn('数据同步失败，下次操作自动重试', e);
+      console.warn('Supabase同步失败，数据已保存在本地', e);
     }
     _syncTimer = null;
   }, 300);
@@ -240,6 +285,8 @@ async function handleAuth() {
     } else {
       await registerUser(name, password);
     }
+    // 保存本地备份
+    saveAllToLocal();
     // 检查是否已完成注册（选过头像和五行）
     if (USER_CACHE.avatar && USER_CACHE.element) {
       goHomeAfterLogin();
