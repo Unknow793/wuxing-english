@@ -210,7 +210,7 @@ function loadAllFromLocal() {
 /* ---------- 同步数据到 Supabase ---------- */
 let _syncTimer = null;
 
-/** PATCH body — 只包含 Supabase 表确认存在的列（achievements/title/letterBag 等列不存在，已排除） */
+/** PATCH body */
 function _buildPatchBody() {
   return JSON.stringify({
     xp: USER_CACHE.xp,
@@ -218,7 +218,10 @@ function _buildPatchBody() {
     items: USER_CACHE.items,
     bonus: USER_CACHE.bonus,
     equip: USER_CACHE.equip,
+    achievements: USER_CACHE.achievements,
     avatarFrame: USER_CACHE.avatarFrame,
+    title: USER_CACHE.title,
+    letterBag: USER_CACHE.letterBag,
     updated_at: new Date().toISOString(),
   });
 }
