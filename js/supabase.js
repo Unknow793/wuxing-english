@@ -221,7 +221,7 @@ function _buildPatchBody() {
     achievements: USER_CACHE.achievements,
     avatarFrame: USER_CACHE.avatarFrame,
     title: USER_CACHE.title,
-    letterBag: USER_CACHE.letterBag,
+    // letterBag: USER_CACHE.letterBag, // 暂不移除，等 PostgREST cache 刷新
     updated_at: new Date().toISOString(),
   });
 }
