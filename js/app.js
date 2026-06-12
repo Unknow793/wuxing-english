@@ -2290,18 +2290,50 @@ function finishThemeLearning() {
 
   // 计算测验 XP + 拼词 XP
   const totalSpelled = STATE.spellResult.filter(r => r.success).length;
-  const totalWords = STATE.words.length;
+  const spellRequired = STATE.spellRequiredCount;
   const quizAccuracy = STATE.quizTotal > 0 ? STATE.quizCorrect / STATE.quizTotal : 0;
   const quizXp = Math.round(10 + quizAccuracy * 20); // 10~30
 
-  const cat = STATE.words[0]?.category_cn || '';
-  const emoji = DATA.THEME_EMOJI[cat] || '📖';
-  const msg = `${emoji} ${cat} 主题完成！拼对 ${totalSpelled}/${totalWords} 个词 +${quizXp}XP（测验）+ 拼词奖励`;
+  const oldTotal = loadXp();
   addXp(quizXp);
   document.getElementById('theme-header').style.display = 'none';
 
-  showToast(msg);
-  goHome();
+  showThemeReward(totalSpelled, spellRequired, quizAccuracy, quizXp, oldTotal);
+}
+
+function showThemeReward(spelled, required, accuracy, quizXp, oldTotal) {
+  const cat = STATE.words[0]?.category_cn || '';
+  const emoji = DATA.THEME_EMOJI[cat] || '📖';
+  const pct = Math.round(accuracy * 100);
+
+  showScreen('screen-reward');
+
+  document.getElementById('reward-icon').textContent = spelled >= required ? '🎉' : '💪';
+  document.getElementById('reward-title').textContent = spelled >= required ? '主题完成！' : '继续加油！';
+  document.getElementById('reward-desc').textContent = `${emoji} ${cat} · 拼对 ${spelled}/${required} · 测验正确率 ${pct}%`;
+
+  // XP 显示
+  const totalXp = loadXp();
+  const { level, xpInLevel, xpNeeded } = getXpProgress(totalXp);
+  const pctBar = xpNeeded > 0 ? (xpInLevel / xpNeeded) * 100 : 100;
+
+  document.getElementById('reward-xp-gain').textContent = `+${quizXp} XP（测验）`;
+  document.getElementById('reward-xp-fill').style.width = Math.min(100, pctBar) + '%';
+  document.getElementById('reward-xp-text').textContent = `Lv.${level} ${xpInLevel}/${xpNeeded}`;
+  document.getElementById('reward-xp-info').style.display = 'flex';
+
+  // 单词卡已在拼写时逐词发放，不再重复发放
+  const container = document.getElementById('reward-cards');
+  container.innerHTML = '<p style="color:var(--text-light);font-size:14px;padding:12px">单词卡已在拼写时获得，继续学习收集更多！</p>';
+
+  // 等级升级检测
+  const oldLevel = getLevel(oldTotal);
+  if (level > oldLevel) {
+    const lvlUp = document.createElement('div');
+    lvlUp.style.cssText = 'background:#fff3e0;color:#e65100;font-weight:700;font-size:18px;text-align:center;padding:12px;margin-bottom:12px;border-radius:16px;';
+    lvlUp.textContent = `⬆️ 升级！Lv.${oldLevel} → Lv.${level}`;
+    container.insertBefore(lvlUp, container.firstChild);
+  }
 }
 
 /* ========== 学单词 ========== */
@@ -4355,7 +4387,7 @@ function bossTurn() {
     question = generateLetterBossQuestion();
     if (!question) question = DATA.generateClozeQuestion();
   } else {
-    question = DATA.generateClozeQuestion();
+    question = DATA.generateClozeQuestion('intermediate');
   }
   BATTLE.currentQuestion = question;
 
