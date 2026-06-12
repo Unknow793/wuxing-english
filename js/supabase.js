@@ -309,12 +309,41 @@ function goHomeAfterLogin() {
 }
 
 /* ---------- 获取所有用户（排行榜用） ---------- */
+/* ---------- 立即同步到 Supabase（跳过 debounce，等待完成） ---------- */
+async function syncToSupabaseNow() {
+  if (!USER_CACHE.id) return;
+  saveAllToLocal();
+  if (_syncTimer) { clearTimeout(_syncTimer); _syncTimer = null; }
+  try {
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
+      {
+        method: 'PATCH',
+        headers: SB_HEADERS,
+        body: JSON.stringify({
+          xp: USER_CACHE.xp,
+          backpack: USER_CACHE.backpack,
+          items: USER_CACHE.items,
+          bonus: USER_CACHE.bonus,
+          equip: USER_CACHE.equip,
+          achievements: USER_CACHE.achievements,
+          avatarFrame: USER_CACHE.avatarFrame,
+          title: USER_CACHE.title,
+          letterBag: USER_CACHE.letterBag,
+          updated_at: new Date().toISOString(),
+        }),
+      }
+    );
+  } catch (e) {
+    console.warn('Supabase同步失败，数据已保存在本地', e);
+  }
+}
+
 async function fetchAllUsers() {
   try {
-    // 加时间戳避免缓存
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus,equip,avatarFrame&order=xp.desc&limit=100&_=${Date.now()}`,
-      { headers: { ...SB_HEADERS, 'Cache-Control': 'no-cache' } }
+      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus,equip,avatarFrame&order=xp.desc&limit=100`,
+      { headers: SB_HEADERS }
     );
     return await res.json();
   } catch (e) {

@@ -1675,8 +1675,8 @@ async function showLeaderboard() {
   document.getElementById('lb-loading').style.display = 'block';
   document.getElementById('lb-list').innerHTML = '';
 
-  // 触发本地数据同步到Supabase（排行榜拉取前确保最新）
-  syncToSupabase();
+  // 先确保本地数据已上传到 Supabase
+  await syncToSupabaseNow();
 
   const rows = await fetchAllUsers();
   if (!Array.isArray(rows) || rows.length === 0) {
@@ -1702,29 +1702,6 @@ async function showLeaderboard() {
       power,
     };
   });
-
-  // 用本地实时数据覆盖当前用户（Supabase 可能未同步完成）
-  const selfIdx = _lbData.findIndex(u => u.username === USER_CACHE.username);
-  if (selfIdx >= 0) {
-    const selfLevel = getLevel(loadXp());
-    const selfPower = calcPowerForUser(
-      USER_CACHE.element,
-      loadBonus(),
-      selfLevel,
-      loadEquip()
-    );
-    _lbData[selfIdx] = {
-      username: USER_CACHE.username,
-      avatar: USER_CACHE.avatar || '',
-      element: USER_CACHE.element || '',
-      avatarFrame: USER_CACHE.avatarFrame || '',
-      xp: loadXp(),
-      level: selfLevel,
-      bonus: loadBonus(),
-      equip: loadEquip(),
-      power: selfPower,
-    };
-  }
 
   document.getElementById('lb-loading').style.display = 'none';
   renderLeaderboard(_lbTab);
