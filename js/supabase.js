@@ -210,6 +210,21 @@ function loadAllFromLocal() {
 /* ---------- 同步数据到 Supabase ---------- */
 let _syncTimer = null;
 
+/** PATCH body 只包含数据库中确认存在的列（letterBag 可能无对应列，去掉避免整请求失败） */
+function _buildPatchBody() {
+  return JSON.stringify({
+    xp: USER_CACHE.xp,
+    backpack: USER_CACHE.backpack,
+    items: USER_CACHE.items,
+    bonus: USER_CACHE.bonus,
+    equip: USER_CACHE.equip,
+    achievements: USER_CACHE.achievements,
+    avatarFrame: USER_CACHE.avatarFrame,
+    title: USER_CACHE.title,
+    updated_at: new Date().toISOString(),
+  });
+}
+
 function syncToSupabase() {
   if (!USER_CACHE.id) return;
   // 同时也存一份到 localStorage
@@ -217,25 +232,11 @@ function syncToSupabase() {
   if (_syncTimer) clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async () => {
     try {
-      await fetch(
+      const res = await fetch(
         `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
-        {
-          method: 'PATCH',
-          headers: SB_HEADERS,
-          body: JSON.stringify({
-            xp: USER_CACHE.xp,
-            backpack: USER_CACHE.backpack,
-            items: USER_CACHE.items,
-            bonus: USER_CACHE.bonus,
-            equip: USER_CACHE.equip,
-            achievements: USER_CACHE.achievements,
-            avatarFrame: USER_CACHE.avatarFrame,
-            title: USER_CACHE.title,
-            letterBag: USER_CACHE.letterBag,
-            updated_at: new Date().toISOString(),
-          }),
-        }
+        { method: 'PATCH', headers: SB_HEADERS, body: _buildPatchBody() }
       );
+      if (!res.ok) console.warn('Supabase PATCH 返回', res.status, await res.text().catch(()=>''));
     } catch (e) {
       console.warn('Supabase同步失败，数据已保存在本地', e);
     }
@@ -315,25 +316,11 @@ async function syncToSupabaseNow() {
   saveAllToLocal();
   if (_syncTimer) { clearTimeout(_syncTimer); _syncTimer = null; }
   try {
-    await fetch(
+    const res = await fetch(
       `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
-      {
-        method: 'PATCH',
-        headers: SB_HEADERS,
-        body: JSON.stringify({
-          xp: USER_CACHE.xp,
-          backpack: USER_CACHE.backpack,
-          items: USER_CACHE.items,
-          bonus: USER_CACHE.bonus,
-          equip: USER_CACHE.equip,
-          achievements: USER_CACHE.achievements,
-          avatarFrame: USER_CACHE.avatarFrame,
-          title: USER_CACHE.title,
-          letterBag: USER_CACHE.letterBag,
-          updated_at: new Date().toISOString(),
-        }),
-      }
+      { method: 'PATCH', headers: SB_HEADERS, body: _buildPatchBody() }
     );
+    if (!res.ok) console.warn('Supabase 即时同步返回', res.status, await res.text().catch(()=>''));
   } catch (e) {
     console.warn('Supabase同步失败，数据已保存在本地', e);
   }
