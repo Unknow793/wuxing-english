@@ -100,7 +100,7 @@ async function loginUser(username, password) {
     title: user.title || '',
     letterBag: user.letterBag || [],
   });
-  // 有本地数据且用户名匹配 → 以本地为准（本地数据更新，可能Supabase未同步成功）
+  // 有本地数据且用户名匹配 → 合并两地数据（不简单覆盖，防止多设备互刷）
   if (hasLocal) {
     Object.assign(USER_CACHE, {
       xp: localData.xp ?? USER_CACHE.xp,
@@ -111,8 +111,11 @@ async function loginUser(username, password) {
       achievements: localData.achievements ?? USER_CACHE.achievements,
       avatarFrame: localData.avatarFrame ?? USER_CACHE.avatarFrame,
       title: localData.title ?? USER_CACHE.title,
-      letterBag: localData.letterBag ?? USER_CACHE.letterBag,
     });
+    // 字母背包：取并集（不覆盖，多地收集互不丢失）
+    const remoteLetters = USER_CACHE.letterBag || [];
+    const localLetters = localData.letterBag || [];
+    USER_CACHE.letterBag = [...new Set([...remoteLetters, ...localLetters])];
   }
   saveAllToLocal();
   localStorage.setItem('wuxing_user', name);
