@@ -1642,7 +1642,7 @@ function pracShowResult() {
 let _lbData = [];
 let _lbTab = 'level';
 
-/** 给任意用户计算综合战力（不依赖全局 USER_CACHE） */
+/** 给任意用户计算综合战力（与 getPlayerStats 公式一致） */
 function calcPowerForUser(element, bonus, level, equip) {
   const base = ELEMENT_STATS[element] || { hp: 10, atk: 10, def: 10, spd: 10, cri: 10 };
   const bns = bonus || {};
@@ -1652,19 +1652,30 @@ function calcPowerForUser(element, bonus, level, equip) {
   let water = base.spd + level + (bns.water || 0);
   let metal = base.cri + level + (bns.metal || 0);
 
-  // 装备加成
+  // 装备加成（与 getPlayerStats 相同：字母数×品质系数% + 字母数×品质等级）
   const eq = equip || [null, null, null, null];
-  const eqBonus = { wood: 0, fire: 0, earth: 0, water: 0, metal: 0 };
+  let pctWood = 0, pctFire = 0, pctEarth = 0, pctWater = 0, pctMetal = 0;
+  let flatWood = 0, flatFire = 0, flatEarth = 0, flatWater = 0, flatMetal = 0;
   for (const slot of eq) {
     if (!slot || !slot.element) continue;
     const key = ELEMENT_TO_BONUS[slot.element];
-    if (key) eqBonus[key] += 0.1;
+    if (!key) continue;
+    const q = slot.quality || 'common';
+    const qi = CARD_QUALITIES[q] || CARD_QUALITIES.common;
+    const wlen = slot.word ? slot.word.length : 1;
+    const pct = wlen * qi.coeff;
+    const flat = wlen * qi.level;
+    if (key === 'wood') { pctWood += pct; flatWood += flat; }
+    else if (key === 'fire') { pctFire += pct; flatFire += flat; }
+    else if (key === 'earth') { pctEarth += pct; flatEarth += flat; }
+    else if (key === 'water') { pctWater += pct; flatWater += flat; }
+    else if (key === 'metal') { pctMetal += pct; flatMetal += flat; }
   }
-  wood = Math.round(wood * (1 + eqBonus.wood));
-  fire = Math.round(fire * (1 + eqBonus.fire));
-  earth = Math.round(earth * (1 + eqBonus.earth));
-  water = Math.round(water * (1 + eqBonus.water));
-  metal = Math.round(metal * (1 + eqBonus.metal));
+  wood = Math.round(wood * (1 + pctWood)) + flatWood;
+  fire = Math.round(fire * (1 + pctFire)) + flatFire;
+  earth = Math.round(earth * (1 + pctEarth)) + flatEarth;
+  water = Math.round(water * (1 + pctWater)) + flatWater;
+  metal = Math.round(metal * (1 + pctMetal)) + flatMetal;
 
   const maxHp = 60 + wood * 4;
   return Math.floor(maxHp * 2 + fire * 5 + earth * 3 + water + metal);
