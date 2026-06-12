@@ -1690,6 +1690,16 @@ async function showLeaderboard() {
   await syncToSupabaseNow();
 
   const rows = await fetchAllUsers();
+
+  // debug: 对比当前用户本地 vs Supabase 数据
+  const me = rows.find(u => u.username === USER_CACHE.username);
+  if (me) {
+    console.log('[排行] 本地 equip:', JSON.stringify(loadEquip()));
+    console.log('[排行] Supabase equip:', JSON.stringify(me.equip));
+    console.log('[排行] 本地 bonus:', JSON.stringify(loadBonus()));
+    console.log('[排行] Supabase bonus:', JSON.stringify(me.bonus));
+    console.log('[排行] 本地 xp:', loadXp(), 'Supabase xp:', me.xp);
+  }
   if (!Array.isArray(rows) || rows.length === 0) {
     document.getElementById('lb-loading').textContent = '暂无数据';
     return;
