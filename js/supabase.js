@@ -311,9 +311,10 @@ function goHomeAfterLogin() {
 /* ---------- 获取所有用户（排行榜用） ---------- */
 async function fetchAllUsers() {
   try {
+    // 加时间戳避免缓存
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus,equip,avatarFrame&order=xp.desc&limit=100`,
-      { headers: SB_HEADERS }
+      `${SUPABASE_URL}/rest/v1/user_profiles?select=username,avatar,element,xp,bonus,equip,avatarFrame&order=xp.desc&limit=100&_=${Date.now()}`,
+      { headers: { ...SB_HEADERS, 'Cache-Control': 'no-cache' } }
     );
     return await res.json();
   } catch (e) {
