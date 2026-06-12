@@ -24,7 +24,7 @@ const SPEECH = (() => {
     } catch (e) {}
   })();
 
-  function speak(text, rate = 0.85, onEnd) {
+  function speak(text, rate = 1.0, onEnd) {
     if (!enabled || !supported) return;
 
     // 先取消当前朗读
@@ -42,8 +42,8 @@ const SPEECH = (() => {
     });
   }
 
-  function speakWord(word, onEnd) { speak(word, 0.5, onEnd); }
-  function speakSentence(sentence, onEnd) { speak(sentence, 0.65, onEnd); }
+  function speakWord(word, onEnd) { speak(word, 1.0, onEnd); }
+  function speakSentence(sentence, onEnd) { speak(sentence, 1.0, onEnd); }
 
   function stop() { if (supported) ss.cancel(); }
   function toggle() { if (!supported) return false; enabled = !enabled; return enabled; }
