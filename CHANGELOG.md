@@ -201,3 +201,10 @@
 - **挑战模式 Boss 崩溃修复**：pracGenMatchCn 增加空池检查，bossTurn 增加出题失败安全处理（显示退出按钮）
 - **战斗退出按钮**：战斗界面右上角增加退出按钮
 - **装备品质显示**：装备选择器和挑战选牌界面显示卡牌品质
+
+### 2026-06-12 第二波（已提交）
+- **PATCH 拆分**：letterBag 拆为独立 PATCH，防止 PostgREST schema cache 问题阻塞装备/经验同步
+- **排行榜战力同步**：calcPowerForUser 公式与个人页对齐（品质系数+等级），syncToSupabaseNow 排行榜前强制执行同步
+- **登录合并取并集**：letterBag 登录时合并两地取并集，防止多设备互刷丢失
+- **sentence_groups 缺 elements 修复**：补上 25 组 beginner 句子的 elements 字段，修复个人页崩溃
+- **Supabase 表结构文档**：新增 docs/supabase-schema.md
