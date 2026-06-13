@@ -1088,8 +1088,8 @@ h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px
 }
 .lb-rank.gold { color: #ff8f00; } .lb-rank.silver { color: #90a4ae; } .lb-rank.bronze { color: #8d6e63; }
 .lb-medal { font-size: 20px; }
-.lb-avatar { font-size: 24px; flex-shrink: 0; width: 28px; height: 28px; }
-.lb-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; display: block; }
+.lb-avatar { font-size: 24px; flex-shrink: 0; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
+.lb-avatar-img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; display: block; }
 .lb-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-element { font-size: 12px; flex-shrink: 0; }
 .lb-stats {
@@ -1263,28 +1263,29 @@ h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px
 .frame-progress-text { font-size: 10px; color: var(--text-light); white-space: nowrap; }
 .frame-status { font-size: 11px; font-weight: 600; color: var(--text-light); }
 
+/* 测试解锁按钮 */
+.debug-unlock-btn {
+  display: block; margin: 0 auto 8px; font-size: 12px; padding: 4px 14px;
+  background: #f5f0ff; border: 1px solid #d0c0e0; border-radius: 12px;
+  cursor: pointer; color: #7b5ea7; transition: background 0.15s;
+}
+.debug-unlock-btn:hover { background: #e8dff5; }
+.debug-unlock-btn:active { transform: scale(0.96); }
+
 /* 头像框预览着色 — 类名直接加在 .frame-avatar-mock 上 */
-.frame-el-lv10 { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; }
-.frame-el-lv20 { box-shadow: 0 0 0 3px #ff5722, 0 0 10px rgba(255,87,34,0.4); border-radius: 50%; }
-.frame-el-lv30 { box-shadow: 0 0 0 3px #ffd700, 0 0 14px rgba(255,215,0,0.5); border-radius: 50%; }
-.frame-el-wood-1 { box-shadow: 0 0 0 3px #a5d6a7; border-radius: 50%; }
-.frame-el-wood-2 { box-shadow: 0 0 0 3px #4caf50, 0 0 10px rgba(76,175,80,0.4); border-radius: 50%; }
-.frame-el-wood-3 { box-shadow: 0 0 0 3px #2e7d32, 0 0 14px rgba(76,175,80,0.5); border-radius: 50%; }
-.frame-el-fire-1 { box-shadow: 0 0 0 3px #ffab91; border-radius: 50%; }
-.frame-el-fire-2 { box-shadow: 0 0 0 3px #ff5722, 0 0 10px rgba(255,87,34,0.4); border-radius: 50%; }
-.frame-el-fire-3 { box-shadow: 0 0 0 3px #bf360c, 0 0 14px rgba(255,87,34,0.5); border-radius: 50%; }
-.frame-el-metal-1 { box-shadow: 0 0 0 3px #ffe082; border-radius: 50%; }
-.frame-el-metal-2 { box-shadow: 0 0 0 3px #ffc107, 0 0 10px rgba(255,193,7,0.4); border-radius: 50%; }
-.frame-el-metal-3 { box-shadow: 0 0 0 3px #ff8f00, 0 0 14px rgba(255,193,7,0.5); border-radius: 50%; }
-.frame-el-water-1 { box-shadow: 0 0 0 3px #90caf9; border-radius: 50%; }
-.frame-el-water-2 { box-shadow: 0 0 0 3px #2196f3, 0 0 10px rgba(33,150,243,0.4); border-radius: 50%; }
-.frame-el-water-3 { box-shadow: 0 0 0 3px #1565c0, 0 0 14px rgba(33,150,243,0.5); border-radius: 50%; }
-.frame-el-earth-1 { box-shadow: 0 0 0 3px #bcaaa4; border-radius: 50%; }
-.frame-el-earth-2 { box-shadow: 0 0 0 3px #795548, 0 0 10px rgba(121,85,72,0.4); border-radius: 50%; }
-.frame-el-earth-3 { box-shadow: 0 0 0 3px #4e342e, 0 0 14px rgba(121,85,72,0.5); border-radius: 50%; }
-.frame-el-rainbow-1 { box-shadow: 0 0 0 3px #ffd700, 0 0 10px rgba(255,215,0,0.4); border-radius: 50%; }
-.frame-el-rainbow-2 { box-shadow: 0 0 0 3px #ff6f00, 0 0 0 6px #ffd700, 0 0 14px rgba(255,215,0,0.4); border-radius: 50%; }
-.frame-el-rainbow-3 { box-shadow: 0 0 0 3px #e040fb, 0 0 0 6px #ffd700, 0 0 16px rgba(224,64,251,0.5); border-radius: 50%; }
+/* 木: 绿#4caf50, 火: 红#ff5722, 金: 黄#f57f17, 水: 蓝#2196f3, 土: 褐#795548 */
+.frame-el-wood-1, .frame-el-wood-2, .frame-el-wood-3 { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; }
+.frame-el-fire-1, .frame-el-fire-2, .frame-el-fire-3 { box-shadow: 0 0 0 3px #ff5722; border-radius: 50%; }
+.frame-el-metal-1, .frame-el-metal-2, .frame-el-metal-3 { box-shadow: 0 0 0 3px #f57f17; border-radius: 50%; }
+.frame-el-water-1, .frame-el-water-2, .frame-el-water-3 { box-shadow: 0 0 0 3px #2196f3; border-radius: 50%; }
+.frame-el-earth-1, .frame-el-earth-2, .frame-el-earth-3 { box-shadow: 0 0 0 3px #795548; border-radius: 50%; }
+/* 彩系列: 同色同心环 */
+.frame-el-rainbow-1, .frame-el-rainbow-2, .frame-el-rainbow-3 { box-shadow: 0 0 0 2px #ff0000, 0 0 0 5px #ff8800, 0 0 0 8px #ffd700, 0 0 0 11px #00cc00, 0 0 0 14px #0088ff; border-radius: 50%; }
+/* 紫 #9c27b0, 粉 #e91e63, 橙 #ff9800, 黑 #616161 */
+.frame-el-purple-1, .frame-el-purple-2, .frame-el-purple-3 { box-shadow: 0 0 0 3px #9c27b0; border-radius: 50%; }
+.frame-el-pink-1, .frame-el-pink-2, .frame-el-pink-3 { box-shadow: 0 0 0 3px #e91e63; border-radius: 50%; }
+.frame-el-orange-1, .frame-el-orange-2, .frame-el-orange-3 { box-shadow: 0 0 0 3px #ff9800; border-radius: 50%; }
+.frame-el-black-1, .frame-el-black-2, .frame-el-black-3 { box-shadow: 0 0 0 3px #616161; border-radius: 50%; }
 
 /* 头像框动画 */
 .frame-anim-glow { animation: frame-brightness 2s ease-in-out infinite; }
@@ -1297,34 +1298,88 @@ h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px
 @keyframes frame-hue-rotate { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
 /* ========== 头像框 — 个人页展示 ========== */
-/* 等级 */
-.profile-frame-frame-lv10 .profile-avatar-img { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; }
-.profile-frame-frame-lv20 .profile-avatar-img { box-shadow: 0 0 0 3px #ff5722, 0 0 12px rgba(255,87,34,0.5); border-radius: 50%; }
-.profile-frame-frame-lv30 .profile-avatar-img { box-shadow: 0 0 0 3px #ffd700, 0 0 16px rgba(255,215,0,0.6); border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 /* 木 */
-.profile-frame-frame-wood-1 .profile-avatar-img { box-shadow: 0 0 0 3px #a5d6a7; border-radius: 50%; }
-.profile-frame-frame-wood-2 .profile-avatar-img { box-shadow: 0 0 0 3px #4caf50, 0 0 12px rgba(76,175,80,0.4); border-radius: 50%; }
-.profile-frame-frame-wood-3 .profile-avatar-img { box-shadow: 0 0 0 3px #2e7d32, 0 0 16px rgba(76,175,80,0.5); border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+.profile-frame-frame-wood-1 .profile-avatar-img { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; }
+.profile-frame-frame-wood-2 .profile-avatar-img { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-wood-3 .profile-avatar-img { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 /* 火 */
-.profile-frame-frame-fire-1 .profile-avatar-img { box-shadow: 0 0 0 3px #ffab91; border-radius: 50%; }
-.profile-frame-frame-fire-2 .profile-avatar-img { box-shadow: 0 0 0 3px #ff5722, 0 0 12px rgba(255,87,34,0.4); border-radius: 50%; }
-.profile-frame-frame-fire-3 .profile-avatar-img { box-shadow: 0 0 0 3px #bf360c, 0 0 16px rgba(255,87,34,0.5); border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+.profile-frame-frame-fire-1 .profile-avatar-img { box-shadow: 0 0 0 3px #ff5722; border-radius: 50%; }
+.profile-frame-frame-fire-2 .profile-avatar-img { box-shadow: 0 0 0 3px #ff5722; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-fire-3 .profile-avatar-img { box-shadow: 0 0 0 3px #ff5722; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 /* 金 */
-.profile-frame-frame-metal-1 .profile-avatar-img { box-shadow: 0 0 0 3px #ffe082; border-radius: 50%; }
-.profile-frame-frame-metal-2 .profile-avatar-img { box-shadow: 0 0 0 3px #ffc107, 0 0 12px rgba(255,193,7,0.4); border-radius: 50%; }
-.profile-frame-frame-metal-3 .profile-avatar-img { box-shadow: 0 0 0 3px #ff8f00, 0 0 16px rgba(255,193,7,0.5); border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+.profile-frame-frame-metal-1 .profile-avatar-img { box-shadow: 0 0 0 3px #f57f17; border-radius: 50%; }
+.profile-frame-frame-metal-2 .profile-avatar-img { box-shadow: 0 0 0 3px #f57f17; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-metal-3 .profile-avatar-img { box-shadow: 0 0 0 3px #f57f17; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 /* 水 */
-.profile-frame-frame-water-1 .profile-avatar-img { box-shadow: 0 0 0 3px #90caf9; border-radius: 50%; }
-.profile-frame-frame-water-2 .profile-avatar-img { box-shadow: 0 0 0 3px #2196f3, 0 0 12px rgba(33,150,243,0.4); border-radius: 50%; }
-.profile-frame-frame-water-3 .profile-avatar-img { box-shadow: 0 0 0 3px #1565c0, 0 0 16px rgba(33,150,243,0.5); border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+.profile-frame-frame-water-1 .profile-avatar-img { box-shadow: 0 0 0 3px #2196f3; border-radius: 50%; }
+.profile-frame-frame-water-2 .profile-avatar-img { box-shadow: 0 0 0 3px #2196f3; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-water-3 .profile-avatar-img { box-shadow: 0 0 0 3px #2196f3; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 /* 土 */
-.profile-frame-frame-earth-1 .profile-avatar-img { box-shadow: 0 0 0 3px #bcaaa4; border-radius: 50%; }
-.profile-frame-frame-earth-2 .profile-avatar-img { box-shadow: 0 0 0 3px #795548, 0 0 12px rgba(121,85,72,0.4); border-radius: 50%; }
-.profile-frame-frame-earth-3 .profile-avatar-img { box-shadow: 0 0 0 3px #4e342e, 0 0 16px rgba(121,85,72,0.5); border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+.profile-frame-frame-earth-1 .profile-avatar-img { box-shadow: 0 0 0 3px #795548; border-radius: 50%; }
+.profile-frame-frame-earth-2 .profile-avatar-img { box-shadow: 0 0 0 3px #795548; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-earth-3 .profile-avatar-img { box-shadow: 0 0 0 3px #795548; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 /* 五彩 */
-.profile-frame-frame-rainbow-1 .profile-avatar-img { box-shadow: 0 0 0 3px #ffd700, 0 0 12px rgba(255,215,0,0.4); border-radius: 50%; }
-.profile-frame-frame-rainbow-2 .profile-avatar-img { box-shadow: 0 0 0 3px #ff6f00, 0 0 0 6px #ffd700, 0 0 16px rgba(255,215,0,0.4); border-radius: 50%; }
-.profile-frame-frame-rainbow-3 .profile-avatar-img { box-shadow: 0 0 0 3px #e040fb, 0 0 0 6px #ffd700, 0 0 16px rgba(224,64,251,0.5); border-radius: 50%; animation: frame-hue-rotate 2s linear infinite, frame-pulse 1.5s ease-in-out infinite; }
+.profile-frame-frame-rainbow-1 .profile-avatar-img { box-shadow: 0 0 0 2px #ff0000, 0 0 0 5px #ff8800, 0 0 0 8px #ffd700, 0 0 0 11px #00cc00, 0 0 0 14px #0088ff; border-radius: 50%; }
+.profile-frame-frame-rainbow-2 .profile-avatar-img { box-shadow: 0 0 0 2px #ff0000, 0 0 0 5px #ff8800, 0 0 0 8px #ffd700, 0 0 0 11px #00cc00, 0 0 0 14px #0088ff; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-rainbow-3 .profile-avatar-img { box-shadow: 0 0 0 2px #ff0000, 0 0 0 5px #ff8800, 0 0 0 8px #ffd700, 0 0 0 11px #00cc00, 0 0 0 14px #0088ff; border-radius: 50%; animation: frame-hue-rotate 2s linear infinite, frame-pulse 1.5s ease-in-out infinite; }
+/* 紫 */
+.profile-frame-frame-purple-1 .profile-avatar-img { box-shadow: 0 0 0 3px #9c27b0; border-radius: 50%; }
+.profile-frame-frame-purple-2 .profile-avatar-img { box-shadow: 0 0 0 3px #9c27b0; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-purple-3 .profile-avatar-img { box-shadow: 0 0 0 3px #9c27b0; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 粉 */
+.profile-frame-frame-pink-1 .profile-avatar-img { box-shadow: 0 0 0 3px #e91e63; border-radius: 50%; }
+.profile-frame-frame-pink-2 .profile-avatar-img { box-shadow: 0 0 0 3px #e91e63; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-pink-3 .profile-avatar-img { box-shadow: 0 0 0 3px #e91e63; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 橙 */
+.profile-frame-frame-orange-1 .profile-avatar-img { box-shadow: 0 0 0 3px #ff9800; border-radius: 50%; }
+.profile-frame-frame-orange-2 .profile-avatar-img { box-shadow: 0 0 0 3px #ff9800; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-orange-3 .profile-avatar-img { box-shadow: 0 0 0 3px #ff9800; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 黑 */
+.profile-frame-frame-black-1 .profile-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; }
+.profile-frame-frame-black-2 .profile-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-black-3 .profile-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+
+/* ========== 头像框 — 排行榜展示 ========== */
+/* 木 */
+.lb-frame-frame-wood-1 .lb-avatar-img { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; }
+.lb-frame-frame-wood-2 .lb-avatar-img { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-wood-3 .lb-avatar-img { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 火 */
+.lb-frame-frame-fire-1 .lb-avatar-img { box-shadow: 0 0 0 3px #ff5722; border-radius: 50%; }
+.lb-frame-frame-fire-2 .lb-avatar-img { box-shadow: 0 0 0 3px #ff5722; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-fire-3 .lb-avatar-img { box-shadow: 0 0 0 3px #ff5722; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 金 */
+.lb-frame-frame-metal-1 .lb-avatar-img { box-shadow: 0 0 0 3px #f57f17; border-radius: 50%; }
+.lb-frame-frame-metal-2 .lb-avatar-img { box-shadow: 0 0 0 3px #f57f17; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-metal-3 .lb-avatar-img { box-shadow: 0 0 0 3px #f57f17; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 水 */
+.lb-frame-frame-water-1 .lb-avatar-img { box-shadow: 0 0 0 3px #2196f3; border-radius: 50%; }
+.lb-frame-frame-water-2 .lb-avatar-img { box-shadow: 0 0 0 3px #2196f3; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-water-3 .lb-avatar-img { box-shadow: 0 0 0 3px #2196f3; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 土 */
+.lb-frame-frame-earth-1 .lb-avatar-img { box-shadow: 0 0 0 3px #795548; border-radius: 50%; }
+.lb-frame-frame-earth-2 .lb-avatar-img { box-shadow: 0 0 0 3px #795548; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-earth-3 .lb-avatar-img { box-shadow: 0 0 0 3px #795548; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 五彩 */
+.lb-frame-frame-rainbow-1 .lb-avatar-img { box-shadow: 0 0 0 2px #ff0000, 0 0 0 5px #ff8800, 0 0 0 8px #ffd700, 0 0 0 11px #00cc00, 0 0 0 14px #0088ff; border-radius: 50%; }
+.lb-frame-frame-rainbow-2 .lb-avatar-img { box-shadow: 0 0 0 2px #ff0000, 0 0 0 5px #ff8800, 0 0 0 8px #ffd700, 0 0 0 11px #00cc00, 0 0 0 14px #0088ff; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-rainbow-3 .lb-avatar-img { box-shadow: 0 0 0 2px #ff0000, 0 0 0 5px #ff8800, 0 0 0 8px #ffd700, 0 0 0 11px #00cc00, 0 0 0 14px #0088ff; border-radius: 50%; animation: frame-hue-rotate 2s linear infinite, frame-pulse 1.5s ease-in-out infinite; }
+/* 紫 */
+.lb-frame-frame-purple-1 .lb-avatar-img { box-shadow: 0 0 0 3px #9c27b0; border-radius: 50%; }
+.lb-frame-frame-purple-2 .lb-avatar-img { box-shadow: 0 0 0 3px #9c27b0; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-purple-3 .lb-avatar-img { box-shadow: 0 0 0 3px #9c27b0; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 粉 */
+.lb-frame-frame-pink-1 .lb-avatar-img { box-shadow: 0 0 0 3px #e91e63; border-radius: 50%; }
+.lb-frame-frame-pink-2 .lb-avatar-img { box-shadow: 0 0 0 3px #e91e63; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-pink-3 .lb-avatar-img { box-shadow: 0 0 0 3px #e91e63; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 橙 */
+.lb-frame-frame-orange-1 .lb-avatar-img { box-shadow: 0 0 0 3px #ff9800; border-radius: 50%; }
+.lb-frame-frame-orange-2 .lb-avatar-img { box-shadow: 0 0 0 3px #ff9800; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-orange-3 .lb-avatar-img { box-shadow: 0 0 0 3px #ff9800; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 黑 */
+.lb-frame-frame-black-1 .lb-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; }
+.lb-frame-frame-black-2 .lb-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-black-3 .lb-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 
 /* ========== 称号 ========== */
 .profile-title-badge {

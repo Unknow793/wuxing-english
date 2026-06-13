@@ -15,17 +15,21 @@ const AVATARS_SPECIAL = Array.from({length: 28}, (_, i) => ({
 
 /* ========== 成就定义 ========== */
 const ACHIEVEMENTS = [
-  { id:'first_boss_win',   name:'初战告捷',   desc:'第一次击败Boss',            icon:'🏆', titleUnlock:'初战告捷' },
-  { id:'spell_50_words',   name:'拼词达人',   desc:'累计拼对50个单词',          icon:'✍️' },
-  { id:'spell_200_words',  name:'拼词高手',   desc:'累计拼对200个单词',         icon:'✍️' },
-  { id:'all_elements_10',   name:'五行调和',   desc:'五行永久加成各达10',        icon:'⚖️' },
-  { id:'collect_500',      name:'收藏家',     desc:'累计收集500张单词卡',        icon:'📚' },
-  { id:'element_master',   name:'五行大师',   desc:'各五行收集率均达50%',        icon:'🌟' },
-  { id:'no_damage_win',    name:'完美防御',   desc:'无伤击败Boss',              icon:'🛡️', titleUnlock:'完美防御' },
-  { id:'lv10',             name:'初出茅庐',   desc:'达到10级',                  icon:'⭐', titleUnlock:'初出茅庐' },
-  { id:'lv20',             name:'小有所成',   desc:'达到20级',                  icon:'⭐' },
-  { id:'boss_10_wins',     name:'常胜将军',   desc:'累计击败Boss 10次',          icon:'⚔️' },
-  { id:'use_10_items',     name:'道具达人',   desc:'累计使用10个道具',           icon:'🧰' },
+  { id:'first_boss_win',    name:'初战告捷',     desc:'第一次击败Boss',          icon:'🏆', titleUnlock:'初战告捷' },
+  { id:'spell_10_words',    name:'拼词小能手',   desc:'累计拼对10个单词',        icon:'✍️' },
+  { id:'spell_50_words',    name:'拼词达人',     desc:'累计拼对50个单词',        icon:'✍️' },
+  { id:'spell_200_words',   name:'拼词高手',     desc:'累计拼对200个单词',       icon:'✍️' },
+  { id:'all_elements_10',   name:'五行调和',     desc:'五行永久加成各达10',      icon:'⚖️' },
+  { id:'collect_500',       name:'收藏家',       desc:'累计收集500张单词卡',     icon:'📚' },
+  { id:'element_master',    name:'五行大师',     desc:'各五行收集率均达50%',     icon:'🌟' },
+  { id:'no_damage_win',     name:'完美防御·初',  desc:'无伤击败Boss 1次',       icon:'🛡️', titleUnlock:'完美防御' },
+  { id:'no_damage_win_10',  name:'完美防御·极',  desc:'无伤击败Boss 10次',      icon:'🛡️' },
+  { id:'no_damage_win_30',  name:'完美防御·臻',  desc:'无伤击败Boss 30次',      icon:'🛡️' },
+  { id:'lv10',              name:'初出茅庐',     desc:'达到10级',               icon:'⭐', titleUnlock:'初出茅庐' },
+  { id:'lv20',              name:'小有所成',     desc:'达到20级',               icon:'⭐' },
+  { id:'boss_10_wins',      name:'常胜将军',     desc:'累计击败Boss 10次',       icon:'⚔️' },
+  { id:'boss_50_wins',      name:'不败传奇',     desc:'累计击败Boss 50次',       icon:'⚔️', titleUnlock:'不败传奇' },
+  { id:'use_10_items',      name:'道具达人',     desc:'累计使用10个道具',        icon:'🧰' },
 ];
 
 /* ========== 头像框定义 ========== */
@@ -36,16 +40,12 @@ const ACHIEVEMENTS = [
  */
 const AVATAR_FRAMES = [
   { id:'', label:'无', anim:'none', condition:null },
-  // ★ 等级框
-  { id:'frame-lv10', label:'木之框·初', anim:'glow', condition:{type:'level',value:10} },
-  { id:'frame-lv20', label:'炎之框·极', anim:'glow', condition:{type:'level',value:20} },
-  { id:'frame-lv30', label:'金之框·臻', anim:'dynamic', condition:{type:'level',value:30} },
   // ★ 五行·初（击杀5次）
-  { id:'frame-wood-1', label:'木·初', anim:'glow', condition:{type:'bossKills',element:'木',value:5} },
-  { id:'frame-fire-1', label:'火·初', anim:'glow', condition:{type:'bossKills',element:'火',value:5} },
-  { id:'frame-metal-1', label:'金·初', anim:'glow', condition:{type:'bossKills',element:'金',value:5} },
-  { id:'frame-water-1', label:'水·初', anim:'glow', condition:{type:'bossKills',element:'水',value:5} },
-  { id:'frame-earth-1', label:'土·初', anim:'glow', condition:{type:'bossKills',element:'土',value:5} },
+  { id:'frame-wood-1', label:'木·初', anim:'none', condition:{type:'bossKills',element:'木',value:5} },
+  { id:'frame-fire-1', label:'火·初', anim:'none', condition:{type:'bossKills',element:'火',value:5} },
+  { id:'frame-metal-1', label:'金·初', anim:'none', condition:{type:'bossKills',element:'金',value:5} },
+  { id:'frame-water-1', label:'水·初', anim:'none', condition:{type:'bossKills',element:'水',value:5} },
+  { id:'frame-earth-1', label:'土·初', anim:'none', condition:{type:'bossKills',element:'土',value:5} },
   // ★ 五行·极（击杀20次）
   { id:'frame-wood-2', label:'木·极', anim:'glow', condition:{type:'bossKills',element:'木',value:20} },
   { id:'frame-fire-2', label:'火·极', anim:'glow', condition:{type:'bossKills',element:'火',value:20} },
@@ -59,9 +59,25 @@ const AVATAR_FRAMES = [
   { id:'frame-water-3', label:'水·臻', anim:'dynamic', condition:{type:'bossKills',element:'水',value:50} },
   { id:'frame-earth-3', label:'土·臻', anim:'dynamic', condition:{type:'bossKills',element:'土',value:50} },
   // ★ 五彩系列（全五行攻击次数解锁）
-  { id:'frame-rainbow-1', label:'彩·初', anim:'glow', condition:{type:'allFive',value:5} },
-  { id:'frame-rainbow-2', label:'彩·绚', anim:'rainbow', condition:{type:'allFive',value:20} },
+  { id:'frame-rainbow-1', label:'彩·初', anim:'none', condition:{type:'allFive',value:5} },
+  { id:'frame-rainbow-2', label:'彩·绚', anim:'glow', condition:{type:'allFive',value:20} },
   { id:'frame-rainbow-3', label:'彩·幻', anim:'rainbow-dynamic', condition:{type:'allFive',value:50} },
+  // ★ 紫色系
+  { id:'frame-purple-1', label:'紫·初', anim:'none', condition:{type:'bossWins',value:1} },
+  { id:'frame-purple-2', label:'紫·极', anim:'glow', condition:{type:'bossWins',value:10} },
+  { id:'frame-purple-3', label:'紫·臻', anim:'dynamic', condition:{type:'bossWins',value:50} },
+  // ★ 粉色系
+  { id:'frame-pink-1', label:'粉·初', anim:'none', condition:{type:'wordsSpelled',value:10} },
+  { id:'frame-pink-2', label:'粉·极', anim:'glow', condition:{type:'wordsSpelled',value:50} },
+  { id:'frame-pink-3', label:'粉·臻', anim:'dynamic', condition:{type:'wordsSpelled',value:200} },
+  // ★ 橙色系（待定奖励）
+  { id:'frame-orange-1', label:'橙·初', anim:'none', condition:null },
+  { id:'frame-orange-2', label:'橙·极', anim:'glow', condition:null },
+  { id:'frame-orange-3', label:'橙·臻', anim:'dynamic', condition:null },
+  // ★ 黑色系
+  { id:'frame-black-1', label:'黑·初', anim:'none', condition:{type:'perfectWins',value:1} },
+  { id:'frame-black-2', label:'黑·极', anim:'glow', condition:{type:'perfectWins',value:10} },
+  { id:'frame-black-3', label:'黑·臻', anim:'dynamic', condition:{type:'perfectWins',value:30} },
 ];
 
 /** 获取头像图片路径 */
@@ -417,15 +433,19 @@ function checkAchievements(context) {
     let met = false;
     switch (ach.id) {
       case 'first_boss_win': met = stats.bossWins >= 1; break;
+      case 'spell_10_words': met = stats.wordsSpelled >= 10; break;
       case 'spell_50_words': met = stats.wordsSpelled >= 50; break;
       case 'spell_200_words': met = stats.wordsSpelled >= 200; break;
       case 'all_elements_10': met = bonus.wood>=10 && bonus.fire>=10 && bonus.earth>=10 && bonus.water>=10 && bonus.metal>=10; break;
       case 'collect_500': met = bp.length >= 500; break;
       case 'element_master': met = Object.values(completion).every(v => v >= 50); break;
       case 'no_damage_win': met = stats.bossPerfectWins >= 1; break;
+      case 'no_damage_win_10': met = stats.bossPerfectWins >= 10; break;
+      case 'no_damage_win_30': met = stats.bossPerfectWins >= 30; break;
       case 'lv10': met = stats.level >= 10; break;
       case 'lv20': met = stats.level >= 20; break;
       case 'boss_10_wins': met = stats.bossWins >= 10; break;
+      case 'boss_50_wins': met = stats.bossWins >= 50; break;
       case 'use_10_items': met = stats.itemsUsed >= 10; break;
     }
     if (met) {
@@ -492,6 +512,7 @@ async function showAchievements() {
     let progressStr = '';
     switch (ach.id) {
       case 'first_boss_win': progressStr = `${stats.bossWins}/1`; break;
+      case 'spell_10_words': progressStr = `${stats.wordsSpelled}/10`; break;
       case 'spell_50_words': progressStr = `${stats.wordsSpelled}/50`; break;
       case 'spell_200_words': progressStr = `${stats.wordsSpelled}/200`; break;
       case 'all_elements_10': {
@@ -504,9 +525,12 @@ async function showAchievements() {
         progressStr = `${m}%/50%`; break;
       }
       case 'no_damage_win': progressStr = `${stats.bossPerfectWins}/1`; break;
+      case 'no_damage_win_10': progressStr = `${stats.bossPerfectWins}/10`; break;
+      case 'no_damage_win_30': progressStr = `${stats.bossPerfectWins}/30`; break;
       case 'lv10': progressStr = `${level}/10`; break;
       case 'lv20': progressStr = `${level}/20`; break;
       case 'boss_10_wins': progressStr = `${stats.bossWins}/10`; break;
+      case 'boss_50_wins': progressStr = `${stats.bossWins}/50`; break;
       case 'use_10_items': progressStr = `${stats.itemsUsed}/10`; break;
     }
 
@@ -658,6 +682,15 @@ function getFrameProgress(frame) {
     return { current: loadLocal('bossKills_' + c.element, 0), target: c.value };
   } else if (c.type === 'allFive') {
     return { current: loadLocal('allFiveAttacks', 0), target: c.value };
+  } else if (c.type === 'bossWins') {
+    const s = loadLocal('achStats', {});
+    return { current: s.bossWins || 0, target: c.value };
+  } else if (c.type === 'wordsSpelled') {
+    const s = loadLocal('achStats', {});
+    return { current: s.wordsSpelled || 0, target: c.value };
+  } else if (c.type === 'perfectWins') {
+    const s = loadLocal('achStats', {});
+    return { current: s.bossPerfectWins || 0, target: c.value };
   }
   return { current: 0, target: 0 };
 }
@@ -703,11 +736,16 @@ function getFrameColor(id) {
     const info = DATA.getElementInfo(el);
     if (info) return info.color;
   }
-  if (id.includes('lv10')) return '#4caf50';
-  if (id.includes('lv20')) return '#ff5722';
-  if (id.includes('lv30')) return '#ffd700';
   if (id.includes('rainbow')) return '#ffd700';
   return '#888';
+}
+
+/** 测试用：解锁所有头像框 */
+function unlockAllFrames() {
+  const allIds = AVATAR_FRAMES.map(f => f.id).filter(id => id);
+  saveLocal(FRAME_UNLOCK_KEY, allIds);
+  showToast('✅ 已解锁全部头像框');
+  showFrameSelect();
 }
 
 /** 设置当前佩戴的头像框 */
@@ -1744,8 +1782,7 @@ function renderLeaderboard(tab) {
     const isSelf = u.username === USER_CACHE.username;
     const avUrl = getAvatarUrl(u.avatar);
     const elInfo = DATA.getElementInfo(u.element);
-    const frameColor = getFrameColor(u.avatarFrame);
-    const frameStyle = frameColor ? `style="box-shadow:0 0 0 2px ${frameColor};border-radius:50%"` : '';
+    const frameClass = u.avatarFrame ? ` lb-frame-${u.avatarFrame}` : '';
 
     const row = document.createElement('div');
     row.className = 'lb-row' + (isSelf ? ' lb-self' : '');
@@ -1759,7 +1796,7 @@ function renderLeaderboard(tab) {
 
     row.innerHTML = `
       ${rankHtml}
-      <span class="lb-avatar">${avUrl ? `<img src="${avUrl}" class="lb-avatar-img" ${frameStyle} onerror="this.outerHTML='👤'">` : '👤'}</span>
+      <span class="lb-avatar${frameClass}">${avUrl ? `<img src="${avUrl}" class="lb-avatar-img" onerror="this.outerHTML='👤'">` : '👤'}</span>
       <span class="lb-name">${u.username}${isSelf ? ' （你）' : ''}</span>
       <span class="lb-element" style="color:${elInfo ? elInfo.color : '#888'}">${elInfo ? elInfo.icon : ''}</span>
       <div class="lb-stats">
