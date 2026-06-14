@@ -70,10 +70,26 @@ const AVATAR_FRAMES = [
   { id:'frame-pink-1', label:'粉·初', anim:'none', condition:{type:'wordsSpelled',value:10} },
   { id:'frame-pink-2', label:'粉·极', anim:'glow', condition:{type:'wordsSpelled',value:50} },
   { id:'frame-pink-3', label:'粉·臻', anim:'dynamic', condition:{type:'wordsSpelled',value:200} },
-  // ★ 橙色系（待定奖励）
+  // ★ 橙色系（1-4年级概率奖励：学习6%/练习4%/初级挑战Boss2%）
   { id:'frame-orange-1', label:'橙·初', anim:'none', condition:null },
   { id:'frame-orange-2', label:'橙·极', anim:'glow', condition:null },
   { id:'frame-orange-3', label:'橙·臻', anim:'dynamic', condition:null },
+  // ★ 朱翠系（5-6年级概率奖励：学习6%/练习4%/中级挑战Boss2%）
+  { id:'frame-zhucui-1', label:'朱·翠·初', anim:'none', condition:null },
+  { id:'frame-zhucui-2', label:'朱·翠·极', anim:'glow', condition:null },
+  { id:'frame-zhucui-3', label:'朱·翠·臻', anim:'dynamic', condition:null },
+  // ★ 青橙系（暂锁，待分配）
+  { id:'frame-qingcheng-1', label:'青·橙·初', anim:'none', condition:null },
+  { id:'frame-qingcheng-2', label:'青·橙·极', anim:'glow', condition:null },
+  { id:'frame-qingcheng-3', label:'青·橙·臻', anim:'dynamic', condition:null },
+  // ★ 靛黄系（暂锁，待分配）
+  { id:'frame-dianhuang-1', label:'靛·黄·初', anim:'none', condition:null },
+  { id:'frame-dianhuang-2', label:'靛·黄·极', anim:'glow', condition:null },
+  { id:'frame-dianhuang-3', label:'靛·黄·臻', anim:'dynamic', condition:null },
+  // ★ 黛金系（暂锁，待分配）
+  { id:'frame-daijin-1', label:'黛·金·初', anim:'none', condition:null },
+  { id:'frame-daijin-2', label:'黛·金·极', anim:'glow', condition:null },
+  { id:'frame-daijin-3', label:'黛·金·臻', anim:'dynamic', condition:null },
   // ★ 黑色系
   { id:'frame-black-1', label:'黑·初', anim:'none', condition:{type:'perfectWins',value:1} },
   { id:'frame-black-2', label:'黑·极', anim:'glow', condition:{type:'perfectWins',value:10} },
@@ -202,7 +218,7 @@ function showFrameSelect() {
   const current = USER_CACHE.avatarFrame || '';
 
   for (const f of AVATAR_FRAMES) {
-    const isUnlocked = !f.condition || unlocked.has(f.id);
+    const isUnlocked = f.id === '' || unlocked.has(f.id);
     const isActive = f.id === current;
     const progress = f.condition ? getFrameProgress(f) : null;
     const pct = progress && progress.target > 0 ? Math.min(100, Math.round(progress.current / progress.target * 100)) : 100;
@@ -737,15 +753,22 @@ function getFrameColor(id) {
     if (info) return info.color;
   }
   if (id.includes('rainbow')) return '#ffd700';
+  if (id.includes('zhucui')) return '#e74c3c';
+  if (id.includes('qingcheng')) return '#00bcd4';
+  if (id.includes('dianhuang')) return '#3f51b5';
+  if (id.includes('daijin')) return '#455a64';
   return '#888';
 }
 
-/** 测试用：解锁所有头像框 */
-function unlockAllFrames() {
-  const allIds = AVATAR_FRAMES.map(f => f.id).filter(id => id);
-  saveLocal(FRAME_UNLOCK_KEY, allIds);
-  showToast('✅ 已解锁全部头像框');
-  showFrameSelect();
+/** 概率掉落解锁头像框 */
+function tryUnlockFrameByDrop(frameId, label, probability) {
+  if (Math.random() >= probability) return false;
+  const unlocked = getUnlockedFrames();
+  if (unlocked.has(frameId)) return false;
+  unlocked.add(frameId);
+  saveLocal(FRAME_UNLOCK_KEY, [...unlocked]);
+  showToast(`🖼️ 获得头像框：${label}！可在个人页更换`);
+  return true;
 }
 
 /** 设置当前佩戴的头像框 */
@@ -1215,8 +1238,10 @@ function showRewardsInfo() {
         <tr><td>经验加倍符</td><td>15%</td></tr>
         <tr><td>幸运护符</td><td>10%</td></tr>
         <tr><td>复活石</td><td>8%</td></tr>
+        <tr><td>初级挑战：橙·臻头像框</td><td>2%</td></tr>
+        <tr><td>中级挑战：朱·翠·臻头像框</td><td>2%</td></tr>
       </table>
-      <p class="ri-note">* 除五行洗髓丹外，均受幸运（金属性）加成</p>
+      <p class="ri-note">* 除五行洗髓丹和头像框外，均受幸运（金属性）加成</p>
       <p>Boss战失败：固定 +15 XP</p>
     </div>
     <div class="ri-section">
@@ -1225,10 +1250,23 @@ function showRewardsInfo() {
       <table class="ri-table">
         <tr><td>空白单词卡</td><td>12%</td></tr>
         <tr><td>🎒 背包格 +2</td><td>10%</td></tr>
+        <tr><td>1-4年级：橙·极头像框</td><td>4%</td></tr>
+        <tr><td>5-6年级：朱·翠·极头像框</td><td>4%</td></tr>
       </table>
       <p>满分（100%）额外追加：</p>
       <table class="ri-table">
         <tr><td>随机五行属性 +1</td><td>10%</td></tr>
+      </table>
+    </div>
+    <div class="ri-section">
+      <h3>🔤 学习模式 · 拼词</h3>
+      <p>每次拼对一个单词获得：字母解锁 + 单词卡 + 经验</p>
+      <table class="ri-table">
+        <tr><td>第1次成功</td><td>满额经验</td></tr>
+        <tr><td>第2次成功</td><td>半额经验</td></tr>
+        <tr><td>3次及以上</td><td>仅给卡，无经验</td></tr>
+        <tr><td>1-4年级：橙·初头像框</td><td>6%</td></tr>
+        <tr><td>5-6年级：朱·翠·初头像框</td><td>6%</td></tr>
       </table>
     </div>
     <div class="ri-section">
@@ -1668,6 +1706,12 @@ function pracShowResult() {
     if (Math.random() < 0.10) {
       addBackpackSlot(2);
       rewards.push('🎒 背包格 +2');
+    }
+    // 头像框概率掉落：练习模式 ≥80%
+    if (PRAC.mode === 'grade1-2' || PRAC.mode === 'grade3-4') {
+      if (tryUnlockFrameByDrop('frame-orange-2', '橙·极', 0.04)) rewards.push('🖼️ 橙·极头像框');
+    } else if (PRAC.mode === 'grade5-6') {
+      if (tryUnlockFrameByDrop('frame-zhucui-2', '朱·翠·极', 0.04)) rewards.push('🖼️ 朱·翠·极头像框');
     }
         if (rewards.length > 0) {
       rewardEl.style.display = 'block';
@@ -2258,6 +2302,15 @@ function showSpellReward(result) {
     achStats2.wordsSpelled = (achStats2.wordsSpelled || 0) + 1;
     saveAchStats(achStats2);
     checkAchievements('after_spell');
+  }
+
+  // 头像框概率掉落：学习模式拼对单词
+  if (xpGain > 0) {
+    if (STATE.currentMode === 'grade1-2' || STATE.currentMode === 'grade3-4') {
+      tryUnlockFrameByDrop('frame-orange-1', '橙·初', 0.06);
+    } else if (STATE.currentMode === 'grade5-6') {
+      tryUnlockFrameByDrop('frame-zhucui-1', '朱·翠·初', 0.06);
+    }
   }
 
   // 将单词加入技能背包
@@ -5350,6 +5403,15 @@ function endBattle(win) {
         saveItems(items);
         extraRewards.push(`🖼️ 特殊头像「${target.label}」已解锁！`);
       }
+    }
+
+    // 头像框概率掉落：挑战模式 Boss 胜利
+    if (BATTLE.isLetterMode) {
+      // 初级挑战 → 橙·臻
+      if (tryUnlockFrameByDrop('frame-orange-3', '橙·臻', 0.02)) extraRewards.push('🖼️ 橙·臻头像框');
+    } else {
+      // 中级挑战 → 朱·翠·臻
+      if (tryUnlockFrameByDrop('frame-zhucui-3', '朱·翠·臻', 0.02)) extraRewards.push('🖼️ 朱·翠·臻头像框');
     }
 
     saveBackpack(bp);

@@ -1263,15 +1263,6 @@ h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px
 .frame-progress-text { font-size: 10px; color: var(--text-light); white-space: nowrap; }
 .frame-status { font-size: 11px; font-weight: 600; color: var(--text-light); }
 
-/* 测试解锁按钮 */
-.debug-unlock-btn {
-  display: block; margin: 0 auto 8px; font-size: 12px; padding: 4px 14px;
-  background: #f5f0ff; border: 1px solid #d0c0e0; border-radius: 12px;
-  cursor: pointer; color: #7b5ea7; transition: background 0.15s;
-}
-.debug-unlock-btn:hover { background: #e8dff5; }
-.debug-unlock-btn:active { transform: scale(0.96); }
-
 /* 头像框预览着色 — 类名直接加在 .frame-avatar-mock 上 */
 /* 木: 绿#4caf50, 火: 红#ff5722, 金: 黄#f57f17, 水: 蓝#2196f3, 土: 褐#795548 */
 .frame-el-wood-1, .frame-el-wood-2, .frame-el-wood-3 { box-shadow: 0 0 0 3px #4caf50; border-radius: 50%; }
@@ -1286,6 +1277,14 @@ h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px
 .frame-el-pink-1, .frame-el-pink-2, .frame-el-pink-3 { box-shadow: 0 0 0 3px #e91e63; border-radius: 50%; }
 .frame-el-orange-1, .frame-el-orange-2, .frame-el-orange-3 { box-shadow: 0 0 0 3px #ff9800; border-radius: 50%; }
 .frame-el-black-1, .frame-el-black-2, .frame-el-black-3 { box-shadow: 0 0 0 3px #616161; border-radius: 50%; }
+/* 朱翠  #e74c3c + #2ecc71 */
+.frame-el-zhucui-1, .frame-el-zhucui-2, .frame-el-zhucui-3 { box-shadow: 0 0 0 2px #e74c3c, 0 0 0 5px #2ecc71; border-radius: 50%; }
+/* 青橙  #00bcd4 + #ff9800 */
+.frame-el-qingcheng-1, .frame-el-qingcheng-2, .frame-el-qingcheng-3 { box-shadow: 0 0 0 2px #00bcd4, 0 0 0 5px #ff9800; border-radius: 50%; }
+/* 靛黄  #3f51b5 + #ffc107 */
+.frame-el-dianhuang-1, .frame-el-dianhuang-2, .frame-el-dianhuang-3 { box-shadow: 0 0 0 2px #3f51b5, 0 0 0 5px #ffc107; border-radius: 50%; }
+/* 黛金  #455a64 + #ffd700 */
+.frame-el-daijin-1, .frame-el-daijin-2, .frame-el-daijin-3 { box-shadow: 0 0 0 2px #455a64, 0 0 0 5px #ffd700; border-radius: 50%; }
 
 /* 头像框动画 */
 .frame-anim-glow { animation: frame-brightness 2s ease-in-out infinite; }
@@ -1338,6 +1337,22 @@ h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px
 .profile-frame-frame-black-1 .profile-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; }
 .profile-frame-frame-black-2 .profile-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
 .profile-frame-frame-black-3 .profile-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 朱翠 */
+.profile-frame-frame-zhucui-1 .profile-avatar-img { box-shadow: 0 0 0 2px #e74c3c, 0 0 0 5px #2ecc71; border-radius: 50%; }
+.profile-frame-frame-zhucui-2 .profile-avatar-img { box-shadow: 0 0 0 2px #e74c3c, 0 0 0 5px #2ecc71; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-zhucui-3 .profile-avatar-img { box-shadow: 0 0 0 2px #e74c3c, 0 0 0 5px #2ecc71; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 青橙 */
+.profile-frame-frame-qingcheng-1 .profile-avatar-img { box-shadow: 0 0 0 2px #00bcd4, 0 0 0 5px #ff9800; border-radius: 50%; }
+.profile-frame-frame-qingcheng-2 .profile-avatar-img { box-shadow: 0 0 0 2px #00bcd4, 0 0 0 5px #ff9800; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-qingcheng-3 .profile-avatar-img { box-shadow: 0 0 0 2px #00bcd4, 0 0 0 5px #ff9800; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 靛黄 */
+.profile-frame-frame-dianhuang-1 .profile-avatar-img { box-shadow: 0 0 0 2px #3f51b5, 0 0 0 5px #ffc107; border-radius: 50%; }
+.profile-frame-frame-dianhuang-2 .profile-avatar-img { box-shadow: 0 0 0 2px #3f51b5, 0 0 0 5px #ffc107; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-dianhuang-3 .profile-avatar-img { box-shadow: 0 0 0 2px #3f51b5, 0 0 0 5px #ffc107; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 黛金 */
+.profile-frame-frame-daijin-1 .profile-avatar-img { box-shadow: 0 0 0 2px #455a64, 0 0 0 5px #ffd700; border-radius: 50%; }
+.profile-frame-frame-daijin-2 .profile-avatar-img { box-shadow: 0 0 0 2px #455a64, 0 0 0 5px #ffd700; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.profile-frame-frame-daijin-3 .profile-avatar-img { box-shadow: 0 0 0 2px #455a64, 0 0 0 5px #ffd700; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 
 /* ========== 头像框 — 排行榜展示 ========== */
 /* 木 */
@@ -1380,6 +1395,22 @@ h2 { font-size: 24px; color: var(--text); text-align: center; margin-bottom: 8px
 .lb-frame-frame-black-1 .lb-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; }
 .lb-frame-frame-black-2 .lb-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
 .lb-frame-frame-black-3 .lb-avatar-img { box-shadow: 0 0 0 3px #616161; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 朱翠 */
+.lb-frame-frame-zhucui-1 .lb-avatar-img { box-shadow: 0 0 0 2px #e74c3c, 0 0 0 5px #2ecc71; border-radius: 50%; }
+.lb-frame-frame-zhucui-2 .lb-avatar-img { box-shadow: 0 0 0 2px #e74c3c, 0 0 0 5px #2ecc71; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-zhucui-3 .lb-avatar-img { box-shadow: 0 0 0 2px #e74c3c, 0 0 0 5px #2ecc71; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 青橙 */
+.lb-frame-frame-qingcheng-1 .lb-avatar-img { box-shadow: 0 0 0 2px #00bcd4, 0 0 0 5px #ff9800; border-radius: 50%; }
+.lb-frame-frame-qingcheng-2 .lb-avatar-img { box-shadow: 0 0 0 2px #00bcd4, 0 0 0 5px #ff9800; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-qingcheng-3 .lb-avatar-img { box-shadow: 0 0 0 2px #00bcd4, 0 0 0 5px #ff9800; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 靛黄 */
+.lb-frame-frame-dianhuang-1 .lb-avatar-img { box-shadow: 0 0 0 2px #3f51b5, 0 0 0 5px #ffc107; border-radius: 50%; }
+.lb-frame-frame-dianhuang-2 .lb-avatar-img { box-shadow: 0 0 0 2px #3f51b5, 0 0 0 5px #ffc107; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-dianhuang-3 .lb-avatar-img { box-shadow: 0 0 0 2px #3f51b5, 0 0 0 5px #ffc107; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
+/* 黛金 */
+.lb-frame-frame-daijin-1 .lb-avatar-img { box-shadow: 0 0 0 2px #455a64, 0 0 0 5px #ffd700; border-radius: 50%; }
+.lb-frame-frame-daijin-2 .lb-avatar-img { box-shadow: 0 0 0 2px #455a64, 0 0 0 5px #ffd700; border-radius: 50%; animation: frame-brightness 2s ease-in-out infinite; }
+.lb-frame-frame-daijin-3 .lb-avatar-img { box-shadow: 0 0 0 2px #455a64, 0 0 0 5px #ffd700; border-radius: 50%; animation: frame-pulse 1.5s ease-in-out infinite; }
 
 /* ========== 称号 ========== */
 .profile-title-badge {
