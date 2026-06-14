@@ -1423,7 +1423,7 @@ async function startPractice(mode) {
     PRAC.bestStreak = 0;
     PRAC.answered = false;
     PRAC.totalXp = 0;
-    const types = mode === "grade1-2" ? ["cloze", "match-cn", "word-class"] : mode === "grade3-4" ? ["cloze", "match-cn", "pos", "word-class"] : ["cloze", "match-cn", "pos", "shengke"];
+    const types = mode === "grade1-2" ? ["cloze", "match-cn", "word-class"] : mode === "grade3-4" ? ["cloze", "match-cn", "pos", "word-class"] : ["cloze", "match-cn", "pos", "shengke", "word-class"];
     for (let i = 0; i < 10; i++) {
       const type = DATA.randomPick(types);
       const q = pracGenQuestion(type, mode);
@@ -1898,27 +1898,23 @@ async function startStudy(mode) {
   await DATA.load();
 
   if (mode === 'grade5-6') {
-    // 5-6年级：走原有连句模式（word → quiz → sentence）
-    const tier = 'intermediate';
-    const result = DATA.selectAnySentenceGroup(tier);
-    if (result) {
-      // 对齐 words 与 targetOrder：以 targetOrder 为准构建 word 列表
-      STATE.targetOrder = result.targetOrder;
-      // 直接使用 targetOrder 构建 words（保持完全一致，含重复词如 the the）
-      STATE.words = [...result.targetOrder];
-      STATE.targetSentence = result.targetSentence;
-      STATE.contextCn = result.contextCn;
-    } else {
-      STATE.words = DATA.selectWords4();
-      STATE.targetOrder = DATA.getTargetOrder(STATE.words);
-      STATE.targetSentence = '';
-      STATE.contextCn = '';
-    }
-    STATE.wordIndex = 0;
-    STATE.sentenceCorrect = false;
+    // 5-6年级：先拼词热身（3个词），再进入连句
+    STATE.studyPhase = 'spelling';
     STATE.isThemeMode = false;
-    STATE.words = DATA.shuffleArray([...STATE.words]);
-    startLearning();
+    STATE.isSpelling = true;
+    STATE.spellWordIndex = 0;
+    STATE.spellResult = [];
+    STATE.spellRequiredCount = 3;
+    // 选3个有分类的单词用于拼词
+    const pool = DATA.words.filter(w => w.category_cn && DATA.THEME_EMOJI[w.category_cn]);
+    STATE.words = DATA.shuffleArray([...pool]).slice(0, 3);
+    // 进入拼词界面
+    document.getElementById('theme-header').style.display = 'none';
+    document.getElementById('learn-element').style.display = 'block';
+    document.getElementById('word-sentence').style.display = 'block';
+    document.querySelector('.spell-area .learn-buttons').style.display = 'flex';
+    document.getElementById('spell-result').style.display = 'none';
+    showSpellingWord(0);
   } else {
     // 1-2 / 3-4年级：走主题学习模式（word → quiz → finish）
     startThemeLearning(mode);
@@ -2100,6 +2096,10 @@ function startSpellingPhase() {
 
 function showSpellingWord(index) {
   if (index >= STATE.spellRequiredCount) {
+    if (STATE.currentMode === 'grade5-6') {
+      transitionFromSpellingToSentences();
+      return;
+    }
     finishThemeLearning();
     return;
   }
@@ -2345,8 +2345,13 @@ function showSpellReward(result) {
   if (isLast) {
     const btn = document.createElement('button');
     btn.className = 'primary-btn';
-    btn.textContent = '领取全部奖励 →';
-    btn.addEventListener('click', finishThemeLearning);
+    if (STATE.currentMode === 'grade5-6') {
+      btn.textContent = '进入造句 →';
+      btn.addEventListener('click', transitionFromSpellingToSentences);
+    } else {
+      btn.textContent = '领取全部奖励 →';
+      btn.addEventListener('click', finishThemeLearning);
+    }
     btns.appendChild(btn);
   } else {
     const btn = document.createElement('button');
@@ -2424,6 +2429,48 @@ function showThemeReward(spelled, required, accuracy, quizXp, oldTotal) {
     lvlUp.textContent = `⬆️ 升级！Lv.${oldLevel} → Lv.${level}`;
     container.insertBefore(lvlUp, container.firstChild);
   }
+}
+
+/** 5-6年级：拼词热身完成后转入连句模式 */
+function transitionFromSpellingToSentences() {
+  STATE.studyPhase = 'sentences';
+  STATE.isSpelling = false;
+  // 显示转场提示
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:24px 40px;border-radius:20px;z-index:200;text-align:center;animation:popIn 0.3s';
+  el.innerHTML = `
+    <div style="font-size:36px;margin-bottom:8px">🎯</div>
+    <div style="font-size:18px;font-weight:700">拼词热身完成！</div>
+    <div style="font-size:14px;margin-top:4px;opacity:0.9">接下来学习如何用单词造句 ↓</div>
+  `;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.remove();
+    // 设置连句模式数据
+    const tier = 'intermediate';
+    const result = DATA.selectAnySentenceGroup(tier);
+    if (result) {
+      STATE.targetOrder = result.targetOrder;
+      STATE.words = [...result.targetOrder];
+      STATE.targetSentence = result.targetSentence;
+      STATE.contextCn = result.contextCn;
+    } else {
+      STATE.words = DATA.selectWords4();
+      STATE.targetOrder = DATA.getTargetOrder(STATE.words);
+      STATE.targetSentence = '';
+      STATE.contextCn = '';
+    }
+    STATE.wordIndex = 0;
+    STATE.sentenceCorrect = false;
+    STATE.words = DATA.shuffleArray([...STATE.words]);
+    STATE.quizCorrect = 0;
+    STATE.quizTotal = 0;
+    STATE._quizAnswered = false;
+    STATE._quizzedWords = new Set();
+    STATE.quizSchedule = computeQuizSchedule(STATE.words.length);
+    showScreen('screen-learn');
+    showWord(0);
+  }, 2000);
 }
 
 /* ========== 学单词 ========== */
@@ -4453,6 +4500,12 @@ function generateLetterBossQuestion() {
   return pracGenQuestion(type, 'grade3-4');
 }
 
+function generateIntermediateBossQuestion() {
+  const types = ['cloze', 'match-cn', 'word-class'];
+  const type = DATA.randomPick(types);
+  return pracGenQuestion(type, 'grade5-6');
+}
+
 function bossTurn() {
   BATTLE.phase = 'boss';
   BATTLE.roundCount++;
@@ -4477,7 +4530,8 @@ function bossTurn() {
     question = generateLetterBossQuestion();
     if (!question) question = DATA.generateClozeQuestion();
   } else {
-    question = DATA.generateClozeQuestion('intermediate');
+    question = generateIntermediateBossQuestion();
+    if (!question) question = DATA.generateClozeQuestion('intermediate');
   }
   BATTLE.currentQuestion = question;
 
@@ -4545,7 +4599,7 @@ function answerBossQuestion(optIndex) {
 
     if (BATTLE.isLetterMode) {
       resultEl.innerHTML = `✅ 正确！Boss掉了10点HP！`;
-    } else {
+    } else if (question.correctWord) {
       resultEl.innerHTML = `✅ 正确！Boss掉了10点HP！<br>「${opt.word}」加入你的手牌！`;
 
       // 创建奖励牌（从词汇表补全数据）
@@ -4562,6 +4616,8 @@ function answerBossQuestion(optIndex) {
         source: 'reward',
       };
       BATTLE.handCards.push(rewardCard);
+    } else {
+      resultEl.innerHTML = `✅ 正确！Boss掉了10点HP！`;
     }
     updateHpBars();
 
@@ -4579,7 +4635,8 @@ function answerBossQuestion(optIndex) {
     const bossAtk = BATTLE.boss.atk || 20;
     const isBerserkDouble = BATTLE.roundCount > 5 && BATTLE.berserkSubRound === 1;
     const dmgMult = isBerserkDouble ? 2 : 1;
-    const rawDmg = Math.round(bossAtk * (10 / (10 + pStats.def)) * dmgMult);
+    const defFactor = BATTLE.isLetterMode ? 10 : 20;
+    const rawDmg = Math.round(bossAtk * (defFactor / (10 + pStats.def)) * dmgMult);
     BATTLE.playerHp -= rawDmg;
     resultEl.className = 'bq-result bq-wrong';
     const berserkLabel = isBerserkDouble ? '（狂暴双倍伤害！）' : '';
