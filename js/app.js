@@ -1898,23 +1898,26 @@ async function startStudy(mode) {
   await DATA.load();
 
   if (mode === 'grade5-6') {
-    // 5-6年级：先拼词热身（3个词），再进入连句
-    STATE.studyPhase = 'spelling';
+    // 5-6年级：先热身（学2-3个→拼1个）×2轮，再进入连句
+    STATE.studyPhase = 'warmup';
     STATE.isThemeMode = false;
-    STATE.isSpelling = true;
-    STATE.spellWordIndex = 0;
-    STATE.spellResult = [];
-    STATE.spellRequiredCount = 3;
-    // 选3个有分类的单词用于拼词
-    const pool = DATA.words.filter(w => w.category_cn && DATA.THEME_EMOJI[w.category_cn]);
-    STATE.words = DATA.shuffleArray([...pool]).slice(0, 3);
-    // 进入拼词界面
-    document.getElementById('theme-header').style.display = 'none';
-    document.getElementById('learn-element').style.display = 'block';
-    document.getElementById('word-sentence').style.display = 'block';
-    document.querySelector('.spell-area .learn-buttons').style.display = 'flex';
-    document.getElementById('spell-result').style.display = 'none';
-    showSpellingWord(0);
+    STATE.isSpelling = false;
+    // 从 intermediate 词库选6个有分类的单词
+    let pool = DATA.byTier['intermediate'] ? DATA.byTier['intermediate'].filter(w =>
+      w.category_cn && DATA.THEME_EMOJI[w.category_cn]
+    ) : [];
+    if (pool.length < 6) {
+      // 不足6个时放宽筛选条件
+      pool = (DATA.byTier['intermediate'] || []).filter(w => w.category_cn);
+    }
+    const shuffled = DATA.shuffleArray([...pool]);
+    STATE._g5AllWords = [
+      shuffled.slice(0, 3),
+      shuffled.slice(3, 6)
+    ];
+    STATE._g5Batch = 0;
+    STATE.words = STATE._g5AllWords[0];
+    startG5Warmup();
   } else {
     // 1-2 / 3-4年级：走主题学习模式（word → quiz → finish）
     startThemeLearning(mode);
@@ -2074,6 +2077,106 @@ function showThemeWord(index) {
   document.getElementById('learn-element').style.display = 'block';
 
   SPEAKER.speakWord(w.word);
+}
+
+/* ========== 5-6年级热身模式（学→拼 ×2轮） ========== */
+
+function startG5Warmup() {
+  STATE.wordIndex = 0;
+  STATE.quizCorrect = 0;
+  STATE.quizTotal = 0;
+  STATE._quizAnswered = false;
+  STATE._quizzedWords = new Set();
+  STATE.quizSchedule = computeQuizSchedule(STATE.words.length);
+
+  document.getElementById('theme-header').style.display = 'none';
+  document.getElementById('learn-element').style.display = 'block';
+  document.getElementById('word-sentence').style.display = 'none';
+
+  showScreen('screen-learn');
+  showG5WarmupWord(0);
+}
+
+function showG5WarmupWord(index) {
+  const batchSize = STATE.words.length;
+  if (index >= batchSize) {
+    startG5BatchSpelling();
+    return;
+  }
+  STATE.wordIndex = index;
+  STATE._quizAnswered = false;
+  const w = STATE.words[index];
+
+  // 全局进度（跨两批）
+  const totalWords = STATE._g5AllWords.reduce((sum, arr) => sum + arr.length, 0);
+  const offset = STATE._g5Batch * STATE._g5AllWords[0].length;
+  const globalIndex = offset + index;
+  document.getElementById('progress-fill').style.width = `${(globalIndex / totalWords) * 100}%`;
+  document.getElementById('progress-text').textContent = `${globalIndex + 1}/${totalWords}`;
+
+  // 隐藏测验，恢复单词
+  document.getElementById('learn-quiz').style.display = 'none';
+  document.getElementById('word-display').style.display = 'block';
+  document.getElementById('btn-chinese').style.display = 'inline-block';
+  document.getElementById('btn-next').style.display = 'inline-block';
+
+  const isQuizPoint = STATE.quizSchedule.includes(index);
+  const isLast = index >= batchSize - 1;
+  if (isQuizPoint) {
+    document.getElementById('btn-next').textContent = '答题 →';
+  } else if (isLast) {
+    document.getElementById('btn-next').textContent = '进入拼词 →';
+  } else {
+    document.getElementById('btn-next').textContent = '下一个 →';
+  }
+
+  // 用分类 emoji 提示（类似低年级主题模式）
+  const cat = w.category_cn;
+  const emoji = DATA.THEME_EMOJI[cat] || '📖';
+  document.getElementById('learn-element').textContent = `${emoji} ${cat}`;
+  document.getElementById('learn-element').style.display = 'block';
+  document.getElementById('word-english').textContent = w.word;
+  document.getElementById('word-english').style.color = 'var(--text)';
+  document.getElementById('word-chinese').textContent = w.cn;
+  document.getElementById('word-chinese').style.display = 'none';
+
+  SPEAKER.speakWord(w.word);
+}
+
+function onG5WarmupNextClick() {
+  if (STATE._quizAnswered) {
+    showG5WarmupWord(STATE.wordIndex + 1);
+  } else if (STATE.quizSchedule.includes(STATE.wordIndex)) {
+    showQuiz();
+  } else {
+    showG5WarmupWord(STATE.wordIndex + 1);
+  }
+}
+
+function startG5BatchSpelling() {
+  STATE.isSpelling = true;
+  STATE.spellWordIndex = 0;
+  STATE.spellResult = [];
+  STATE.spellRequiredCount = 1;
+  // 用当前批最后一个词作为拼词目标
+  const spellWord = STATE.words[STATE.words.length - 1];
+  STATE.words = [spellWord];
+
+  document.getElementById('theme-header').style.display = 'none';
+  document.getElementById('learn-element').style.display = 'block';
+  document.getElementById('word-sentence').style.display = 'block';
+  document.querySelector('.spell-area .learn-buttons').style.display = 'flex';
+  document.getElementById('spell-result').style.display = 'none';
+
+  showSpellingWord(0);
+}
+
+function startG5NextBatch() {
+  STATE._g5Batch++;
+  STATE.words = STATE._g5AllWords[STATE._g5Batch];
+  STATE.isSpelling = false;
+  hideSpellResult();
+  startG5Warmup();
 }
 
 /* ========== 拼词阶段（低年级学习模式，替代连句） ========== */
@@ -2345,7 +2448,15 @@ function showSpellReward(result) {
   if (isLast) {
     const btn = document.createElement('button');
     btn.className = 'primary-btn';
-    if (STATE.currentMode === 'grade5-6') {
+    if (STATE.currentMode === 'grade5-6' && STATE.studyPhase === 'warmup') {
+      if (STATE._g5Batch < STATE._g5AllWords.length - 1) {
+        btn.textContent = '继续学习 →';
+        btn.addEventListener('click', startG5NextBatch);
+      } else {
+        btn.textContent = '进入造句 →';
+        btn.addEventListener('click', transitionFromSpellingToSentences);
+      }
+    } else if (STATE.currentMode === 'grade5-6') {
       btn.textContent = '进入造句 →';
       btn.addEventListener('click', transitionFromSpellingToSentences);
     } else {
@@ -2570,6 +2681,10 @@ function showChinese() {
 
 /** 点击"答题"或"下一个"按钮 */
 function onNextClick() {
+  if (STATE.studyPhase === 'warmup') {
+    onG5WarmupNextClick();
+    return;
+  }
   if (STATE.isThemeMode) {
     onThemeNextClick();
     return;
@@ -2697,7 +2812,9 @@ function handleQuizAnswer(selectedBtn) {
 
   // 显示继续按钮
   const contBtn = document.getElementById('quiz-continue');
-  if (STATE.isThemeMode) {
+  if (STATE.studyPhase === 'warmup') {
+    contBtn.textContent = isLast ? '进入拼词 →' : '继续 →';
+  } else if (STATE.isThemeMode) {
     contBtn.textContent = isLast ? '完成 →' : '继续 →';
   } else {
     contBtn.textContent = isLast ? '开始连句 →' : '继续 →';
@@ -2707,6 +2824,14 @@ function handleQuizAnswer(selectedBtn) {
 
 function advanceAfterQuiz() {
   const isLast = STATE.wordIndex >= STATE.words.length - 1;
+  if (STATE.studyPhase === 'warmup') {
+    if (isLast) {
+      startG5BatchSpelling();
+    } else {
+      showG5WarmupWord(STATE.wordIndex + 1);
+    }
+    return;
+  }
   if (STATE.isThemeMode) {
     if (isLast) {
       startSpellingPhase();
@@ -3954,7 +4079,11 @@ function closeModal() {
 }
 
 function confirmAbort() {
-  showModal('确定退出学习吗？进度不会保存。', () => {
+  let msg = '确定退出学习吗？进度不会保存。';
+  if (STATE.studyPhase === 'warmup') {
+    msg = '确定退出热身拼词吗？进度不会保存。';
+  }
+  showModal(msg, () => {
     closeModal();
     STATE.isThemeMode = false;
     goHome();
