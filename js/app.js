@@ -4658,6 +4658,8 @@ function bossTurn() {
   BATTLE.roundCount++;
   // 清除上一回合的临时奖励卡（source === 'reward' 的卡仅在本回合内有效）
   BATTLE.handCards = BATTLE.handCards.filter(c => c.source !== 'reward');
+  // 重置 boss 狂暴状态（避免跨战斗残留）
+  document.getElementById('b-boss-card')?.classList.remove('berserk');
   showPhase('b-boss-turn');
 
   const isBerserk = BATTLE.roundCount > 5;
