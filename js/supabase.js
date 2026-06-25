@@ -100,22 +100,54 @@ async function loginUser(username, password) {
     title: user.title || '',
     letterBag: user.letterBag || [],
   });
-  // 有本地数据且用户名匹配 → 合并两地数据（不简单覆盖，防止多设备互刷）
+  // 有本地数据且用户名匹配 → 合并两地数据
+  // 策略：远程优先（最后保存到服务器的为准），累积型取较大值，收集型合并去重
   if (hasLocal) {
-    Object.assign(USER_CACHE, {
-      xp: localData.xp ?? USER_CACHE.xp,
-      backpack: localData.backpack ?? USER_CACHE.backpack,
-      items: localData.items ?? USER_CACHE.items,
-      bonus: localData.bonus ?? USER_CACHE.bonus,
-      equip: localData.equip ?? USER_CACHE.equip,
-      achievements: localData.achievements ?? USER_CACHE.achievements,
-      avatarFrame: localData.avatarFrame ?? USER_CACHE.avatarFrame,
-      title: localData.title ?? USER_CACHE.title,
-    });
-    // 字母背包：取并集（不覆盖，多地收集互不丢失）
+    // — 累积型：取较高值 —
+    USER_CACHE.xp = Math.max(USER_CACHE.xp || 0, localData.xp || 0);
+    const rb = USER_CACHE.bonus || {};
+    const lb = localData.bonus || {};
+    USER_CACHE.bonus = {
+      wood: Math.max(rb.wood || 0, lb.wood || 0),
+      fire: Math.max(rb.fire || 0, lb.fire || 0),
+      earth: Math.max(rb.earth || 0, lb.earth || 0),
+      water: Math.max(rb.water || 0, lb.water || 0),
+      metal: Math.max(rb.metal || 0, lb.metal || 0),
+    };
+    // — 收集型：以量多的为准，再补入另一端的独有项 —
+    function mergeCardArrays(a, b) {
+      if (!a || a.length === 0) return b || [];
+      if (!b || b.length === 0) return a;
+      const keys = new Set(a.map(c => c.word + '|' + c.element));
+      const extra = b.filter(c => !keys.has(c.word + '|' + c.element));
+      return [...a, ...extra];
+    }
+    USER_CACHE.backpack = mergeCardArrays(USER_CACHE.backpack || [], localData.backpack || []);
+    USER_CACHE.items = mergeCardArrays(USER_CACHE.items || [], localData.items || []);
+    // — 字母背包：并集（多地收集互不丢失） —
     const remoteLetters = USER_CACHE.letterBag || [];
     const localLetters = localData.letterBag || [];
     USER_CACHE.letterBag = [...new Set([...remoteLetters, ...localLetters])];
+    // — 成就：按完整度合并（reward_claimed > completed > locked） —
+    function mergeAchievements(a, b) {
+      const map = new Map();
+      const rank = { locked: 0, completed: 1, reward_claimed: 2 };
+      for (const ach of [...(a || []), ...(b || [])]) {
+        const prev = map.get(ach.id);
+        if (!prev || (rank[ach.status] || 0) > (rank[prev.status] || 0)) {
+          map.set(ach.id, ach);
+        }
+      }
+      return [...map.values()];
+    }
+    USER_CACHE.achievements = mergeAchievements(USER_CACHE.achievements, localData.achievements);
+    // — 选择型：远程优先（设备间切换以最后保存到服务器的为准） —
+    USER_CACHE.avatarFrame = USER_CACHE.avatarFrame || localData.avatarFrame || '';
+    USER_CACHE.title = USER_CACHE.title || localData.title || '';
+    // equip：保留远程数据（远程 = 最后保存的状态）
+    if (!USER_CACHE.equip || USER_CACHE.equip.every(e => e === null)) {
+      USER_CACHE.equip = localData.equip || [null, null, null, null];
+    }
   }
   saveAllToLocal();
   localStorage.setItem('wuxing_user', name);
@@ -236,17 +268,42 @@ function _buildLetterBagPatch() {
   });
 }
 
-/** 发送一次 PATCH，失败只 warn 不抛异常 */
-async function _doPatch(body) {
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
-      { method: 'PATCH', headers: SB_HEADERS, body }
-    );
-    if (!res.ok) console.warn('Supabase PATCH 返回', res.status, await res.text().catch(()=>''));
-  } catch (e) {
-    console.warn('Supabase同步失败，数据已保存在本地', e);
+// 同步失败重试队列
+let _retryQueue = [];
+
+/** 带指数退避重试的 PATCH */
+async function _doPatchWithRetry(body, maxRetries = 2) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`,
+        { method: 'PATCH', headers: SB_HEADERS, body }
+      );
+      if (res.ok) return;
+      if (attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 300 * Math.pow(3, attempt)));
+      }
+    } catch (e) {
+      if (attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 300 * Math.pow(3, attempt)));
+      }
+    }
   }
+  // 所有重试均失败 → 入队，下次 syncToSupabase 时重新尝试
+  _retryQueue.push(body);
+}
+
+/** 发送一次 PATCH（先消费重试队列，再发当前请求） */
+async function _doPatch(body) {
+  // 先消费重试队列
+  if (_retryQueue.length > 0) {
+    const pending = _retryQueue.slice();
+    _retryQueue = [];
+    for (const q of pending) {
+      await _doPatchWithRetry(q);
+    }
+  }
+  await _doPatchWithRetry(body);
 }
 
 function syncToSupabase() {
@@ -256,7 +313,7 @@ function syncToSupabase() {
   if (_syncTimer) clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async () => {
     await _doPatch(_buildPatchBody());
-    await _doPatch(_buildLetterBagPatch()); // 单独发送，失败不影响主数据
+    await _doPatch(_buildLetterBagPatch());
     _syncTimer = null;
   }, 300);
 }
@@ -335,6 +392,40 @@ async function syncToSupabaseNow() {
   await _doPatch(_buildPatchBody());
   await _doPatch(_buildLetterBagPatch());
 }
+
+/* ---------- 页面关闭/隐藏时强制同步（防止防抖队列丢失） ---------- */
+function _forceSyncOnExit() {
+  if (!USER_CACHE.id) return;
+  if (_syncTimer) { clearTimeout(_syncTimer); _syncTimer = null; }
+  // 同步阻塞 XHR（beforeunload 中 fetch 可能被取消，用 XHR 确保送达）
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PATCH', `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`, false);
+    xhr.setRequestHeader('apikey', SUPABASE_KEY);
+    xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_KEY}`);
+    xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    xhr.send(_buildPatchBody());
+  } catch (e) {
+    // 确保至少存入 localStorage
+    saveAllToLocal();
+  }
+  // letterBag 也同步（单独请求）
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PATCH', `${SUPABASE_URL}/rest/v1/user_profiles?id=eq.${USER_CACHE.id}`, false);
+    xhr.setRequestHeader('apikey', SUPABASE_KEY);
+    xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_KEY}`);
+    xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    xhr.send(_buildLetterBagPatch());
+  } catch (e) {}
+}
+
+// visibilitychange 用于移动端切后台 / 标签页切换
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') _forceSyncOnExit();
+});
+// pagehide 补充（Safari 等浏览器在 visibilitychange 后不一定会发送同步请求）
+window.addEventListener('pagehide', _forceSyncOnExit);
 
 async function fetchAllUsers() {
   try {
