@@ -1466,6 +1466,7 @@ function pracGenCloze(mode) {
       text: `${o.word} (${o.cn})`, isCorrect: o.isCorrect,
     }))),
     explanation: '正确答案：' + q.options.find(o => o.isCorrect).word,
+    correctWord: q.correctWord,  // 透传，用于BOSS回合奖励手牌
   };
 }
 
@@ -4638,6 +4639,8 @@ function generateIntermediateBossQuestion() {
 function bossTurn() {
   BATTLE.phase = 'boss';
   BATTLE.roundCount++;
+  // 清除上一回合的临时奖励卡（source === 'reward' 的卡仅在本回合内有效）
+  BATTLE.handCards = BATTLE.handCards.filter(c => c.source !== 'reward');
   showPhase('b-boss-turn');
 
   const isBerserk = BATTLE.roundCount > 5;
@@ -4745,6 +4748,7 @@ function answerBossQuestion(optIndex) {
         source: 'reward',
       };
       BATTLE.handCards.push(rewardCard);
+      renderHandCards();
     } else {
       resultEl.innerHTML = `✅ 正确！Boss掉了10点HP！`;
     }
