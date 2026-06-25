@@ -4542,6 +4542,7 @@ function initLetterBattle(selectedLetters) {
   BATTLE.selectedIndices = [];
   BATTLE.berserkSubRound = 0;
   BATTLE._revived = false;
+  BATTLE._lastSpelledWord = '';  // 初级挑战防重复用词
 
   // 字母模式特有
   BATTLE.isLetterMode = true;
@@ -5117,6 +5118,12 @@ async function bpLetterAttack() {
       return;
     }
 
+    // 禁止重复上一个拼过的词（鼓励尝试新词）
+    if (word === BATTLE._lastSpelledWord) {
+      document.getElementById('bp-letter-error-msg').textContent = `❌ "${word}" 上一个回合刚用过，试试其他词！`;
+      return;
+    }
+
     document.getElementById('bp-letter-error-msg').textContent = '';
 
     // 计算伤害
@@ -5133,6 +5140,7 @@ async function bpLetterAttack() {
 
     // 多字母拼词：字母不消耗，放回字母库
     BATTLE.battleLetterPlaced = [];
+    BATTLE._lastSpelledWord = word;  // 记录已拼词，下回合不可重复
 
     updateHpBars();
 
