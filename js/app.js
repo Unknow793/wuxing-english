@@ -4211,7 +4211,23 @@ function selectBoss(boss) {
   BATTLE.bossHp = bossStats.maxHp;
   BATTLE.bossMaxHp = bossStats.maxHp;
   if (BATTLE.isLetterMode) {
-    showLetterEquipScreen();
+    // 直接使用所有已拥有的字母，跳过逐一点选步骤
+    const lb = loadLetterBag();
+    const allLetters = [...lb].sort();
+    if (allLetters.length < 6) {
+      showToast(`❗ 需要至少6个字母，你只有 ${allLetters.length} 个。先去学习模式收集吧！`);
+      return;
+    }
+    // 检查五行覆盖
+    const elementSet = new Set();
+    for (const ch of allLetters) elementSet.add(DATA.getLetterElement(ch));
+    const missing = DATA.ELEMENTS.map(e => e.name).filter(el => !elementSet.has(el));
+    if (missing.length > 0) {
+      showToast(`❗ 缺少 ${missing.join('、')} 属性的字母，需要所有五行才能出战`);
+      return;
+    }
+    BATTLE._selectedLetters = allLetters;
+    initLetterBattle(allLetters);
   } else {
     showEquipScreen();
   }
